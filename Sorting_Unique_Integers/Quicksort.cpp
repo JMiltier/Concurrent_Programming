@@ -6,10 +6,10 @@
 using namespace std;
 
 //quick sort
-void quickSort(unsigned long long int *arr, unsigned long long int left, unsigned long long int right) {
-    unsigned long long int i = left, j = right;
-    unsigned long long int tmp;
-    unsigned long long int pivot = arr[(left + right) / 2];
+void quickSort(int *arr, int left, int right) {
+    int i = left, j = right;
+    int tmp;
+    int pivot = arr[(left + right) / 2];
 
     /* partition */
     while (i <= j) {

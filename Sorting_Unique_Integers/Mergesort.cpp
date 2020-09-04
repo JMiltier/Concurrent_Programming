@@ -5,31 +5,49 @@
 
 using namespace std;
 
-// merge sort
-void mergeSort(unsigned long long int *arr, unsigned long long int left, unsigned long long int right) {
-    unsigned long long int i = left, j = right;
-    unsigned long long int tmp;
-    unsigned long long int pivot = arr[(left + right) / 2];
+void merge(int *,int, int, int);
 
-    /* partition */
-    while (i <= j) {
-        while (arr[i] < pivot)
+void mergeSort(int *arr, int low, int high) {
+    int mid;
+    if (low < high){
+        //divide the array at mid and sort independently using merge sort
+        mid=(low+high)/2;
+        mergeSort(arr,low,mid);
+        mergeSort(arr,mid+1,high);
+        //merge or conquer sorted arrays
+        merge(arr,low,high,mid);
+    }
+}
+
+// Merge sort
+void merge(int *arr, int low, int high, int mid) {
+    int i, j, k, c[50];
+    i = low;
+    k = low;
+    j = mid + 1;
+    while (i <= mid && j <= high) {
+        if (arr[i] < arr[j]) {
+            c[k] = arr[i];
+            k++;
             i++;
-        while (arr[j] > pivot)
-            j--;
-            if (i <= j) {
-                tmp = arr[i];
-                arr[i] = arr[j];
-                arr[j] = tmp;
-                i++;
-                j--;
-            }
-    };
-
-    /* recursion */
-    if (left < j){
-        mergeSort(arr, left, j);
-    }if (i < right){
-        mergeSort(arr, i, right);
+        }
+        else  {
+            c[k] = arr[j];
+            k++;
+            j++;
+        }
+    }
+    while (i <= mid) {
+        c[k] = arr[i];
+        k++;
+        i++;
+    }
+    while (j <= high) {
+        c[k] = arr[j];
+        k++;
+        j++;
+    }
+    for (i = low; i < k; i++)  {
+        arr[i] = c[i];
     }
 }

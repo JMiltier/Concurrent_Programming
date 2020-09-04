@@ -17,6 +17,6 @@ int main() {
       arr.push_back(ran_data);
    }
 
-   file << arr << "";
+   file << arr;
    file.close();
 }

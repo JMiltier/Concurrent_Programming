@@ -11,8 +11,8 @@ using namespace std;
 static unsigned long int swapCount = 0;
 
 //check if array sorted correctly - by comparing two sorted arrays
-void arrayCheck(unsigned long long arraysize, unsigned long long int *array1, unsigned long long int *array2){
-    for(unsigned long int i=0;i<arraysize;i++){
+void arrayCheck(int arraysize, int *array1, int *array2){
+    for(int i=0;i<arraysize;i++){
         if(array1[i]!=array2[i]){
             cout<<"Error with the previous sortings!\n\n";
             return;
@@ -21,13 +21,13 @@ void arrayCheck(unsigned long long arraysize, unsigned long long int *array1, un
 }
 
 int main(){
-    const unsigned long long int arraysize = 500000;
+    const int arraysize = 500000;
     cout<<"Using array size of "<<arraysize<<endl<<endl;
 
     //dynamically allocate arrays
-    unsigned long long int *array1, *array2, *array3;
-    array1 = new unsigned long long int [arraysize];
-    array2 = new unsigned long long int [arraysize];
+    int *array1, *array2, *array3;
+    array1 = new int [arraysize];
+    array2 = new int [arraysize];
 
     for(unsigned long int i=0;i<arraysize;i++){
         array1[i]=rand();
@@ -47,7 +47,7 @@ int main(){
     // merge sort
     swapCount = 0; //reset global variable to 0
     time (&begin);
-    mergeSort(array2, arraysize);
+    mergeSort(array2, 0, arraysize);
     time (&end);
     cout<<"Array sorted after "<<swapCount<<" swaps using the ''Shell Sort'' method."<<endl;
     cout<<"Run time: "<<difftime (end,begin)<<" seconds"<<endl<<endl;
