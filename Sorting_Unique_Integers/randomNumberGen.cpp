@@ -1,24 +1,22 @@
 #include <iostream>
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
 #include <fstream>
+#include <cstdio>
+#include <vector>
+#include <string>
+
 using namespace std;
 
 int main() {
-  srand(time(NULL));
-  int value = 0;
-  ofstream myfile ("list.txt");
+   ofstream file;
+   file.open("sourcefile.txt");
+   srand((unsigned)(0));
+   vector<int> arr;
 
-  myfile.open ("list.txt", ios::out | ios::app );
+   for (int index = 0; index < 100; index++) {
+      int ran_data = (rand() % 101) + 1;
+      arr.push_back(ran_data);
+   }
 
-  if (myfile.is_open()) {
-    for (int i = 0; i < 1000; ++i) {
-      value = rand();
-      myfile << i << " " << value << "\n";
-    }
-    myfile.close();
-  } else cout << "Unable to open file";
-
-  return 0;
+   file << arr << "";
+   file.close();
 }
