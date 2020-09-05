@@ -7,10 +7,10 @@ Sorting Algorithms (through divide and conquer):
 
 #### Makefile
 1. `make` creates a mysort exe file
-  Functionality:
-  - `mysort --name` displays first name and last name
-  - `mysort <input file> -o <output file> --alg=<merge,quick>` takes an input file, writes to an output file; the input file is sorted based on specified merge or quick, and written to the output file
-  - no other mysort features available; no current fact checking
+    Functionality:
+    - `mysort --name` displays first name and last name
+    - `mysort <input file> -o <output file> --alg=<merge,quick>` takes an input file, writes to an output file; the input file is sorted based on specified merge or quick, and written to the output file
+    - no other mysort features available; no current fact checking
 2. `make clean` removes any files created by make
 
 #### Additional files
