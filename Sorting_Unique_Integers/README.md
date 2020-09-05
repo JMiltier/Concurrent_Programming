@@ -6,7 +6,7 @@ Sorting Algorithms (through divide and conquer):
   2. **Mergesort** - divides into two halfs, then merges sorted halfs
 
 #### Makefile
-1. `make` creates a mysort exe file
+1. `make` creates a mysort exe file  
     Functionality:
     - `mysort --name` displays first name and last name
     - `mysort <input file> -o <output file> --alg=<merge,quick>` takes an input file, writes to an output file; the input file is sorted based on specified merge or quick, and written to the output file
