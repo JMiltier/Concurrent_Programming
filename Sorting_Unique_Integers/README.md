@@ -14,6 +14,6 @@ Sorting Algorithms (through divide and conquer):
 2. `make clean` removes any files created by make
 
 #### Additional files
-1. randomNumberGen.cpp - creates a text file with a specified number of random numbers from [ 1 - <number size> ]. Number size is specified within cpp file itself.
+1. randomNumberGen.cpp - creates a text file with a specified number of random numbers from [ 1 - number size ]. Number size is specified within cpp file itself.
 2. mergesort and quicksort cpp + header files. Not used, to directly incorperate to main.cpp.
 
