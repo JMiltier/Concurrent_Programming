@@ -2,22 +2,9 @@
 #include <ctime>
 #include <cstdlib>
 #include <cmath>
+#include "mergesort.h"
 
 using namespace std;
-
-void merge(int *,int, int, int);
-
-void mergeSort(int *arr, int low, int high) {
-    int mid;
-    if (low < high){
-        //divide the array at mid and sort independently using merge sort
-        mid=(low+high)/2;
-        mergeSort(arr,low,mid);
-        mergeSort(arr,mid+1,high);
-        //merge or conquer sorted arrays
-        merge(arr,low,high,mid);
-    }
-}
 
 // Merge sort
 void merge(int *arr, int low, int high, int mid) {
@@ -49,5 +36,17 @@ void merge(int *arr, int low, int high, int mid) {
     }
     for (i = low; i < k; i++)  {
         arr[i] = c[i];
+    }
+}
+
+void mergeSort(int **arr, int low, int high) {
+    int mid;
+    if (low < high){
+        //divide the array at mid and sort independently using merge sort
+        mid=(low+high)/2;
+        mergeSort(arr,low,mid);
+        mergeSort(arr,mid+1,high);
+        //merge or conquer sorted arrays
+        merge(arr,low,high,mid);
     }
 }

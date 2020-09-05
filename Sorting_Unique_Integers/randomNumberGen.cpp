@@ -6,17 +6,17 @@
 
 using namespace std;
 
+// generates
 int main() {
    ofstream file;
    file.open("sourcefile.txt");
    srand((unsigned)(0));
-   vector<int> arr;
+   int size = 1000;
 
-   for (int index = 0; index < 100; index++) {
-      int ran_data = (rand() % 101) + 1;
-      arr.push_back(ran_data);
+   for (int i = 0; i < size; i++) {
+      int ran_data = (rand() % size+1) + 1; // generates int between 1 - <size>
+      file << ran_data << endl;
    }
 
-   file << arr;
    file.close();
 }

@@ -2,11 +2,12 @@
 #include <ctime>
 #include <cstdlib>
 #include <cmath>
+#include "quicksort.h"
 
 using namespace std;
 
 //quick sort
-void quickSort(int *arr, int left, int right) {
+void quickSort(int arr, int left, int right) {
     int i = left, j = right;
     int tmp;
     int pivot = arr[(left + right) / 2];

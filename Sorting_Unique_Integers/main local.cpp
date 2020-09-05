@@ -4,8 +4,8 @@
 #include <unistd.h>
 #include <cmath>
 #include <string>
-#include <fstream>
-#include <vector>
+#include "quicksort.h"
+#include "mergesort.h"
 
 using namespace std;
 
@@ -102,38 +102,54 @@ void quickSort(int *arr, int left, int right) {
 }
 
 int main(int argc, char *argv[]) {
+    // switch (getopt(argc, argv, "nt:")) {
+    //     case '--name': // check for name
+    //         cout << "Josh Miltier" << endl;
+    //         return 0;
+    // }
+
     // check for name
     if (string(argv[1]) == "--name") { cout << "Josh Miltier" << endl; return 0; }
 
-    fstream file(string(argv[1]), ios_base::in);
-    int arraysize = 0;
-    string line;
-    while (getline(file, line)) {
-        arraysize++;
+    // const int arraysize = 100;
+    // cout << "Using array size of " << arraysize << endl
+    //     << endl;
+
+    //dynamically allocate arrays
+    int *array1, *array2;
+    array1 = new int[arraysize];
+    array2 = new int[arraysize];
+
+    for (int i = 0; i < arraysize; i++) {
+        array1[i] = rand() % 1000 + 1;
+        array2[i] = array1[i]; //=array1[i]; //to sure all of the arrays are the same (FAIRNESS!)
     }
 
-    int array[arraysize];
-    int a;
-    int b = 0;
-    fstream infile(string(argv[1]), ios_base::in);
-    while (infile >> a) {
-        array[b] = a;
-        b++;
-    }
+//   printList(array1, arraysize);
+
+    time_t begin, end; // time_t is a datatype to store time values.
 
     // quick sort
-    if (string(argv[4]) == "--alg=quick") quickSort(array, 0, arraysize - 1);
+    time(&begin);
+    quickSort(array1, 0, arraysize - 1);
+    time(&end);
+    double timediff = difftime(end, begin);
+    cout << "Run time: " << timediff << " seconds" << endl
+        << endl;
+
     // merge sort
-    else if (string(argv[4]) == "--alg=merge") mergeSort(array, 0, arraysize - 1, arraysize);
-    // printList(array, arraysize);
+    time(&begin);
+    mergeSort(array2, 0, arraysize - 1, arraysize);
+    time(&end);
+    cout << "Run time: " << difftime(end, begin) << " seconds" << endl
+        << endl;
 
-    ofstream outfile;
-    outfile.open(string(argv[3]));
-    for (int i = 0; i < arraysize; i++) {
-      outfile << array[i] << endl;
-    }
+    arrayCheck(arraysize, array1, array2);
+    // printList(array1, arraysize);
 
-    outfile.close();
+    // clean-up
+    delete[] array1;
+    delete[] array2;
 
     return 0;
 }
