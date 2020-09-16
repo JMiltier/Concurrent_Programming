@@ -111,7 +111,7 @@ int main(int argc, char *argv[]) {
     // check for name
     if (string(argv[1]) == "--name") { cout << "Josh Miltier" << endl; return 0; }
 
-    // const int arraysize = 100;
+    const int arraysize = 100;
     // cout << "Using array size of " << arraysize << endl
     //     << endl;
 
