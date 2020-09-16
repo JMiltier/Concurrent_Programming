@@ -15,5 +15,5 @@ Sorting Algorithms (through divide and conquer):
 
 #### Additional files
 1. randomNumberGen.cpp - creates a text file with a specified number of random numbers from [ 1 - number size ]. Number size is specified within cpp file itself.
-2. mergesort and quicksort cpp + header files. Not used, to directly incorperate to main.cpp.
+2. mergesort and quicksort cpp + header files. Not used, instead directly incorporated to main.cpp.
 
