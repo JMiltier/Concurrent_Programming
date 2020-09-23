@@ -1,8 +1,8 @@
+#define _POSIX_C_SOURCE 200112L
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-
 
 pthread_t* threads;
 size_t* args;
@@ -33,16 +33,16 @@ void* thread_main(void* args){
 		clock_gettime(CLOCK_MONOTONIC,&start);
 	}
 	pthread_barrier_wait(&bar);
-	
+
 	// do something
 	printf("Thread %zu reporting for duty\n",tid);
-	
+
 	pthread_barrier_wait(&bar);
 	if(tid==1){
 		clock_gettime(CLOCK_MONOTONIC,&end);
 	}
 	local_cleanup();
-	
+
 	return 0;
 }
 
@@ -50,7 +50,7 @@ void* thread_main(void* args){
 
 
 int main(int argc, const char* argv[]){
-	
+
 	// parse args
 	if(argc==2){
 		NUM_THREADS = atoi( argv[1] );
@@ -62,10 +62,10 @@ int main(int argc, const char* argv[]){
 	else{
 		NUM_THREADS = 5;
 	}
-	
-	
+
+
 	global_init();
-	
+
 	// launch threads
 	int ret; size_t i;
   for(i=1; i<NUM_THREADS; i++){
@@ -79,7 +79,7 @@ int main(int argc, const char* argv[]){
 	}
 	i = 1;
 	thread_main(&i); // master also calls thread_main
-	
+
 	// join threads
 	for(size_t i=1; i<NUM_THREADS; i++){
 		ret = pthread_join(threads[i],NULL);
@@ -89,9 +89,9 @@ int main(int argc, const char* argv[]){
 		}
 		printf("joined thread %zu\n",i+1);
 	}
-	
+
 	global_cleanup();
-	
+
 	unsigned long long elapsed_ns;
 	elapsed_ns = (end.tv_sec-start.tv_sec)*1000000000 + (end.tv_nsec-start.tv_nsec);
 	printf("Elapsed (ns): %llu\n",elapsed_ns);
