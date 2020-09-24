@@ -47,9 +47,6 @@ void* thread_main(void* args){
 	return 0;
 }
 
-
-
-
 int main(int argc, const char* argv[]){
 
 	// parse args
@@ -63,7 +60,6 @@ int main(int argc, const char* argv[]){
 	else{
 		NUM_THREADS = 5;
 	}
-
 
 	global_init();
 
