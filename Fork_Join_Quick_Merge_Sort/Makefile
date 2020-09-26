@@ -7,3 +7,5 @@ test: test.c
 .PHONY : clean
 clean:
 	rm test
+
+	# need to add for sorting algos
