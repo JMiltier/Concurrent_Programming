@@ -1,5 +1,6 @@
 /*
  * pthread_barrier for implementation for Mac OS
+ * * Check on Linux
  * From: https://blog.albertarmea.com/post/47089939939/using-pthreadbarrier-on-mac-os-x
 */
 
