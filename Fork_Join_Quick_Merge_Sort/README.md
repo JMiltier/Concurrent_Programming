@@ -4,6 +4,7 @@ This program sorts a text file of unique integers and outputs the sorted list. T
 Sorting Algorithms (through divide and conquer):
   1. **Quicksort** - picks element as pivot and partition exchanging
   2. **Mergesort** - divides into two halfs, then merges sorted halfs
+  3. **Bucketsort** - sorts array into different bins, then sorts the bins
 
 #### Makefile
 1. `make` creates a mysort exe file
