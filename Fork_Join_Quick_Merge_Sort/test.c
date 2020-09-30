@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <pthread_add.h>
+#include "pthread_add.h"
 
 pthread_t* threads;
 size_t* args;

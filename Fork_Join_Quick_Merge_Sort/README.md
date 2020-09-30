@@ -40,4 +40,5 @@ Using two different sorting algorithms and two different paralellization strateg
   - **Additional outputs**: time of execution in nanoseconds
 
 ### 🐜 Surviving Bugs
-  - None witnessed
+  - text files are not declared for input/output files (not checked)
+  - numbers within input txt file must be integers (not checked)

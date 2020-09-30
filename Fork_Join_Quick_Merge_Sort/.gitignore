@@ -3,4 +3,9 @@
 *.text
 *.txt
 *.webloc
+*.dSYM
 Test Machines*
+
+# executable file
+test
+mysort
