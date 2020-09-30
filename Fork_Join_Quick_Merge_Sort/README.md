@@ -30,7 +30,15 @@ Using two different sorting algorithms and two different paralellization strateg
 
 ### Execution
 `mysort [--name] [source.txt] [-o out.txt] [-t NUM THREADS] [--alg=<fjmerge,fjquick,lkbucket>]`
-  1.
+  1. `mysort --name`: prints name to console.
+  2. `source.txt`: unsorted txt file of numbers, with each number on a new line
+  3. `-o out.txt`: sorted txt file of numebrs, in which the program outputs/writes to
+  4. `-t NUM_THREADS`: specify how many threads to use during execution (including master thread)
+  5. `--alg=<fjmerge, lkbucket>`: specify which algorithm to use.
+      - fjmerge: fork/join of merge sort
+      - lkbucket: lock of bucket sort
+  - **Additional outputs**: time of execution in nanoseconds
+
 
 ### 🐜 Surviving Bugs
   - None witnessed
