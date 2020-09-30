@@ -1,5 +1,5 @@
 ## 〽️ C++ sorting algorithms
-Using two different sorting algorithms and two different paralellization strategies, this program sorts a text file of unique integers and outputs the sorted list. The text file will be an unsorted data structure [Standard Template Library (STL) vector]. This is to emulate the performance of the UNIX `sort-n` command.
+Using two different sorting algorithms and two different paralellization strategies(fork/join and locks), this program sorts a text file of unique integers and outputs the sorted list to a text file. The text file will be an unsorted data structure [Standard Template Library (STL) vector]. This is to emulate the performance of the UNIX `sort-n` command.
 
 #### Sorting Algorithms:
   1. **Quicksort** - picks element as pivot and partition exchanging

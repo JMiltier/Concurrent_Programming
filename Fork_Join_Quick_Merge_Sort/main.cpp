@@ -54,23 +54,23 @@ void* thread_main(void* args){
 	return 0;
 }
 
+/* ****************************** MAIN ****************************** */
 int main(int argc, const char* argv[]){
 	string inputFile, outputFile, algorithm;
 
-	// check for name
-	if (argc == 2 && string(argv[1]) == "--name") {
-		printf("Josh Miltier\n");
-		return 0;
-  } else if (argc == 7) {
-		// continue on to execution
-	} else { // catch all
+	/* *************v ARG CHECKER v************* */
+	if (argc == 2 && string(argv[1]) == "--name") { printf("Josh Miltier\n"); return 0; } // check for --name
+	else if (argc == 7) {} // continue on to execution
+	else { // catch all
 		printf("\nERROR: program options are invalid.\nRefer to the readme for execution instructions.\n\n");
 		exit(-1);
 	}
+	/* *************^ END ARG CHECK ^************* */
 
-		global_init();
+	global_init();
 
- 	/* ************* ARG PARSER ************* */
+	/* ************************************** */
+ 	/* *************v ARG PARSER v************* */
 	// txt input file (argv 1)
 	inputFile = string(argv[1]);
 
@@ -85,7 +85,6 @@ int main(int argc, const char* argv[]){
 	} else {
 		NUM_THREADS = atoi( argv[5] );
 		if (NUM_THREADS > 150) { printf("ERROR; too many threads\n"); exit(-1); }
-		else NUM_THREADS = 5;
 	}
 
 	// algorithm type <fjmerge> or <lkbucket> (argv 7)
@@ -95,7 +94,8 @@ int main(int argc, const char* argv[]){
 	else if (string(argv[6]) == "--alg=lkbucket") algorithm = "lkbucket";
 	// algorithm not available
 	else printf("ERROR: algorithm does not exist. Try 'fjmerge' or 'lkbucket'\n");
- 	/* *********** END ARG PARSER *********** */
+ 	/* ***********^ END ARG PARSER ^*********** */
+	/* ************************************** */
 
 	// launch threads
 	int ret; size_t i;
@@ -121,6 +121,8 @@ int main(int argc, const char* argv[]){
 		printf("joined thread %zu\n",i+1);
 	}
 
+	/* ********************************************* */
+	/* *************** FILE HANDLING *************** */
 	// read from file
 	fstream file(inputFile, ios_base::in);
     int arraysize = 0;
@@ -137,6 +139,8 @@ int main(int argc, const char* argv[]){
 		outfile << array[i] << endl;
 	}
 	outfile.close();
+	/* ************* END FILE HANDLING ************* */
+	/* ********************************************* */
 
 	global_cleanup();
 
