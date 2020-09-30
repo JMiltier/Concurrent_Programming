@@ -14,7 +14,7 @@ Using two different sorting algorithms and two different paralellization strateg
 ### 🗄️ Code Organization
 
 ### 📁 Files
-  1. `main.cpp`
+  1. `main.c`
   1. `bucketsort.cpp`
   2. `mergesort.cpp`
   3. `Makefile`
@@ -35,10 +35,9 @@ Using two different sorting algorithms and two different paralellization strateg
   3. `-o out.txt`: sorted txt file of numebrs, in which the program outputs/writes to
   4. `-t NUM_THREADS`: specify how many threads to use during execution (including master thread)
   5. `--alg=<fjmerge, lkbucket>`: specify which algorithm to use.
-      - fjmerge: fork/join of merge sort
-      - lkbucket: lock of bucket sort
+      - fjmerge: merge sort using fork/join
+      - lkbucket: bucket sort using locks
   - **Additional outputs**: time of execution in nanoseconds
-
 
 ### 🐜 Surviving Bugs
   - None witnessed
