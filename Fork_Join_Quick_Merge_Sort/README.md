@@ -14,13 +14,13 @@ Using two different sorting algorithms and two different paralellization strateg
 ### 🗄️ Code Organization
 
 ### 📁 Files
-  1. `main.c`
+  1. `main.cpp`
   1. `bucketsort.cpp`
   2. `mergesort.cpp`
   3. `Makefile`
 
 #### 💾 Additional files
-  1. randomNumberGen.cpp - creates a text file with a specified number of random numbers from [ 1 - number size ]. Default number is 10,000 unless specified when ran (as second argument).
+  1. `randomNumberGen.cpp`- creates a text file with a specified number of random numbers from [ 1 - number size ]. Default number is 10,000 unless specified when ran (as second argument).
   2. mergesort and quicksort cpp + header files. Not used, instead directly incorporated to main.cpp.
 
 ### Compiling
