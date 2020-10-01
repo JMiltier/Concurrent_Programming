@@ -13,15 +13,19 @@ CC = g++
 #  -w			inhibits all warning messages
 CFLAGS  = -w
 
-MYPROGRAM=mysort
+SORTPRGM=mysort
 SOURCE=main.cpp
+
+NUMGENPRGM=numGem
+NUMGENSRC=randomNumberGen.cpp
+
 name= "Josh Miltier"
 
-$(MYPROGRAM): clean $(SOURCE)
-	$(CC) $(CFGLAGS) $(SOURCE) -o $(MYPROGRAM)
+$(SORTPRGM): clean $(SOURCE)
+	$(CC) $(CFGLAGS) $(SOURCE) -o $(SORTPRGM)
 
-numGen: randomNumberGen.cpp
-	$(CC) $(CFGLAGS) randomNumberGen.cpp -o numGen
+$(NUMGENPRGM): $(NUMGENSRC)
+	$(CC) $(CFGLAGS) $(NUMGENSRC) -o $(NUMGENPRGM)
 
 clean:
-	rm -rf $(MYPROGRAM) numGen
+	rm -rf $(MYPROGRAM) $(NUMGENPRGM)
