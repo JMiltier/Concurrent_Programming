@@ -1,7 +1,8 @@
 # --------------------------------------------------------
 # Makefile - versitility to use again for C or C++ files
-# 'make'        builds executable targets
-# 'make clean'  removes all .o and executable files
+# 'make'         builds executable targets
+# 'make numGen'  creates random number generator object
+# 'make clean'   removes all .o and executable files
 # --------------------------------------------------------
 
 # the compiler: gcc for C program, define as g++ for C++
@@ -16,7 +17,7 @@ CFLAGS  = -w
 SORTPRGM=mysort
 SOURCE=main.cpp
 
-NUMGENPRGM=numGem
+NUMGENPRGM=numGen
 NUMGENSRC=randomNumberGen.cpp
 
 name= "Josh Miltier"
@@ -28,4 +29,4 @@ $(NUMGENPRGM): $(NUMGENSRC)
 	$(CC) $(CFGLAGS) $(NUMGENSRC) -o $(NUMGENPRGM)
 
 clean:
-	rm -rf $(MYPROGRAM) $(NUMGENPRGM)
+	rm -rf $(SORTPRGM) $(NUMGENPRGM)
