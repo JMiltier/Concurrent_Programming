@@ -20,5 +20,8 @@ name= "Josh Miltier"
 $(MYPROGRAM): clean $(SOURCE)
 	$(CC) $(CFGLAGS) $(SOURCE) -o $(MYPROGRAM)
 
+numGen: randomNumberGen.cpp
+	$(CC) $(CFGLAGS) randomNumberGen.cpp -o numGen
+
 clean:
-	rm -rf $(MYPROGRAM)
+	rm -rf $(MYPROGRAM) numGen

@@ -20,13 +20,14 @@ Using two different sorting algorithms and two different paralellization strateg
   3. `Makefile`
 
 #### 💾 Additional files
-  1. randomNumberGen.cpp - creates a text file with a specified number of random numbers from [ 1 - number size ]. Number size is specified within cpp file itself.
+  1. randomNumberGen.cpp - creates a text file with a specified number of random numbers from [ 1 - number size ]. Default number is 10,000 unless specified when ran (as second argument).
   2. mergesort and quicksort cpp + header files. Not used, instead directly incorporated to main.cpp.
 
 ### Compiling
   Note: If zipped, unzip file.
-  1.
-
+  1. From root directory, run `make` from the terminal. This will generate a program called *mysort*
+  2. Additionally, if wanting to create a text file (*source.txt*) of randomly generated numbers (repeatable), run `make numGen` from the terminal. Then, `./numGen <amount of numbers to generate>`. If a second argument isn't passed in (`./numGen`), the program will generate 10,000 numbers by default.
+  3. Next, follow execution syntax below for parallel algoritm sorting.
 
 ### Execution
 `mysort [--name] [source.txt] [-o out.txt] [-t NUM THREADS] [--alg=<fjmerge,fjquick,lkbucket>]`
@@ -40,5 +41,5 @@ Using two different sorting algorithms and two different paralellization strateg
   - **Additional outputs**: time of execution in nanoseconds
 
 ### 🐜 Surviving Bugs
-  - text files are not declared for input/output files (not checked)
-  - numbers within input txt file must be integers (not checked)
+  - Input/output files are loaded/saved as is. Does not check for txt file types.
+  - Numbers within input txt file must be integers (not checked) for the program to work.
