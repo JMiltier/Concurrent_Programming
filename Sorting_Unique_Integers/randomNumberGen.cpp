@@ -20,3 +20,5 @@ int main() {
 
    file.close();
 }
+
+// to run: g++ -o numGen randomNumberGen.cpp
