@@ -21,8 +21,6 @@ pthread_barrier_t bar;
 
 struct timespec time_start, time_end;
 
-/* **************************************************************** */
-/* *************************v GLOBAL INIT v************************ */
 void global_init(){
 	threads = static_cast<pthread_t*>(malloc(NUM_THREADS*sizeof(pthread_t)));
 	args = static_cast<size_t*>(malloc(NUM_THREADS*sizeof(size_t)));
@@ -48,7 +46,7 @@ void* thread_main(void* args){
 	pthread_barrier_wait(&bar);
 
 	// do something
-	printf("Thread %zu reporting for duty\n",tid);
+	// printf("Thread %zu reporting for duty\n",tid);
 
 	pthread_barrier_wait(&bar);
 	if(tid==1){
@@ -58,41 +56,41 @@ void* thread_main(void* args){
 
 	return 0;
 }
-/* ***********************^ END GLOBAL INIT ^********************** */
-/* **************************************************************** */
 
-/* *************************************************************** */
-/* *************************v MERGE SORT v************************ */
+
+/* ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ MERGE SORT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ */
 void fj_merge(int *arr, int low, int high, int mid, int len) {
-    int i, j, k, c[len];
-    i = low;
-    k = low;
-    j = mid + 1;
-    while (i <= mid && j <= high) {
-        if (arr[i] < arr[j]) {
-            c[k] = arr[i];
-            k++;
-            i++;
-        }
-        else  {
-            c[k] = arr[j];
-            k++;
-            j++;
-        }
-    }
-    while (i <= mid) {
-        c[k] = arr[i];
-        k++;
-        i++;
-    }
-    while (j <= high) {
-        c[k] = arr[j];
-        k++;
-        j++;
-    }
-    for (i = low; i < k; i++)  {
-        arr[i] = c[i];
-    }
+	int i, j, k, c[len];
+	i = low;
+	k = low;
+	j = mid + 1;
+
+	while (i <= mid && j <= high) {
+		if (arr[i] < arr[j]) {
+			c[k] = arr[i];
+			k++;
+			i++;
+		} else {
+			c[k] = arr[j];
+			k++;
+			j++;
+		}
+	}
+
+	while (i <= mid) {
+		c[k] = arr[i];
+		k++;
+		i++;
+	}
+
+	while (j <= high) {
+		c[k] = arr[j];
+		k++;
+		j++;
+	}
+
+	for (i = low; i < k; i++)
+		arr[i] = c[i];
 }
 
 void fj_mergeSort(int *arr, int low, int high, int len) {
@@ -106,44 +104,42 @@ void fj_mergeSort(int *arr, int low, int high, int len) {
         fj_merge(arr,low,high,mid,len);
     }
 }
-/* ***********************^ END MERGE SORT ^********************** */
-/* *************************************************************** */
+/* ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ END MERGE SORT ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ */
 
-/* *************************************************************** */
-/* *************************v BUCKET SORT v*********************** */
+
+/* ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ BUCKET SORT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ */
 // Function to sort arr[] of size n using bucket sort
 void lk_bucketSort(int *arr, int n) {
 	int i, j, count = 0, max_value = 0;
 
 	// find max key value in arr
-	for (i = 0; i < n; ++i) {
+	for (i = 0; i < n; ++i)
 		if (arr[i] > max_value) max_value = arr[i];
-	}
 
 	// create n empty buckets
 	auto buckets = vector<unsigned >(static_cast<unsigned int>(max_value + 1));
 
 	// put array elements in different buckets
-	for (i = 0; i < n; ++i) {
+	for (i = 0; i < n; ++i)
 		buckets[arr[i]]++;
-	}
 
 	// concatenate all buckets into arr[]
-	for (int i = 0; i < buckets.capacity(); ++i) {
-			for (int j = 0; j < buckets[i]; ++j) {
-					arr[count] = i;
-					count++;
-			}
-	}
+	for (int i = 0; i < buckets.capacity(); ++i)
+		for (int j = 0; j < buckets[i]; ++j) {
+				arr[count] = i;
+				count++;
+		}
 }
-/* ***********************^ END BUCKET SORT ^********************* */
-/* *************************************************************** */
+/* ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ END BUCKET SORT ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ */
 
-/* ****************************** MAIN ****************************** */
+
+/* =============================================== */
+/* ===================== MAIN ==================== */
+/* =============================================== */
 int main(int argc, const char* argv[]){
 	string inputFile, outputFile, algorithm;
 
-	/* *************v ARG CHECKER v************* */
+	/* ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ ARG CHECKER ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ */
 	if (argc == 2 && string(argv[1]) == "--name") { printf("Josh Miltier\n"); return 0; } // check for --name
 	else if (argc == 7) {} // continue on to execution
 	else { // catch all else
@@ -152,12 +148,11 @@ int main(int argc, const char* argv[]){
 					"       Refer to the README for execution instructions.\n\n", argc-1);
 		exit(-1);
 	}
-	/* *************^ END ARG CHECK ^************* */
+	/* ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ END ARG CHECK ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ */
 
 	global_init();
 
-	/* ************************************** */
- 	/* *************v ARG PARSER v************* */
+ 	/* ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ ARG PARSER ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ */
 	// txt input file (argv 1)
 	inputFile = string(argv[1]);
 
@@ -181,58 +176,53 @@ int main(int argc, const char* argv[]){
 	else if (string(argv[6]) == "--alg=lkbucket") algorithm = "lkbucket";
 	// algorithm not available
 	else { printf("ERROR: algorithm does not exist. Try 'fjmerge' or 'lkbucket'\n"); exit(-1); }
- 	/* ***********^ END ARG PARSER ^*********** */
-	/* ************************************** */
-	/* ******************************************* */
-	/* ****************v THREADS v**************** */
-	// int ret; size_t i;
-  // for(i=1; i<NUM_THREADS; i++){
-	// 	args[i]=i+1;
-	// 	printf("creating thread %zu\n",args[i]);
-	// 	ret = pthread_create(&threads[i], NULL, &thread_main, &args[i]);
-	// 	if(ret){
-	// 		printf("ERROR; pthread_create: %d\n", ret);
-	// 		exit(-1);
-	// 	}
-	// }
-	// i = 1;
-	// thread_main(&i); // master also calls thread_main
+ 	/* ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ END ARG PARSER ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ */
 
-	// // join threads
-	// for(size_t i=1; i<NUM_THREADS; i++){
-	// 	ret = pthread_join(threads[i],NULL);
-	// 	if(ret){
-	// 		printf("ERROR; pthread_join: %d\n", ret);
-	// 		exit(-1);
-	// 	}
-	// 	printf("joined thread %zu\n",i+1);
-	// }
-	/* **************^ END THREADS ^************** */
-	/* ******************************************* */
-
-	/* ****************************************************** */
-	/* **************v FILE AND ALGO HANDLING v************** */
-	// read from file
+	/* ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ CREATE ARRAQY FROM FILE ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ */
 	fstream file(inputFile, ios_base::in);
-    int arraysize = 0;
-    string line;
-    while (getline(file, line)) { arraysize++; }
-	int array[arraysize], a, b = 0;
+	int arraysize = 0, a, b = 0;
+	string line;
+	while (getline(file, line)) arraysize++;
+	int array[arraysize];
 	fstream infile(inputFile, ios_base::in);
 	while (infile >> a) { array[b] = a; b++; }
+	/* ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ END CREATE ARRAQY FROM FILE ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ */
 
-	if (algorithm == "fjmerge") fj_mergeSort(array, 0, arraysize - 1, arraysize);
+
+	/* ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ ALGO AND THREADS ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ */
+	if (algorithm =="fjmerge") {
+		arraysize = arraysize/NUM_THREADS;
+		int ret; size_t i;
+		for(i=1; i<NUM_THREADS; i++){
+			args[i]=i+1;
+			printf("creating thread %zu\n",args[i]);
+			ret = pthread_create(&threads[i], NULL, &thread_main, &args[i]);
+			if(ret){ printf("ERROR; pthread_create: %d\n", ret); exit(-1); }
+			fj_mergeSort(array, 0, arraysize - 1, arraysize);
+		}
+		i = 1;
+		thread_main(&i); // master also calls thread_main
+
+		// join threads
+		for(size_t i=1; i<NUM_THREADS; i++){
+			ret = pthread_join(threads[i], NULL);
+			if(ret){ printf("ERROR; pthread_join: %d\n", ret); exit(-1); }
+			printf("joined thread %zu\n",i+1);
+		}
+	}
+
 	else if (algorithm == "lkbucket") lk_bucketSort(array, arraysize);
 
-	// write to file
+	/* ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ END ALGO AND THREADS ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ */
+
+
+	/* ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ WRITE SORTED ARRAY TO FILE ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ */
 	ofstream outfile;
 	outfile.open(outputFile);
-	for (int i = 0; i < arraysize; i++) {
-		outfile << array[i] << endl;
-	}
+	for (int i = 0; i < arraysize; i++) outfile << array[i] << endl;
 	outfile.close();
-	/* ************^ END FILE AND ALGO HANDLING ^************ */
-	/* ****************************************************** */
+	/* ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ END WRITE SORTED ARRAY TO FILE ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ */
+
 
 	global_cleanup();
 
