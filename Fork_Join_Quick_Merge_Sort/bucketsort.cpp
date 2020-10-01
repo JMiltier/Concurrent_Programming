@@ -6,7 +6,7 @@
 using namespace std;
 
 // Function to sort arr[] of size n using bucket sort
-void bucketSort(float arr[], int n)
+void bucketSort(int arr[], int n)
 {
 	// 1) Create n empty buckets
 	vector<float> b[n];

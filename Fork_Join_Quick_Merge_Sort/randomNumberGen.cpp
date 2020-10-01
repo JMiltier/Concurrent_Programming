@@ -1,12 +1,11 @@
 #include <iostream>
 #include <fstream>
 #include <cstdio>
-#include <vector>
 #include <string>
 
 using namespace std;
 
-// generates
+// generates file with random numbers
 int main(int argc, const char* argv[]) {
    ofstream file;
    string fileOut = "source.txt";
@@ -16,15 +15,20 @@ int main(int argc, const char* argv[]) {
    if (argc == 2) size = atoi(argv[1]);
 
    for (i = 0; i < size; i++) {
-      ran_data = (rand() % size+1) + 1; // generates int between 1 - <size>
+      ran_data = (rand() % (size*3)+1) + 1; // generates int between 1 - <size>
       file << ran_data << endl;
    }
 
    file.close();
-   printf("Generated %i numbers between 1 and %i, and saved to %s\n", size, size, fileOut.c_str());
+   printf("Generated %i numbers between 1 and %i, and saved to %s\n", size, size*3, fileOut.c_str());
    return 0;
 }
 
-// to run:
-//   compile: g++ -o numGen randomNumberGen.cpp
-//   then execute: ./numGen <amount of numbers>
+/*
+To run:
+   EITHER:
+      1. `makefile numGen`
+   OR
+      2. compile: g++ -o numGen randomNumberGen.cpp
+         then execute: ./numGen <amount of numbers>
+*/
