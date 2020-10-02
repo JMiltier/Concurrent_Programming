@@ -1,4 +1,4 @@
-## C++ sorting algorithms
+# 〽️ C++ sorting algorithms
 Using two different sorting algorithms and two different paralellization strategies(fork/join and locks), this program sorts a (specified) *.txt*  file of unique integers and outputs the sorted list to a different (specified) *.txt* file. The input *.txt* file will be an unsorted data structure [Standard Template Library (STL) vector]. This is to emulate the performance of the UNIX `sort-n` command.
 
 #### Sorting Algorithms:
@@ -6,12 +6,12 @@ Using two different sorting algorithms and two different paralellization strateg
   2. **Mergesort** - divides into two halfs, then merges sorted halfs
   3. **Bucketsort** - sorts array into different bins, sorts the bins, then rejoins
 
-#### Added functionality:
+#### 🗜️ Added functionality:
   1. Fork/join parellelism - implementation of fork, join, and barriers
   2. Locks - synchronization mechanism for enforcing limits of resource access; also known as mutex (mutual exlcusion). Used in conjunction with multiple threading a process.
 
 ---
-## Code Organization
+## 🗄️ Code Organization
 
 ### 📁 Files
   1. `main.cpp` - primary C++ file for program execution
