@@ -43,20 +43,15 @@ void* thread_main(void* args){
 	size_t tid = *((size_t*)args);
 	local_init();
 	pthread_barrier_wait(&bar);
-	if(tid==1){
-		clock_gettime(CLOCK_MONOTONIC,&time_start);
-	}
+	if(tid==1) clock_gettime(CLOCK_MONOTONIC,&time_start);
 	pthread_barrier_wait(&bar);
 
 	// do something
 	// printf("Thread %zu reporting for duty\n",tid);
 
 	pthread_barrier_wait(&bar);
-	if(tid==1){
-		clock_gettime(CLOCK_MONOTONIC,&time_end);
-	}
+	if(tid==1) clock_gettime(CLOCK_MONOTONIC,&time_end);
 	local_cleanup();
-
 	return 0;
 }
 
