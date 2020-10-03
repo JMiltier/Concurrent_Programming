@@ -21,7 +21,7 @@ pthread_t* threads;
 size_t* args;
 size_t NUM_THREADS;
 pthread_barrier_t bar;
-int arraysize, array[0], thread_num = 0;
+int arraysize, arr[], thread_num;
 
 struct timespec time_start, time_end;
 
@@ -37,7 +37,9 @@ void global_cleanup(){
 	pthread_barrier_destroy(&bar);
 }
 
-void local_init(){}
+void local_init(){
+	int arr[arraysize];
+}
 void local_cleanup(){}
 
 void* fj_mergeSort(void* args){
@@ -51,6 +53,8 @@ void* fj_mergeSort(void* args){
 		mergeSort(mid + 1, high);
 		merge(low, mid, high);
 	}
+
+	local_cleanup();
 }
 
 void* thread_main(void* args){
@@ -84,9 +88,9 @@ int main(int argc, const char* argv[]){
 	arraysize = 0;
 	string line;
 	while (getline(file, line)) arraysize++;
-	int array[arraysize];
+	arr[arraysize];
 	fstream infile(inputFile, ios_base::in);
-	while (infile >> a) { array[b] = a; b++; }
+	while (infile >> a) { arr[b] = a; b++; }
 
 	/* ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ ALGO AND THREADS ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ */
 	if (algorithm =="fjmerge") {
