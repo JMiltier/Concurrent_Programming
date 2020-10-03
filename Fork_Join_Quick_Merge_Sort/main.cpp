@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 #include "pthread_add.h" // for when running on macOS
-#include "fj_mergesort.h"
+#include "mergesort.h"
 #include "lk_bucketsort.h"
 #include "arg_parser.h"
 
@@ -21,6 +21,7 @@ pthread_t* threads;
 size_t* args;
 size_t NUM_THREADS;
 pthread_barrier_t bar;
+int arraysize, array[0], thread_num = 0;
 
 struct timespec time_start, time_end;
 
@@ -38,6 +39,19 @@ void global_cleanup(){
 
 void local_init(){}
 void local_cleanup(){}
+
+void* fj_mergeSort(void* args){
+	thread_num++;
+
+	int low = thread_num * (arraysize/NUM_THREADS);
+	int high = (thread_num + 1) * (arraysize/NUM_THREADS) - 1;
+	int mid = low + (high - low) / 2;
+	if (low < high) {
+		mergeSort(low, mid);
+		mergeSort(mid + 1, high);
+		merge(low, mid, high);
+	}
+}
 
 void* thread_main(void* args){
 	size_t tid = *((size_t*)args);
@@ -66,7 +80,8 @@ int main(int argc, const char* argv[]){
 
 	// create array from input file
 	fstream file(inputFile.c_str(), ios_base::in);
-	int arraysize = 0, a, b = 0;
+	int a, b = 0;
+	arraysize = 0;
 	string line;
 	while (getline(file, line)) arraysize++;
 	int array[arraysize];
@@ -75,23 +90,25 @@ int main(int argc, const char* argv[]){
 
 	/* ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ ALGO AND THREADS ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ */
 	if (algorithm =="fjmerge") {
-		arraysize = arraysize/NUM_THREADS;
-		int ret; size_t i;
-		for(i=1; i<NUM_THREADS; i++){
-			args[i]=i+1;
-			printf("creating thread %zu\n",args[i]);
-			ret = pthread_create(&threads[i], NULL, &thread_main, &args[i]);
-			if(ret){ printf("ERROR; pthread_create: %d\n", ret); exit(-1); }
-			fj_mergeSort(array, 0, arraysize - 1, arraysize);
-		}
-		i = 1;
-		thread_main(&i); // master also calls thread_main
+		if (NUM_THREADS == 1) mergeSort(0, arraysize - 1);
+		else {
+			int ret; size_t i;
+			for(i=1; i<NUM_THREADS; i++){
+				args[i]=i+1;
+				printf("creating thread %zu\n",args[i]);
+				// ret = pthread_create(&threads[i], NULL, &thread_main, &args[i]);
+				ret = pthread_create(&threads[i], NULL, &fj_mergeSort, &args[i]);
+				if(ret){ printf("ERROR; pthread_create: %d\n", ret); exit(-1); }
+			}
+			i = 1;
+			thread_main(&i); // master also calls thread_main
 
-		// join threads
-		for(size_t i=1; i<NUM_THREADS; i++){
-			ret = pthread_join(threads[i], NULL);
-			if(ret){ printf("ERROR; pthread_join: %d\n", ret); exit(-1); }
-			printf("joined thread %zu\n",i+1);
+			// join threads
+			for(size_t i=1; i<NUM_THREADS; i++){
+				ret = pthread_join(threads[i], NULL);
+				if(ret){ printf("ERROR; pthread_join: %d\n", ret); exit(-1); }
+				printf("joined thread %zu\n",i+1);
+			}
 		}
 	}
 

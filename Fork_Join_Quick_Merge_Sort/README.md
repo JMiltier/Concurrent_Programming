@@ -10,14 +10,16 @@ Using two different sorting algorithms and two different paralellization strateg
   1. Fork/join parellelism - implementation of fork, join, and barriers
   2. Locks - synchronization mechanism for enforcing limits of resource access; also known as mutex (mutual exlcusion). Used in conjunction with multiple threading a process.
 
+#### Merge Sort Paralellism
+- The first idea to run merge sort on multiple threads is to fork each process. However, the issues with forking is that it *copies* the parent process and runs in a different memory space (while also having the same content). Imagine trying to speed up sorting, when you just end up sorting the same array multiple times. Definitely not very efficient. Instead, passing parts of the original array to different arrays to sort is the way to go. Sort parts of the entire array at the same time, and then join them. **The Fix?** We need to have shared memory so that all threads assigned can sort out it's respective parts of the array. Threads will take turns running on a CPU core, so the max number of threads might me the most efficient when it lines up with the CPU core count. 
 ---
 ## 🗄️ Code Organization
 
 ### 📁 Files
   1. `main.cpp` - primary C++ file for program execution
   2. `Makefile` - create executable objects
-  3. `fj_mergesort.h` - header file for merge sort using fork/join
-  4. `lk_bucketsort.h` - header file for bucket sort using locks
+  3. `mergesort.h` - header file for merge sort using fork/join
+  4. `bucketsort.h` - header file for bucket sort using locks
   5. `arg_parser.h` - error handling and parsing for program's input options
   6. `README.pdf` - write-up for project
 
