@@ -11,7 +11,7 @@
 using namespace std;
 
 /* ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ MERGE SORT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ */
-void merge(int low, int high, int mid) {
+void merge(int *arr, int low, int high, int mid) {
 	int l_size = mid - low + 1, r_size = high - mid, i, j, k;
 	int* left = new int[l_size];
 	int* right = new int[r_size];
@@ -33,16 +33,16 @@ void merge(int low, int high, int mid) {
 	while (j < r_size) arr[k++] = right[j++];
 }
 
-void mergeSort(int low, int high) {
+void mergeSort(int *arr, int low, int high) {
     //divide the array at mid
 		int mid = low + (high - low) / 2;
     if (low < high){
         // sort independently using merge sort
         mid=(low+high)/2;
-        mergeSort(low, mid);
-        mergeSort(mid + 1, high);
+        mergeSort(arr, low, mid);
+        mergeSort(arr, mid + 1, high);
         //merge or conquer sorted arrays
-        merge(low, high, mid);
+        merge(arr, low, high, mid);
     }
 }
 /* ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ END MERGE SORT ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ */

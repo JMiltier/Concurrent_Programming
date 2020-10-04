@@ -21,7 +21,7 @@ pthread_t* threads;
 size_t* args;
 size_t NUM_THREADS;
 pthread_barrier_t bar;
-int arraysize, arr[], thread_num;
+int arraysize, arr[100000], thread_num;
 
 struct timespec time_start, time_end;
 
@@ -49,9 +49,9 @@ void* fj_mergeSort(void* args){
 	int high = (thread_num + 1) * (arraysize/NUM_THREADS) - 1;
 	int mid = low + (high - low) / 2;
 	if (low < high) {
-		mergeSort(low, mid);
-		mergeSort(mid + 1, high);
-		merge(low, mid, high);
+		mergeSort(arr, low, mid);
+		mergeSort(arr, mid + 1, high);
+		merge(arr, low, mid, high);
 	}
 
 	local_cleanup();
@@ -94,7 +94,7 @@ int main(int argc, const char* argv[]){
 
 	/* ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ ALGO AND THREADS ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ */
 	if (algorithm =="fjmerge") {
-		if (NUM_THREADS == 1) mergeSort(0, arraysize - 1);
+		if (NUM_THREADS == 1) mergeSort(arr, 0, arraysize - 1);
 		else {
 			int ret; size_t i;
 			for(i=1; i<NUM_THREADS; i++){
@@ -104,8 +104,8 @@ int main(int argc, const char* argv[]){
 				ret = pthread_create(&threads[i], NULL, &fj_mergeSort, &args[i]);
 				if(ret){ printf("ERROR; pthread_create: %d\n", ret); exit(-1); }
 			}
-			i = 1;
-			thread_main(&i); // master also calls thread_main
+			// i = 1;
+			// thread_main(&i); // master also calls thread_main
 
 			// join threads
 			for(size_t i=1; i<NUM_THREADS; i++){
@@ -116,7 +116,7 @@ int main(int argc, const char* argv[]){
 		}
 	}
 
-	else if (algorithm == "lkbucket") lk_bucketSort(array, arraysize);
+	else if (algorithm == "lkbucket") lk_bucketSort(arr, arraysize);
 
 	/* ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ END ALGO AND THREADS ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ */
 
@@ -124,7 +124,7 @@ int main(int argc, const char* argv[]){
 	/* WRITE SORTED ARRAY TO FILE */
 	ofstream outfile;
 	outfile.open(outputFile);
-	for (int i = 0; i < arraysize; i++) outfile << array[i] << endl;
+	for (int i = 0; i < arraysize; i++) outfile << arr[i] << endl;
 	outfile.close();
 
 	global_cleanup();
