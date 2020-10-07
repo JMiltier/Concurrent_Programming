@@ -1,0 +1,11 @@
+*.pdf
+*.zip
+*.text
+*.txt
+*.webloc
+*.dSYM
+*.out
+Test Machines*
+
+# executable file
+counter
