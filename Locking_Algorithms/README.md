@@ -56,7 +56,7 @@ Using two different sorting algorithms and two different paralellization strateg
   3. `-t NUM_THREADS`: specify how many threads to use during execution (including master thread)
   4. `--alg=<fj,bucket>`:
   5. `--bar=<sense,pthread>`:
-  6. `--lock=<tas,ttas,ticket,mcs,pthread>`:
+  6. `--lock=<tas,ttas,ticket,mcs,pthread>`: aj
 
 #### 🐜 Surviving Bugs
   - Input/output files are loaded/saved as is. Does not check for txt file types.
