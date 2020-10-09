@@ -51,12 +51,12 @@ Using two different sorting algorithms and two different paralellization strateg
     - `counter --name`: prints name to console.
   **OR**
   `mysort [source.txt] [-o out.txt] [-t NUM THREADS] [--alg=<fj,bucket>] [--bar=<sense,pthread>] [--lock=<tas,ttas,ticket,mcs,pthread>]`
-  1. `source.txt`
-  2. `-o out.txt`
+  1. `source.txt`: input file for unsorted and random list of numbers, each on a new line
+  2. `-o out.txt`: output fil for sorted list of numbers (from 1.), each on a new line
   3. `-t NUM_THREADS`: specify how many threads to use during execution (including master thread)
-  4. `--alg=<fj,bucket>`:
-  5. `--bar=<sense,pthread>`:
-  6. `--lock=<tas,ttas,ticket,mcs,pthread>`: aj
+  4. `--alg=<fj,bucket>`: sorting algorithm
+  5. `--bar=<sense,pthread>`: type of bar
+  6. `--lock=<tas,ttas,ticket,mcs,pthread>`: type of lock 
 
 #### 🐜 Surviving Bugs
   - Input/output files are loaded/saved as is. Does not check for txt file types.
