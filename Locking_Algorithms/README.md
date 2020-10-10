@@ -2,7 +2,7 @@
 Using two different sorting algorithms and two different paralellization strategies(fork/join and locks), this program sorts a (specified) *.txt*  file of unique integers and outputs the sorted list to a different (specified) *.txt* file. The input *.txt* file will be an unsorted data structure [Standard Template Library (STL) vector]. This is to emulate the performance of the UNIX `sort-n` command.
 
 #### Locking Algorithms:
-  1. **Test-and-set lock** -
+  1. **Test-and-set lock** - test a lock (true/false; obtain when false), and then set lock
   2. **Test-and-test-and-set lock** -
   3. **Ticket lock** -
   4. **MCS Lock** -
