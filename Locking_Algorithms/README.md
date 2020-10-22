@@ -65,4 +65,4 @@ Using two different sorting algorithms and two different paralellization strateg
 #### Resources:
 1. [measuring execution time](https://solarianprogrammer.com/2019/04/17/c17-programming-measuring-execution-time-delaying-program/)
 2. [clock and time functions](https://linux.die.net/man/2/clock_gettime)
-3. [chrono time accuracy](https://www.tutorialspoint.com/how-to-create-a-high-resolution-timer-with-cplusplus-and-linux)
+3. [chrono high resolution time accuracy](https://www.tutorialspoint.com/how-to-create-a-high-resolution-timer-with-cplusplus-and-linux)
