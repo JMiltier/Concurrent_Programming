@@ -11,7 +11,8 @@
 using namespace std;
 
 struct arg_params {
-  string outputFile, argument;
+  string outputFile;
+  int argument;
   size_t NUM_THREADS, NUM_ITERATIONS;
 };
 
@@ -27,7 +28,7 @@ struct arg_params arg_parser(int argc, const char* argv[]){
   else if (argc == 7) {} // continue on to execution
   else { // catch all else
     printf("\nERROR: Program option parameters are invalid.\n"
-          "       Expected 7 options, but got %i.\n"
+          "       Expected 6 options, but got %i.\n"
           "       Refer to the README for execution instructions.\n\n", argc-1);
     exit(-1);
   }
@@ -52,16 +53,15 @@ struct arg_params arg_parser(int argc, const char* argv[]){
     str2int >> args.NUM_ITERATIONS;
   }
   // bar type <sense> or <pthread> (argv 4)
-  if (string(argv[4]) == "--bar=sense") args.argument= "sense";
-  else if (string(argv[4]) == "--bar=pthread") args.argument= "pthread";
-  else { printf("ERROR: algorithm does not exist. Try 'sense' or 'pthread'\n"); exit(-1); }
+  if (string(argv[4]) == "--bar=sense") args.argument= 1;
+  else if (string(argv[4]) == "--bar=pthread") args.argument= 2;
 
   // lock type <tas, ttas, ticket, mcs, pthread> (argv 4)
-  if (string(argv[4]) == "--lock=tas") args.argument = "tas";
-  else if (string(argv[4]) == "--lock=ttas") args.argument = "ttas";
-  else if (string(argv[4]) == "--lock=ticket") args.argument = "ticket";
-  else if (string(argv[4]) == "--lock=pthread") args.argument = "pthread";
-  else { printf("ERROR: algorithm does not exist. Try 'tas', 'ttas', 'ticket', or 'pthread'\n"); exit(-1); }
+  else if (string(argv[4]) == "--lock=tas") args.argument = 3;
+  else if (string(argv[4]) == "--lock=ttas") args.argument = 4;
+  else if (string(argv[4]) == "--lock=ticket") args.argument = 5;
+  else if (string(argv[4]) == "--lock=pthread") args.argument = 6;
+  else { printf("ERROR: argument does not exist. Try '--bar=' or '--lock=' with an available specified method. Refer to README if needed.\n"); exit(-1); }
 
   // txt output file (argv 6), with syntax checking
   if (string(argv[5]).rfind("-o", 0)) {

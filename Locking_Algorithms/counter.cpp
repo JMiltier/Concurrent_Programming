@@ -12,6 +12,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <cstdlib>
+#include <atomic>
+#include <mutex>
 #include <cmath>
 #include <fstream>
 #include <time.h>         // for timing execution (timespec), clock_t, clock()
@@ -58,21 +60,87 @@ void *counter_lock_pthread(void *filler);
 /* *************** Main Function *************** */
 int main(int argc, const char* argv[]){
 	struct arg_params args_parsed = arg_parser(argc, argv);
-	string bar = args_parsed.bar;
+	int argument = args_parsed.argument;
 	string outputFile = args_parsed.outputFile;
-	string lock = args_parsed.lock;
 	NUM_THREADS = args_parsed.NUM_THREADS;
   NUM_ITERATIONS = args_parsed.NUM_ITERATIONS;
+  pthread_t threads[NUM_THREADS];
 
-  // printf("All the data we want:\n%i\n%i\n%s\n%s\n%s\n", NUM_THREADS, NUM_ITERATIONS, bar.c_str(), lock.c_str(), outputFile.c_str());
+  // printf("All the data we want:\n%i\n%i\n%i\n%s\n", NUM_THREADS, NUM_ITERATIONS, argument, outputFile.c_str());
 
-  switch argument
-
-  // execution time
+  // execution start time
   clock_gettime(CLOCK_REALTIME, &time_start);
-  /*!! do something cool */
+
+  /* argument statement (from parser) is as follows:
+   * bar: 1-sense, 2-pthread
+   * lock: 3-tas, 4-ttas, 5-ticket, 6-pthread */
+  switch (argument) {
+    // bar sense
+    case 1:
+      for (int i = 0; i < NUM_THREADS; i ++)
+        pthread_create(&threads[i], NULL, counter_sense, (void*)NULL);
+      for (int i = 0; i < NUM_THREADS; i ++)
+        pthread_join(threads[i], NULL);
+      break;
+    // bar pthread
+    case 2:
+      pthread_barrier_init(&bar, NULL, NUM_THREADS);
+      for (int i = 0; i < NUM_THREADS; i ++)
+        pthread_create(&threads[i], NULL, counter_bar_pthread, (void*)NULL);
+      for (int i = 0; i < NUM_THREADS; i ++)
+        pthread_join(threads[i], NULL);
+      pthread_barrier_destroy(&bar);
+      break;
+
+    // lock tas
+    case 3:
+      for (int i = 0; i < NUM_THREADS; i ++)
+        pthread_create(&threads[i], NULL, counter_TSL, (void*)NULL);
+      for (int i = 0; i < NUM_THREADS; i ++)
+        pthread_join(threads[i], NULL);
+      break;
+    // lock ttas
+    case 4:
+      for (int i = 0; i < NUM_THREADS; i ++)
+        pthread_create(&threads[i], NULL, counter_TTSL, (void*)NULL);
+      for (int i = 0; i < NUM_THREADS; i ++)
+        pthread_join(threads[i], NULL);
+      break;
+    // lock ticket
+    case 5:
+      for (int i = 0; i < NUM_THREADS; i ++)
+        pthread_create(&threads[i], NULL, counter_ticket_lock, (void*)NULL);
+      for (int i = 0; i < NUM_THREADS; i ++)
+        pthread_join(threads[i], NULL);
+      break;
+    // lock pthread
+    case 6:
+      pthread_mutex_init(&mutexLock, NULL);
+      for (int i = 0; i < NUM_THREADS; i ++)
+        pthread_create(&threads[i], NULL, counter_lock_pthread, (void*)NULL);
+      for (int i = 0; i < NUM_THREADS; i ++)
+        pthread_join(threads[i], NULL);
+      pthread_mutex_destroy(&mutexLock);
+      break;
+
+    // something didn't match up
+    default:
+      printf("An error occured in MAIN.");
+      exit(-1);
+  }
+
+  // execution end time
   clock_gettime(CLOCK_REALTIME, &time_end);
   time_display(time_start, time_end);
+
+  // write to file
+  FILE * fp;
+  fp = fopen(outputFile.c_str(), "w");
+  if (fp == NULL) return -1;
+  fprintf(fp, "%d\n", cntr);
+  fclose(fp);
+
+  return 0;
 }
 
 
