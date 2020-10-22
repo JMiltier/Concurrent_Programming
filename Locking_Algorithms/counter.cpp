@@ -66,6 +66,8 @@ int main(int argc, const char* argv[]){
 
   // printf("All the data we want:\n%i\n%i\n%s\n%s\n%s\n", NUM_THREADS, NUM_ITERATIONS, bar.c_str(), lock.c_str(), outputFile.c_str());
 
+  switch argument
+
   // execution time
   clock_gettime(CLOCK_REALTIME, &time_start);
   /*!! do something cool */
@@ -83,7 +85,6 @@ void time_display(timespec ts, timespec te) {
   printf("Time elapsed is %lu nanoseconds\n", time_spent);
   printf("                %f seconds\n", time_spent/1e9);
 }
-
 
 /* *************** BAR FUNCTIONS *************** */
 /* ****** sense ****** */

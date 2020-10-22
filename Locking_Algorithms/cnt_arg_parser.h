@@ -11,7 +11,7 @@
 using namespace std;
 
 struct arg_params {
-  string outputFile, bar, lock;
+  string outputFile, argument;
   size_t NUM_THREADS, NUM_ITERATIONS;
 };
 
@@ -24,7 +24,7 @@ struct arg_params arg_parser(int argc, const char* argv[]){
     printf("Josh Miltier\n");
     exit(0);
   }
-  else if (argc == 8) {} // continue on to execution
+  else if (argc == 7) {} // continue on to execution
   else { // catch all else
     printf("\nERROR: Program option parameters are invalid.\n"
           "       Expected 7 options, but got %i.\n"
@@ -52,21 +52,21 @@ struct arg_params arg_parser(int argc, const char* argv[]){
     str2int >> args.NUM_ITERATIONS;
   }
   // bar type <sense> or <pthread> (argv 4)
-  if (string(argv[4]) == "--bar=sense") args.bar = "sense";
-  else if (string(argv[4]) == "--bar=pthread") args.bar = "pthread";
+  if (string(argv[4]) == "--bar=sense") args.argument= "sense";
+  else if (string(argv[4]) == "--bar=pthread") args.argument= "pthread";
   else { printf("ERROR: algorithm does not exist. Try 'sense' or 'pthread'\n"); exit(-1); }
 
-  // lock type <tas, ttas, ticket, mcs, pthread> (argv 5)
-  if (string(argv[5]) == "--lock=tas") args.lock = "tas";
-  else if (string(argv[5]) == "--lock=ttas") args.lock = "ttas";
-  else if (string(argv[5]) == "--lock=ticket") args.lock = "ticket";
-  else if (string(argv[5]) == "--lock=pthread") args.lock = "pthread";
+  // lock type <tas, ttas, ticket, mcs, pthread> (argv 4)
+  if (string(argv[4]) == "--lock=tas") args.argument = "tas";
+  else if (string(argv[4]) == "--lock=ttas") args.argument = "ttas";
+  else if (string(argv[4]) == "--lock=ticket") args.argument = "ticket";
+  else if (string(argv[4]) == "--lock=pthread") args.argument = "pthread";
   else { printf("ERROR: algorithm does not exist. Try 'tas', 'ttas', 'ticket', or 'pthread'\n"); exit(-1); }
 
-  // txt output file (argv 7), with syntax checking
-  if (string(argv[6]).rfind("-o", 0)) {
-    printf("ERROR: incorrect flag for output file.   Expected: '-o'  Actual: '%s'\n", argv[6]); exit(-1);
-  } else args.outputFile = string(argv[7]);
+  // txt output file (argv 6), with syntax checking
+  if (string(argv[5]).rfind("-o", 0)) {
+    printf("ERROR: incorrect flag for output file.   Expected: '-o'  Actual: '%s'\n", argv[5]); exit(-1);
+  } else args.outputFile = string(argv[6]);
 
 /* ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ END ARG PARSER ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ */
 
