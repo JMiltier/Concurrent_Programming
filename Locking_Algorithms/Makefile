@@ -30,7 +30,7 @@ NUMGENSRC=randomNumberGen.cpp
 all: $(CNTRPRGM) $(SORTPRGM)
 
 # counter
-$(CNTRPRGM): $(CNTRSRC)
+$(CNTRPRGM): clean $(CNTRSRC)
 	$(CC) $(STD) $(CFGLAGS) $(CNTRSRC) -o $(CNTRPRGM)
 
 # mysort
