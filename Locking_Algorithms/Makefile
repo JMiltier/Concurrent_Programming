@@ -1,6 +1,8 @@
 # --------------------------------------------------------
 # Makefile - versitility to use again for C or C++ files
-# 'make'         builds executable targets
+# 'make'         builds executable targets marked from 'all:'
+# 'make mysort'  creates executable object for sort algos
+# 'make counter' creates executable object for counter
 # 'make numGen'  creates random number generator object
 # 'make clean'   removes all .o and executable files
 # --------------------------------------------------------
@@ -17,19 +19,28 @@ CFLAGS = -w
 # GCC standard support for different C++ dialects (98, 11, 14, 17, or 2a)
 STD = -std=c++2a
 
+# variables
 SORTPRGM=mysort
-SOURCE=main.cpp
-
+SORTSRC=mysort.cpp
+CNTRPRGM=counter
+CNTRSRC=counter.cpp
 NUMGENPRGM=numGen
 NUMGENSRC=randomNumberGen.cpp
 
-name= "Josh Miltier"
+all: $(CNTRPRGM) $(SORTPRGM)
 
-$(SORTPRGM): clean $(SOURCE)
-	$(CC) $(STD) $(CFGLAGS) $(SOURCE) -o $(SORTPRGM)
+# counter
+$(CNTRPRGM): $(CNTRSRC)
+	$(CC) $(STD) $(CFGLAGS) $(CNTRSRC) -o $(CNTRPRGM)
 
+# mysort
+$(SORTPRGM): $(SORTSRC)
+	$(CC) $(STD) $(CFGLAGS) $(SORTSRC) -o $(SORTPRGM)
+
+# random numbers generation
 $(NUMGENPRGM): $(NUMGENSRC)
 	$(CC) $(CFGLAGS) $(NUMGENSRC) -o $(NUMGENPRGM)
 
+# clean all objects
 clean:
-	rm -rf $(SORTPRGM) $(NUMGENPRGM)
+	rm -rf $(SORTPRGM) $(CNTRPRGM) $(NUMGENPRGM)

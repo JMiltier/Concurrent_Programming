@@ -2,10 +2,10 @@
 Using two different sorting algorithms and two different paralellization strategies(fork/join and locks), this program sorts a (specified) *.txt*  file of unique integers and outputs the sorted list to a different (specified) *.txt* file. The input *.txt* file will be an unsorted data structure [Standard Template Library (STL) vector]. This is to emulate the performance of the UNIX `sort-n` command.
 
 #### Locking Algorithms:
-  1. **Test-and-set lock** - test a lock (true/false; obtain when false), and then set lock
-  2. **Test-and-test-and-set lock** -
-  3. **Ticket lock** -
-  4. **MCS Lock** -
+  1. **Test-and-set (TAS) lock** - test a lock (true/false; obtain when false), and then set lock
+  2. **Test-and-test-and-set (TTAS) lock** - modified version of TAS, and tests until unlocked (set false)
+  3. **Ticket lock** - atomic counters
+  4. **MCS Lock** - <not implemented> 
   5. **Sense-reversal barrier** -
 
 #### 🗜️ Added functionality:
@@ -61,3 +61,8 @@ Using two different sorting algorithms and two different paralellization strateg
 #### 🐜 Surviving Bugs
   - Input/output files are loaded/saved as is. Does not check for txt file types.
   - Numbers within input txt file must be integers (not checked) for the program to work.
+
+#### Resources:
+1. [measuring execution time](https://solarianprogrammer.com/2019/04/17/c17-programming-measuring-execution-time-delaying-program/)
+2. [clock and time functions](https://linux.die.net/man/2/clock_gettime)
+3. [chrono time accuracy](https://www.tutorialspoint.com/how-to-create-a-high-resolution-timer-with-cplusplus-and-linux)

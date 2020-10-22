@@ -1,3 +1,10 @@
+/*
+ * mysort.cpp
+ * sorting integers based on bucket sort, using bar and lock arguments
+ * * that choose which barrier and lock to use
+ * Upon sorting, all integers will be saved to argument specified file
+ */
+
 #define _POSIX_C_SOURCE 200112L
 #include <iostream>
 #include <pthread.h>
@@ -11,7 +18,6 @@
 #include <string>
 #include <vector>
 #include "pthread_add.h" // for when running on macOS
-#include "mergesort.h"
 #include "lk_bucketsort.h"
 #include "arg_parser.h"
 
