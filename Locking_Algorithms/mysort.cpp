@@ -29,7 +29,8 @@ size_t NUM_THREADS;
 pthread_barrier_t bar;
 int arraysize, arr[100000], thread_num;
 
-struct timespec time_start, time_end;
+/* execution time struct */
+typedef chrono::high_resolution_clock Clock;
 
 void global_init(){
 	threads = static_cast<pthread_t*>(malloc(NUM_THREADS*sizeof(pthread_t)));
@@ -47,21 +48,6 @@ void local_init(){
 	int arr[arraysize];
 }
 void local_cleanup(){}
-
-void* fj_mergeSort(void* args){
-	thread_num++;
-
-	int low = thread_num * (arraysize/NUM_THREADS);
-	int high = (thread_num + 1) * (arraysize/NUM_THREADS) - 1;
-	int mid = low + (high - low) / 2;
-	if (low < high) {
-		mergeSort(arr, low, mid);
-		mergeSort(arr, mid + 1, high);
-		merge(arr, low, mid, high);
-	}
-
-	local_cleanup();
-}
 
 void* thread_main(void* args){
 	size_t tid = *((size_t*)args);
@@ -97,6 +83,84 @@ int main(int argc, const char* argv[]){
 	arr[arraysize];
 	fstream infile(inputFile, ios_base::in);
 	while (infile >> a) { arr[b] = a; b++; }
+
+	struct arg_params args_parsed = arg_parser(argc, argv);
+	int argument = args_parsed.argument;
+	string outputFile = args_parsed.outputFile;
+	NUM_THREADS = args_parsed.NUM_THREADS;
+  NUM_ITERATIONS = args_parsed.NUM_ITERATIONS;
+  pthread_t threads[NUM_THREADS];
+
+  // printf("All the data we want:\n%i\n%i\n%i\n%s\n", NUM_THREADS, NUM_ITERATIONS, argument, outputFile.c_str());
+
+  // execution start time
+  auto start_time = Clock::now();
+
+  /* argument statement (from parser) is as follows:
+   * bar: 1-sense, 2-pthread
+   * lock: 3-tas, 4-ttas, 5-ticket, 6-pthread */
+  switch (argument) {
+    // bar sense
+    case 1:
+      for (int i = 0; i < NUM_THREADS; i ++)
+        pthread_create(&threads[i], NULL, counter_sense, (void*)NULL);
+      for (int i = 0; i < NUM_THREADS; i ++)
+        pthread_join(threads[i], NULL);
+      break;
+    // bar pthread
+    case 2:
+      pthread_barrier_init(&bar, NULL, NUM_THREADS);
+      for (int i = 0; i < NUM_THREADS; i ++)
+        pthread_create(&threads[i], NULL, counter_bar_pthread, (void*)NULL);
+      for (int i = 0; i < NUM_THREADS; i ++)
+        pthread_join(threads[i], NULL);
+      pthread_barrier_destroy(&bar);
+      break;
+
+    // lock tas
+    case 3:
+      for (int i = 0; i < NUM_THREADS; i ++)
+        pthread_create(&threads[i], NULL, counter_TAS, (void*)NULL);
+      for (int i = 0; i < NUM_THREADS; i ++)
+        pthread_join(threads[i], NULL);
+      break;
+    // lock ttas
+    case 4:
+      for (int i = 0; i < NUM_THREADS; i ++)
+        pthread_create(&threads[i], NULL, counter_TTAS, (void*)NULL);
+      for (int i = 0; i < NUM_THREADS; i ++)
+        pthread_join(threads[i], NULL);
+      break;
+    // lock ticket
+    case 5:
+      for (int i = 0; i < NUM_THREADS; i ++)
+        pthread_create(&threads[i], NULL, counter_ticket_lock, (void*)NULL);
+      for (int i = 0; i < NUM_THREADS; i ++)
+        pthread_join(threads[i], NULL);
+      break;
+    // lock pthread
+    case 6:
+      pthread_mutex_init(&mutexLock, NULL);
+      for (int i = 0; i < NUM_THREADS; i ++)
+        pthread_create(&threads[i], NULL, counter_lock_pthread, (void*)NULL);
+      for (int i = 0; i < NUM_THREADS; i ++)
+        pthread_join(threads[i], NULL);
+      pthread_mutex_destroy(&mutexLock);
+      break;
+
+    // something didn't match up
+    default:
+      printf("An error occured in MAIN.");
+      exit(-1);
+  }
+
+  // execution end time
+  auto end_time = Clock::now();
+  // unsigned int 4,294,967,295, which is only 4.3 seconds
+  // unsigned long, plan on never running out (over 5 centuries)
+  unsigned long time_spent = chrono::duration_cast<chrono::nanoseconds>(end_time - start_time).count();
+  printf("Time elapsed is %lu nanoseconds\n", time_spent);
+  printf("                %f seconds\n", time_spent/1e9);
 
 	/* ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ ALGO AND THREADS ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ */
 	if (algorithm =="fjmerge") {

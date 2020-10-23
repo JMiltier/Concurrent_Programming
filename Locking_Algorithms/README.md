@@ -16,10 +16,11 @@ Using two different sorting algorithms and two different paralellization strateg
 ## 🗄️ Code Organization
 
 ### 📁 Files
-  1. `main.cpp` - primary C++ file for program execution
+  1. `counter.cpp` - program to incorperate bars and locks
   2. `Makefile` - create executable objects
   3. `bucketsort.h` - header file for bucket sort using locks
   4. `counter.h` - header file for merge sort using fork/join
+  4. `cnt_arg_parser.h` - 
   5. `arg_parser.h` - error handling and parsing for program's input options
   6. `README.pdf` - write-up for project
 
@@ -61,8 +62,10 @@ Using two different sorting algorithms and two different paralellization strateg
 #### 🐜 Surviving Bugs
   - Input/output files are loaded/saved as is. Does not check for txt file types.
   - Numbers within input txt file must be integers (not checked) for the program to work.
+  - Non-atomic counter somtimes 
 
 #### Resources:
 1. [measuring execution time](https://solarianprogrammer.com/2019/04/17/c17-programming-measuring-execution-time-delaying-program/)
 2. [clock and time functions](https://linux.die.net/man/2/clock_gettime)
 3. [chrono high resolution time accuracy](https://www.tutorialspoint.com/how-to-create-a-high-resolution-timer-with-cplusplus-and-linux)
+4. [atomic fetch add](https://apimirror.com/c/atomic/atomic_fetch_add) - since fai not available
