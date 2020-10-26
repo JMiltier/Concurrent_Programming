@@ -33,9 +33,9 @@ int COUNTER = 0;
 int numberOver = 0;
 pthread_barrier_t bar;
 pthread_mutex_t mutexLock;
-atomic<int> next_num = 0, now_serving = 0, atomicTID = 0;
-atomic<int> sense = 0, cnt = 0;
-atomic<bool> tas_flag = 0;
+atomic<int> next_num (0), now_serving (0), tid (0);
+atomic<int> sense (0), cnt (0);
+atomic<bool> tas_flag (0);
 
 /* execution time struct and function */
 typedef chrono::high_resolution_clock Clock;
@@ -164,21 +164,23 @@ void sense_wait() {
 }
 
 void *counter_sense(void *) {
-  int tid = atomicTID++;
+  int tid = tid++;
   for(int i = 0; i < NUM_ITERATIONS; ++i) {
     COUNTER++;
     sense_wait();
   }
+  return NULL;
 }
 
 /* ****** pthread ****** */
 void *counter_bar_pthread(void *) {
-  int tid = atomicTID++;
+  int tid = tid++;
   pthread_barrier_wait(&bar);
   for (int i = 0; i < NUM_ITERATIONS; i++) {
     COUNTER++;
     pthread_barrier_wait(&bar);
   }
+  return NULL;
 }
 
 /* *************** LOCK FUNCTIONS *************** */
@@ -204,6 +206,7 @@ void *counter_TAS(void *) {
     COUNTER++;
     tas_unlock();
   }
+  return NULL;
 }
 
 /* ****** ttas ****** */
@@ -220,6 +223,7 @@ void *counter_TTAS(void *) {
     ttas_lock();
   }
   tas_unlock();
+  return NULL;
 }
 
 /* ****** ticket ****** */
@@ -247,11 +251,12 @@ void *counter_ticket_lock(void *) {
     ticket_lock();
   }
   ticket_unlock();
+  return NULL;
 }
 
 /* ****** pthread ****** */
 void *counter_lock_pthread(void *) {
-  int tid = atomicTID++;
+  int tid = tid++;
   for(int i = 0; i < NUM_ITERATIONS; ++i) {
     while (COUNTER % (NUM_THREADS - 1) != tid) {
       if (COUNTER >= NUM_ITERATIONS) break;
@@ -260,4 +265,5 @@ void *counter_lock_pthread(void *) {
     COUNTER++;
     pthread_mutex_unlock(&mutexLock);
   }
+  return NULL;
 }
