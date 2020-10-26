@@ -23,8 +23,6 @@ SOURCE=main.cpp
 NUMGENPRGM=numGen
 NUMGENSRC=randomNumberGen.cpp
 
-name= "Josh Miltier"
-
 $(SORTPRGM): clean $(SOURCE)
 	$(CC) $(STD) $(CFGLAGS) $(SOURCE) -o $(SORTPRGM)
 
