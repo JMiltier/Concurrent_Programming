@@ -11,6 +11,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <atomic>
+#include <mutex>
 #include <cstdlib>
 #include <cmath>
 #include <fstream>
@@ -25,8 +27,12 @@ using namespace std;
 
 pthread_t* threads;
 size_t* args;
-size_t NUM_THREADS;
+size_t NUM_THREADS, NUM_ITERATIONS;
 pthread_barrier_t bar;
+pthread_mutex_t mutexLock;
+atomic<int> next_num = 0, now_serving = 0, atomicTID = 0;
+atomic<int> sense = 0, cnt = 0, count = 0;
+atomic<bool> tas_flag = 0;
 int arraysize, arr[100000], thread_num;
 
 /* execution time struct */
@@ -162,34 +168,6 @@ int main(int argc, const char* argv[]){
   printf("Time elapsed is %lu nanoseconds\n", time_spent);
   printf("                %f seconds\n", time_spent/1e9);
 
-	/* ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ ALGO AND THREADS ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ */
-	if (algorithm =="fjmerge") {
-		if (NUM_THREADS == 1) mergeSort(arr, 0, arraysize - 1);
-		else {
-			int ret; size_t i;
-			for(i=1; i<NUM_THREADS; i++){
-				args[i]=i+1;
-				printf("creating thread %zu\n",args[i]);
-				// ret = pthread_create(&threads[i], NULL, &thread_main, &args[i]);
-				ret = pthread_create(&threads[i], NULL, &fj_mergeSort, &args[i]);
-				if(ret){ printf("ERROR; pthread_create: %d\n", ret); exit(-1); }
-			}
-			// i = 1;
-			// thread_main(&i); // master also calls thread_main
-
-			// join threads
-			for(size_t i=1; i<NUM_THREADS; i++){
-				ret = pthread_join(threads[i], NULL);
-				if(ret){ printf("ERROR; pthread_join: %d\n", ret); exit(-1); }
-				printf("joined thread %zu\n",i+1);
-			}
-		}
-	}
-
-	else if (algorithm == "lkbucket") lk_bucketSort(arr, arraysize);
-
-	/* ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ END ALGO AND THREADS ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ */
-
 
 	/* WRITE SORTED ARRAY TO FILE */
 	ofstream outfile;
@@ -198,11 +176,117 @@ int main(int argc, const char* argv[]){
 	outfile.close();
 
 	global_cleanup();
+}
 
-	/* DISPLAY EXECUTION TIME */
-	unsigned long long elapsed_ns;
-	elapsed_ns = (time_end.tv_sec-time_start.tv_sec)*1000000000 + (time_end.tv_nsec-time_start.tv_nsec);
-	printf("Elapsed (ns): %llu\n",elapsed_ns);
-	double elapsed_s = ((double)elapsed_ns)/1000000000.0;
-	printf("Elapsed (s): %lf\n",elapsed_s);
+/* *************** BAR FUNCTIONS *************** */
+/* ****** sense ****** */
+void sense_wait() {
+  int n = NUM_THREADS;
+
+  thread_local bool cur_sense = 0;
+  cur_sense = !cur_sense;
+  int cnt_copy = atomic_fetch_add(&cnt, 1);
+  if (cnt_copy == n - 1) {
+    cnt.store(0, memory_order_relaxed);
+    sense.store(cur_sense);
+  } else while(sense.load() != cur_sense);
+}
+
+void *counter_sense(void *) {
+  int tid = atomicTID++;
+  for(int i = 0; i < NUM_ITERATIONS; ++i) {
+    COUNTER++;
+    sense_wait();
+  }
+}
+
+/* ****** pthread ****** */
+void *counter_bar_pthread(void *) {
+  int tid = atomicTID++;
+  pthread_barrier_wait(&bar);
+  for (int i = 0; i < NUM_ITERATIONS; i++) {
+    COUNTER++;
+    pthread_barrier_wait(&bar);
+  }
+}
+
+/* *************** LOCK FUNCTIONS *************** */
+/* ****** tas ****** */
+bool tas() {
+  if (tas_flag == false){
+    tas_flag = true;
+    return true;
+  } else return false;
+}
+
+void tas_lock() {
+  while(tas() == false) {}
+}
+
+void tas_unlock() {
+  tas_flag.store(false, SEQ_CST);
+}
+
+void *counter_TAS(void *) {
+  for(int i = 0; i < NUM_ITERATIONS; ++i) {
+    tas_lock();
+    COUNTER++;
+    tas_unlock();
+  }
+}
+
+/* ****** ttas ****** */
+void ttas_lock() {
+  while(tas_flag.load(SEQ_CST) == true
+        || tas() == false) {}
+}
+
+void *counter_TTAS(void *) {
+  ttas_lock();
+  for(int i = 0; i < NUM_ITERATIONS; ++i) {
+    COUNTER++;
+    tas_unlock();
+    ttas_lock();
+  }
+  tas_unlock();
+}
+
+/* ****** ticket ****** */
+void ticket_lock() {
+  // fai is fetch and increment, but not in C++?
+  int num = atomic_fetch_add(&next_num, 1);
+  while(now_serving.load(SEQ_CST) != num) {
+    if (COUNTER > NUM_ITERATIONS*NUM_THREADS) {
+      numberOver = 1;
+      break;
+    }
+  }
+}
+
+void ticket_unlock() {
+  // fai is fetch and increment, but not in C++?
+  atomic_fetch_add(&now_serving, 1);
+}
+
+void *counter_ticket_lock(void *) {
+  ticket_lock();
+  for(int i = 0; i < NUM_ITERATIONS; ++i) {
+    if (!numberOver) COUNTER++;
+    ticket_unlock();
+    ticket_lock();
+  }
+  ticket_unlock();
+}
+
+/* ****** pthread ****** */
+void *counter_lock_pthread(void *) {
+  int tid = atomicTID++;
+  for(int i = 0; i < NUM_ITERATIONS; ++i) {
+    while (COUNTER % (NUM_THREADS - 1) != tid) {
+      if (COUNTER >= NUM_ITERATIONS*NUM_THREADS) break;
+    }
+    pthread_mutex_lock(&mutexLock);
+    COUNTER++;
+    pthread_mutex_unlock(&mutexLock);
+  }
 }
