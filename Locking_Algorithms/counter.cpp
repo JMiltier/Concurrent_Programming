@@ -34,10 +34,10 @@ int numberOver = 0;
 pthread_barrier_t bar;
 pthread_mutex_t mutexLock;
 atomic<int> next_num = 0, now_serving = 0, atomicTID = 0;
-atomic<int> sense = 0, cnt = 0, count = 0;
+atomic<int> sense = 0, cnt = 0;
 atomic<bool> tas_flag = 0;
 
-/* execution time struct */
+/* execution time struct and function */
 typedef chrono::high_resolution_clock Clock;
 
 /* bar functions */
@@ -254,7 +254,7 @@ void *counter_lock_pthread(void *) {
   int tid = atomicTID++;
   for(int i = 0; i < NUM_ITERATIONS; ++i) {
     while (COUNTER % (NUM_THREADS - 1) != tid) {
-      if (COUNTER >= NUM_ITERATIONS*NUM_THREADS) break;
+      if (COUNTER >= NUM_ITERATIONS) break;
     }
     pthread_mutex_lock(&mutexLock);
     COUNTER++;
