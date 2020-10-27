@@ -15,16 +15,18 @@ CC = g++
 CFLAGS = -w
 
 # GCC standard support for different C++ dialects (98, 11, 14, 17, or 2a)
-STD = -std=c++2a
+STD = -std=c++11
 
 SORTPRGM=mysort
-SOURCE=main.cpp
-
+SORTSRC=main.cpp
 NUMGENPRGM=numGen
 NUMGENSRC=randomNumberGen.cpp
 
-$(SORTPRGM): clean $(SOURCE)
-	$(CC) $(STD) $(CFGLAGS) $(SOURCE) -o $(SORTPRGM)
+all: $(SORTPRGM)
+.PHONY: clean
+
+$(SORTPRGM): clean $(SORTSRC)
+	$(CC) $(STD) $(CFGLAGS) $(SORTSRC) -o $(SORTPRGM)
 
 $(NUMGENPRGM): $(NUMGENSRC)
 	$(CC) $(CFGLAGS) $(NUMGENSRC) -o $(NUMGENPRGM)

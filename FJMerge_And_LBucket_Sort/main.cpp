@@ -10,9 +10,8 @@
 #include <algorithm>
 #include <string>
 #include <vector>
+#include <time.h>
 #include "pthread_add.h" // for when running on macOS
-#include "mergesort.h"
-#include "lk_bucketsort.h"
 #include "arg_parser.h"
 
 using namespace std;
@@ -21,9 +20,18 @@ pthread_t* threads;
 size_t* args;
 size_t NUM_THREADS;
 pthread_barrier_t bar;
-int arraysize, arr[100000], thread_num;
+atomic<bool> b_lock (0);
+int arrsize, arr[10000], thread_num;
 
-struct timespec time_start, time_end;
+/* execution time struct */
+typedef chrono::high_resolution_clock Clock;
+
+/* merge sort functions */
+void merge(int *arr, int low, int high, int mid);
+void mergeSort(int *arr, int low, int high);
+void* fj_mergeSort(void* args);
+/* bucket sort function*/
+void lk_bucketSort(int *arr, int n);
 
 void global_init(){
 	threads = static_cast<pthread_t*>(malloc(NUM_THREADS*sizeof(pthread_t)));
@@ -37,39 +45,15 @@ void global_cleanup(){
 	pthread_barrier_destroy(&bar);
 }
 
-void local_init(){
-	int arr[arraysize];
-}
-void local_cleanup(){}
-
-void* fj_mergeSort(void* args){
-	thread_num++;
-
-	int low = thread_num * (arraysize/NUM_THREADS);
-	int high = (thread_num + 1) * (arraysize/NUM_THREADS) - 1;
-	int mid = low + (high - low) / 2;
-	if (low < high) {
-		mergeSort(arr, low, mid);
-		mergeSort(arr, mid + 1, high);
-		merge(arr, low, mid, high);
-	}
-
-	local_cleanup();
-}
-
 void* thread_main(void* args){
 	size_t tid = *((size_t*)args);
-	local_init();
 	pthread_barrier_wait(&bar);
-	if(tid==1) clock_gettime(CLOCK_MONOTONIC,&time_start);
 	pthread_barrier_wait(&bar);
 
 	// do something
 	// printf("Thread %zu reporting for duty\n",tid);
 
 	pthread_barrier_wait(&bar);
-	if(tid==1) clock_gettime(CLOCK_MONOTONIC,&time_end);
-	local_cleanup();
 	return 0;
 }
 
@@ -85,16 +69,19 @@ int main(int argc, const char* argv[]){
 	// create array from input file
 	fstream file(inputFile.c_str(), ios_base::in);
 	int a, b = 0;
-	arraysize = 0;
+	arrsize = 0;
 	string line;
-	while (getline(file, line)) arraysize++;
-	arr[arraysize];
+	while (getline(file, line)) arrsize++;
+	arr[arrsize];
 	fstream infile(inputFile, ios_base::in);
 	while (infile >> a) { arr[b] = a; b++; }
 
+	// execution start time
+	auto start_time = Clock::now();
+
 	/* ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ ALGO AND THREADS ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ */
 	if (algorithm =="fjmerge") {
-		if (NUM_THREADS == 1) mergeSort(arr, 0, arraysize - 1);
+		if (NUM_THREADS == 1) mergeSort(arr, 0, arrsize - 1);
 		else {
 			int ret; size_t i;
 			for(i=1; i<NUM_THREADS; i++){
@@ -116,30 +103,32 @@ int main(int argc, const char* argv[]){
 		}
 	}
 
-	else if (algorithm == "lkbucket") lk_bucketSort(arr, arraysize);
+	else if (algorithm == "lkbucket") lk_bucketSort(arr, arrsize);
 
 	/* ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ END ALGO AND THREADS ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ */
-
 
 	/* WRITE SORTED ARRAY TO FILE */
 	ofstream outfile;
 	outfile.open(outputFile);
-	for (int i = 0; i < arraysize; i++) outfile << arr[i] << endl;
+	for (int i = 0; i < arrsize; i++) outfile << arr[i] << endl;
 	outfile.close();
 
 	global_cleanup();
 
-	/* DISPLAY EXECUTION TIME */
-	unsigned long long elapsed_ns;
-	elapsed_ns = (time_end.tv_sec-time_start.tv_sec)*1000000000 + (time_end.tv_nsec-time_start.tv_nsec);
-	printf("Elapsed (ns): %llu\n",elapsed_ns);
-	double elapsed_s = ((double)elapsed_ns)/1000000000.0;
-	printf("Elapsed (s): %lf\n",elapsed_s);
+	// execution end time
+  auto end_time = Clock::now();
+  // calculate and display execution time
+  unsigned long time_spent = chrono::duration_cast<chrono::nanoseconds>(end_time - start_time).count();
+  printf("Time elapsed: %lu nanoseconds\n", time_spent);
+  printf("               %f seconds\n", time_spent/1e9);
+
 }
 
 /* ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ MERGE SORT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ */
 void merge(int *arr, int low, int high, int mid) {
-	int l_size = mid - low + 1, r_size = high - mid, i, j, k;
+	int i, j, k;
+	int l_size = mid - low + 1;
+	int r_size = high - mid;
 	int* left = new int[l_size];
 	int* right = new int[r_size];
 
@@ -156,6 +145,7 @@ void merge(int *arr, int low, int high, int mid) {
 		else arr[k++] = right[j++];
 	}
 
+	// copy remaining vals
 	while (i < l_size) arr[k++] = left[i++];
 	while (j < r_size) arr[k++] = right[j++];
 }
@@ -165,12 +155,27 @@ void mergeSort(int *arr, int low, int high) {
 		int mid = low + (high - low) / 2;
     if (low < high){
         // sort independently using merge sort
-        mid=(low+high)/2;
+        // mid=(low+high)/2;
         mergeSort(arr, low, mid);
         mergeSort(arr, mid + 1, high);
         //merge or conquer sorted arrays
         merge(arr, low, high, mid);
     }
+}
+
+
+void* fj_mergeSort(void* args){
+	int tid = (long) args;
+	int low = tid * (arrsize/NUM_THREADS);
+	int high = (thread_num + 1) * (arrsize/NUM_THREADS) - 1;
+
+	int mid = low + (high - low) / 2;
+	if (low < high) {
+		mergeSort(arr, low, mid);
+		mergeSort(arr, mid + 1, high);
+		merge(arr, low, mid, high);
+	}
+	return NULL;
 }
 /* ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ END MERGE SORT ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ */
 
