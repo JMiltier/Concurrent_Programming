@@ -23,9 +23,10 @@ pthread_t* threads;
 size_t* args;
 size_t NUM_THREADS;
 pthread_barrier_t bar;
-atomic<bool> b_lock (0);
 atomic<int> arr[1000000];
 int arrsize;
+atomic<bool> b_lock (0);	// lock setter
+mutex b_locker; 					// lock for bucket sorting
 
 /* execution time struct */
 typedef chrono::high_resolution_clock Clock;
@@ -35,7 +36,7 @@ void merge(int low, int high, int mid);
 void mergeSort(int low, int high);
 void* fj_mergeSort(void* args);
 /* bucket sort function*/
-void lk_bucketSort(int n);
+void bucketSort(int n);
 
 /* =============================================== */
 /* ===================== MAIN ==================== */
@@ -45,6 +46,11 @@ int main(int argc, const char* argv[]){
 	string outputFile = args_parsed.outputFile;
 	string algorithm = args_parsed.algorithm;
 	NUM_THREADS = args_parsed.NUM_THREADS;
+
+	// init
+	threads = static_cast<pthread_t*>(malloc(NUM_THREADS*sizeof(pthread_t)));
+	args = static_cast<size_t*>(malloc(NUM_THREADS*sizeof(size_t)));
+	pthread_barrier_init(&bar, NULL, NUM_THREADS);
 
 	// create array from input file
 	fstream file(inputFile.c_str(), ios_base::in);
@@ -61,26 +67,25 @@ int main(int argc, const char* argv[]){
 
 	/* ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ ALGO AND THREADS ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ */
 	if (algorithm =="fjmerge") {
-		// init
-		threads = static_cast<pthread_t*>(malloc(NUM_THREADS*sizeof(pthread_t)));
-		args = static_cast<size_t*>(malloc(NUM_THREADS*sizeof(size_t)));
-		pthread_barrier_init(&bar, NULL, NUM_THREADS);
-
-		// no need to run through
+		// if number of threads to use is one, no need to run through
 		if (NUM_THREADS == 1) mergeSort(0, arrsize - 1);
 		else {
 			int ret; size_t i;
 			for(i = 0; i < NUM_THREADS; i++){
 				args[i] = i;
+				printf("creating thread %zu\n",args[i]+1);
 				// ret = pthread_create(&threads[i], NULL, &thread_main, &args[i]);
 				ret = pthread_create(&threads[i], NULL, &fj_mergeSort, &args[i]);
 				if(ret){ printf("ERROR; pthread_create: %d\n", ret); exit(-1); }
 			}
+			// i = 1;
+			// thread_main(&i); // master also calls thread_main
 
 			// join threads
 			for(i = 0; i < NUM_THREADS; i++){
 				ret = pthread_join(threads[i], NULL);
 				if(ret){ printf("ERROR; pthread_join: %d\n", ret); exit(-1); }
+				printf("joined thread %zu\n",i+1);
 			}
 
 			// final merge, since broken up into NUM_THREAD sorted parts/chunks
@@ -94,7 +99,7 @@ int main(int argc, const char* argv[]){
 		pthread_barrier_destroy(&bar);
 	}
 
-	else if (algorithm == "lkbucket") lk_bucketSort(arrsize);
+	else if (algorithm == "lkbucket") bucketSort(arrsize);
 
 	/* ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ END ALGO AND THREADS ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ */
 
@@ -156,10 +161,9 @@ void mergeSort(int low, int high) {
 void* fj_mergeSort(void* args){
 	size_t tid = *((size_t*)args);
 
-	// int tid = (long) args;
-	// int arrsplit = arrsize / NUM_THREADS;
-	int low = (tid * arrsize / NUM_THREADS);
-	int high = ((tid + 1) * arrsize / NUM_THREADS) - 1;
+	int arrsplit = arrsize / NUM_THREADS;
+	int low = tid * arrsplit;
+	int high = ((tid + 1) * arrsplit) - 1;
 
 	pthread_barrier_wait(&bar);
 	int mid = low + (high - low) / 2;
@@ -175,7 +179,7 @@ void* fj_mergeSort(void* args){
 
 /* ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ BUCKET SORT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ */
 // Function to sort arr[] of size n using bucket sort
-void lk_bucketSort(int n) {
+void bucketSort(int n) {
 	int i, j, count = 0, max_value = 0;
 
 	// find max key value in arr
@@ -195,5 +199,23 @@ void lk_bucketSort(int n) {
 				arr[count] = i;
 				count++;
 		}
+}
+
+void* lk_bucketSort(void* args) {
+	size_t tid = *((size_t*)args);
+
+	int arrsplit = arrsize / NUM_THREADS;
+	int low = tid * arrsplit;
+	int high = ((tid + 1) * arrsplit) - 1;
+
+	pthread_barrier_wait(&bar);
+	int mid = low + (high - low) / 2;
+	if (low < high) {
+		mergeSort(low, mid);
+		mergeSort(mid + 1, high);
+		merge(low, mid, high);
+	}
+
+	return 0;
 }
 /* ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ END BUCKET SORT ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ */
