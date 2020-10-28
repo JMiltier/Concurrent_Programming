@@ -26,7 +26,7 @@ all: $(SORTPRGM)
 .PHONY: clean
 
 $(SORTPRGM): clean $(SORTSRC)
-	$(CC) $(STD) $(CFGLAGS) $(SORTSRC) -o $(SORTPRGM)
+	$(CC) $(STD) $(CFGLAGS) $(SORTSRC) -o $(SORTPRGM) -lpthread
 
 $(NUMGENPRGM): $(NUMGENSRC)
 	$(CC) $(CFGLAGS) $(NUMGENSRC) -o $(NUMGENPRGM)
