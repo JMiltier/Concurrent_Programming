@@ -35,8 +35,10 @@ typedef chrono::high_resolution_clock Clock;
 void merge(int low, int high, int mid);
 void mergeSort(int low, int high);
 void* fj_mergeSort(void* args);
-/* bucket sort function*/
-void bucketSort(int n);
+/* bucket sort functions */
+void bucketSort(int low, int high);
+void* lk_bucketSort(void* args);
+
 
 /* =============================================== */
 /* ===================== MAIN ==================== */
@@ -63,7 +65,7 @@ int main(int argc, const char* argv[]){
 	while (infile >> a) { arr[b] = a; b++; }
 
 	// execution start time
-    auto start_time = Clock::now();
+	auto start_time = Clock::now();
 
 	/* ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ ALGO AND THREADS ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ */
 	if (algorithm =="fjmerge") {
@@ -72,14 +74,14 @@ int main(int argc, const char* argv[]){
 		else {
 			int ret; size_t i;
 			for(i = 0; i < NUM_THREADS; i++){
+				b_locker.lock();
 				args[i] = i;
 				printf("creating thread %zu\n",args[i]+1);
 				// ret = pthread_create(&threads[i], NULL, &thread_main, &args[i]);
 				ret = pthread_create(&threads[i], NULL, &fj_mergeSort, &args[i]);
+				b_locker.unlock();
 				if(ret){ printf("ERROR; pthread_create: %d\n", ret); exit(-1); }
 			}
-			// i = 1;
-			// thread_main(&i); // master also calls thread_main
 
 			// join threads
 			for(i = 0; i < NUM_THREADS; i++){
@@ -99,23 +101,31 @@ int main(int argc, const char* argv[]){
 		pthread_barrier_destroy(&bar);
 	}
 
-	else if (algorithm == "lkbucket") bucketSort(arrsize);
+	else if (algorithm == "lkbucket"){
+		int ret; size_t i;
+		for(i = 0; i < NUM_THREADS; i++){
+			args[i] = i;
+			printf("creating thread %zu\n",args[i]+1);
+			// ret = pthread_create(&threads[i], NULL, &thread_main, &args[i]);
+			ret = pthread_create(&threads[i], NULL, &lk_bucketSort, &args[i]);
+			if(ret){ printf("ERROR; pthread_create: %d\n", ret); exit(-1); }
+		}
+	}
 
 	/* ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ END ALGO AND THREADS ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ */
+
+	// execution end time
+	auto end_time = Clock::now();
+	// calculate and display execution time
+	unsigned long time_spent = chrono::duration_cast<chrono::nanoseconds>(end_time - start_time).count();
+	printf("Time elapsed: %lu nanoseconds\n", time_spent);
+	printf("               %f seconds\n", time_spent/1e9);
 
 	/* WRITE SORTED ARRAY TO FILE */
 	ofstream outfile;
 	outfile.open(outputFile);
 	for (int i = 0; i < arrsize; i++) outfile << arr[i] << endl;
 	outfile.close();
-
-	// execution end time
-    auto end_time = Clock::now();
-    // calculate and display execution time
-    unsigned long time_spent = chrono::duration_cast<chrono::nanoseconds>(end_time - start_time).count();
-    printf("Time elapsed: %lu nanoseconds\n", time_spent);
-    printf("               %f seconds\n", time_spent/1e9);
-
 }
 
 /* ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ MERGE SORT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ */
@@ -179,18 +189,18 @@ void* fj_mergeSort(void* args){
 
 /* ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ BUCKET SORT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ */
 // Function to sort arr[] of size n using bucket sort
-void bucketSort(int n) {
+void bucketSort(int low, int high) {
 	int i, j, count = 0, max_value = 0;
 
 	// find max key value in arr
-	for (i = 0; i < n; ++i)
+	for (i = low; i < high; ++i)
 		if (arr[i] > max_value) max_value = arr[i];
 
-	// create n empty buckets
+	// create n empty local buckets
 	auto buckets = vector<unsigned >(static_cast<unsigned int>(max_value + 1));
 
 	// put array elements in different buckets
-	for (i = 0; i < n; ++i)
+	for (i = low; i < high; ++i)
 		buckets[arr[i]]++;
 
 	// concatenate all buckets into arr[]
@@ -208,13 +218,10 @@ void* lk_bucketSort(void* args) {
 	int low = tid * arrsplit;
 	int high = ((tid + 1) * arrsplit) - 1;
 
-	pthread_barrier_wait(&bar);
-	int mid = low + (high - low) / 2;
-	if (low < high) {
-		mergeSort(low, mid);
-		mergeSort(mid + 1, high);
-		merge(low, mid, high);
-	}
+	b_lock = b_locker.try_lock();
+	b_locker.lock();
+	bucketSort(low, high);
+	b_locker.unlock();
 
 	return 0;
 }
