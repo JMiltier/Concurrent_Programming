@@ -20,7 +20,6 @@
 #include <string>
 #include <vector>
 #include "pthread_add.h" // for when running on macOS
-#include "lk_bucketsort.h"
 #include "arg_parser.h"
 
 using namespace std;
@@ -34,51 +33,27 @@ atomic<int> next_num = 0, now_serving = 0, atomicTID = 0;
 atomic<int> sense = 0, cnt = 0, count = 0;
 atomic<bool> tas_flag = 0;
 int arraysize, arr[100000], thread_num;
+atomic<int> b_count (0);
+mutex b_lock; 					// lock for bucket sorting
 
 /* execution time struct */
 typedef chrono::high_resolution_clock Clock;
 
-void global_init(){
-	threads = static_cast<pthread_t*>(malloc(NUM_THREADS*sizeof(pthread_t)));
-	args = static_cast<size_t*>(malloc(NUM_THREADS*sizeof(size_t)));
-	pthread_barrier_init(&bar, NULL, NUM_THREADS);
-}
-
-void global_cleanup(){
-	free(threads);
-	free(args);
-	pthread_barrier_destroy(&bar);
-}
-
-void local_init(){
-	int arr[arraysize];
-}
-void local_cleanup(){}
-
-void* thread_main(void* args){
-	size_t tid = *((size_t*)args);
-	local_init();
-	pthread_barrier_wait(&bar);
-	if(tid==1) clock_gettime(CLOCK_MONOTONIC,&time_start);
-	pthread_barrier_wait(&bar);
-
-	// do something
-	// printf("Thread %zu reporting for duty\n",tid);
-
-	pthread_barrier_wait(&bar);
-	if(tid==1) clock_gettime(CLOCK_MONOTONIC,&time_end);
-	local_cleanup();
-	return 0;
-}
 
 /* ===================== MAIN ==================== */
 int main(int argc, const char* argv[]){
 	struct arg_params args_parsed = arg_parser(argc, argv);
-	string inputFile = args_parsed.inputFile;
+	int argument = args_parsed.argument;
+  string inputFile = "FILL";
 	string outputFile = args_parsed.outputFile;
-	string algorithm = args_parsed.algorithm;
 	NUM_THREADS = args_parsed.NUM_THREADS;
-	global_init();
+  NUM_ITERATIONS = args_parsed.NUM_ITERATIONS;
+  pthread_t threads[NUM_THREADS];
+
+  // init
+  threads = static_cast<pthread_t*>(malloc(NUM_THREADS*sizeof(pthread_t)));
+	args = static_cast<size_t*>(malloc(NUM_THREADS*sizeof(size_t)));
+	pthread_barrier_init(&bar, NULL, NUM_THREADS);
 
 	// create array from input file
 	fstream file(inputFile.c_str(), ios_base::in);
@@ -89,13 +64,6 @@ int main(int argc, const char* argv[]){
 	arr[arraysize];
 	fstream infile(inputFile, ios_base::in);
 	while (infile >> a) { arr[b] = a; b++; }
-
-	struct arg_params args_parsed = arg_parser(argc, argv);
-	int argument = args_parsed.argument;
-	string outputFile = args_parsed.outputFile;
-	NUM_THREADS = args_parsed.NUM_THREADS;
-  NUM_ITERATIONS = args_parsed.NUM_ITERATIONS;
-  pthread_t threads[NUM_THREADS];
 
   // printf("All the data we want:\n%i\n%i\n%i\n%s\n", NUM_THREADS, NUM_ITERATIONS, argument, outputFile.c_str());
 
@@ -175,7 +143,9 @@ int main(int argc, const char* argv[]){
 	for (int i = 0; i < arraysize; i++) outfile << arr[i] << endl;
 	outfile.close();
 
-	global_cleanup();
+	free(threads);
+	free(args);
+	pthread_barrier_destroy(&bar);
 }
 
 /* *************** BAR FUNCTIONS *************** */
