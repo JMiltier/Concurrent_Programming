@@ -1,0 +1,13 @@
+*.pdf
+*.zip
+*.text
+*.txt
+*.webloc
+*.dSYM
+*.out
+Test Machines*
+
+# executable file
+test
+mysort
+numGen
