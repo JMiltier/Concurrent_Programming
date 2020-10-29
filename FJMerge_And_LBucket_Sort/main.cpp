@@ -212,7 +212,7 @@ void bucketSort(int low, int high) {
 
 	// concatenate all buckets into arr[]
 	for (i = 0; i <= buckets.capacity(); ++i)
-		for (j = 0; j < buckets[i]; ++j) {
+		for (j = 0; j <= buckets[i]; ++j) {
 				arr[b_count] = i;
 				b_count++;
 		}
