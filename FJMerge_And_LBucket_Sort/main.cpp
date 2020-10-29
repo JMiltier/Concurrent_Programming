@@ -23,7 +23,7 @@ pthread_t* threads;
 size_t* args;
 size_t NUM_THREADS;
 pthread_barrier_t bar;
-atomic<int> arr[1000000];
+atomic<int> arr[1000000];	// passing thread number into pthread_create fn, so setting global
 int arrsize;
 atomic<bool> b_lock (0);	// lock setter
 mutex b_locker; 					// lock for bucket sorting
@@ -225,9 +225,8 @@ void* lk_bucketSort(void* args) {
 	int low = tid * arrsplit;
 	int high = ((tid + 1) * arrsplit) - 1;
 
-	b_lock = b_locker.try_lock();
+	lock_guard<mutex> guard(b_locker);
 	bucketSort(low, high);
-	b_locker.unlock();
 
 	return 0;
 }
