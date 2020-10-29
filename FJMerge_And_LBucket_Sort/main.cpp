@@ -110,6 +110,13 @@ int main(int argc, const char* argv[]){
 			ret = pthread_create(&threads[i], NULL, &lk_bucketSort, &args[i]);
 			if(ret){ printf("ERROR; pthread_create: %d\n", ret); exit(-1); }
 		}
+
+		// join threads
+			for(i = 0; i < NUM_THREADS; i++){
+				ret = pthread_join(threads[i], NULL);
+				if(ret){ printf("ERROR; pthread_join: %d\n", ret); exit(-1); }
+				printf("joined thread %zu\n",i+1);
+			}
 	}
 
 	/* ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ END ALGO AND THREADS ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ */
@@ -219,7 +226,6 @@ void* lk_bucketSort(void* args) {
 	int high = ((tid + 1) * arrsplit) - 1;
 
 	b_lock = b_locker.try_lock();
-	b_locker.lock();
 	bucketSort(low, high);
 	b_locker.unlock();
 
