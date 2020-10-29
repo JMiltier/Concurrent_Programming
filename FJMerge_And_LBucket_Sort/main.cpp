@@ -25,6 +25,7 @@ size_t NUM_THREADS;
 pthread_barrier_t bar;
 atomic<int> arr[1000000];	// passing thread number into pthread_create fn, so setting global
 int arrsize;
+atomic<int> b_count (0);
 atomic<bool> b_lock (0);	// lock setter
 mutex b_locker; 					// lock for bucket sorting
 
@@ -106,7 +107,6 @@ int main(int argc, const char* argv[]){
 		for(i = 0; i < NUM_THREADS; i++){
 			args[i] = i;
 			printf("creating thread %zu\n",args[i]+1);
-			// ret = pthread_create(&threads[i], NULL, &thread_main, &args[i]);
 			ret = pthread_create(&threads[i], NULL, &lk_bucketSort, &args[i]);
 			if(ret){ printf("ERROR; pthread_create: %d\n", ret); exit(-1); }
 		}
@@ -197,24 +197,24 @@ void* fj_mergeSort(void* args){
 /* ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ BUCKET SORT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ */
 // Function to sort arr[] of size n using bucket sort
 void bucketSort(int low, int high) {
-	int i, j, count = 0, max_value = 0;
+	int i, j, max_value = 0;
 
 	// find max key value in arr
-	for (i = low; i < high; ++i)
+	for (i = low; i <= high; ++i)
 		if (arr[i] > max_value) max_value = arr[i];
 
 	// create n empty local buckets
 	auto buckets = vector<unsigned >(static_cast<unsigned int>(max_value + 1));
 
 	// put array elements in different buckets
-	for (i = low; i < high; ++i)
+	for (i = low; i <= high; ++i)
 		buckets[arr[i]]++;
 
 	// concatenate all buckets into arr[]
 	for (int i = 0; i < buckets.capacity(); ++i)
 		for (int j = 0; j < buckets[i]; ++j) {
-				arr[count] = i;
-				count++;
+				arr[b_count] = i;
+				b_count++;
 		}
 }
 
