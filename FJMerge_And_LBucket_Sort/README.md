@@ -55,3 +55,7 @@ Using two different sorting algorithms and two different paralellization strateg
 #### 🐜 Surviving Bugs
   - Input/output files are loaded/saved as is. Does not check for txt file types.
   - Numbers within input txt file must be integers (not checked) for the program to work.
+
+
+#### Resources
+  - [p-thread tutorial](https://computing.llnl.gov/tutorials/pthreads/)

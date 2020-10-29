@@ -4,12 +4,10 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <cstdlib>
-#include <cmath>
 #include <atomic>
 #include <mutex>
 #include <fstream>
 #include <thread>
-#include <algorithm>
 #include <string>
 #include <vector>
 #include <time.h>
@@ -26,7 +24,6 @@ pthread_barrier_t bar;
 atomic<int> arr[1000000];	// passing thread number into pthread_create fn, so setting global
 int arrsize;
 atomic<int> b_count (0);
-// atomic<bool> b_lock (0);	// lock setter
 mutex b_lock; 					// lock for bucket sorting
 
 /* execution time struct */
@@ -114,8 +111,10 @@ int main(int argc, const char* argv[]){
 				printf("joined thread %zu\n",i+1);
 			}
 
-			// final sort since all buckets are split up
-			bucketSort(0, arrsize-1);
+			// final sort since only NUM_THREADS sub-buckets are sorted
+			// again, not the best way to do this
+			b_count = 0;
+			bucketSort(0, arrsize);
 		}
 	}
 	/* ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ END ALGO AND THREADS ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ */
@@ -134,6 +133,7 @@ int main(int argc, const char* argv[]){
 	outfile.close();
 
 	// cleanup
+	pthread_exit(NULL);
 	free(threads);
 	free(args);
 	pthread_barrier_destroy(&bar);
@@ -213,6 +213,7 @@ void bucketSort(int low, int high) {
 	// put array elements in different buckets
 	for (i = low; i <= high; ++i)
 		buckets[arr[i]]++;
+
 
 	// concatenate all buckets into arr[]
 	for (i = 0; i < buckets.capacity(); ++i)
