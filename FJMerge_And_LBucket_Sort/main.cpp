@@ -26,7 +26,7 @@ pthread_barrier_t bar;
 atomic<int> arr[1000000];	// passing thread number into pthread_create fn, so setting global
 int arrsize;
 atomic<int> b_count (0);
-atomic<bool> b_lock (0);	// lock setter
+// atomic<bool> b_lock (0);	// lock setter
 mutex b_locker; 					// lock for bucket sorting
 
 /* execution time struct */
@@ -211,8 +211,8 @@ void bucketSort(int low, int high) {
 		buckets[arr[i]]++;
 
 	// concatenate all buckets into arr[]
-	for (int i = 0; i < buckets.capacity(); ++i)
-		for (int j = 0; j < buckets[i]; ++j) {
+	for (i = 0; i <= buckets.capacity(); ++i)
+		for (j = 0; j < buckets[i]; ++j) {
 				arr[b_count] = i;
 				b_count++;
 		}
