@@ -22,6 +22,9 @@
 #include "pthread_add.h" // for when running on macOS
 #include "arg_parser.h"
 
+#define SEQ_CST memory_order_seq_cst
+#define RELAXED memory_order_relaxed
+
 using namespace std;
 
 pthread_t* threads;
@@ -33,6 +36,8 @@ atomic<int> next_num = 0, now_serving = 0, atomicTID = 0;
 atomic<int> sense = 0, cnt = 0, count = 0;
 atomic<bool> tas_flag = 0;
 int arraysize, arr[100000], thread_num;
+int COUNTER = 0;
+int numberOver = 0;
 atomic<int> b_count (0);
 mutex b_lock; 					// lock for bucket sorting
 
@@ -42,13 +47,13 @@ typedef chrono::high_resolution_clock Clock;
 
 /* ===================== MAIN ==================== */
 int main(int argc, const char* argv[]){
-	struct arg_params args_parsed = arg_parser(argc, argv);
-	int argument = args_parsed.argument;
-  string inputFile = "FILL";
+  struct arg_params args_parsed = arg_parser(argc, argv);
+  string inputFile = args_parsed.inputFile;
 	string outputFile = args_parsed.outputFile;
 	NUM_THREADS = args_parsed.NUM_THREADS;
-  NUM_ITERATIONS = args_parsed.NUM_ITERATIONS;
-  pthread_t threads[NUM_THREADS];
+	string algorithm = args_parsed.algorithm;
+	int bar_arg = args_parsed.bar;
+  int lock_arg = args_parsed.lock;
 
   // init
   threads = static_cast<pthread_t*>(malloc(NUM_THREADS*sizeof(pthread_t)));
@@ -65,15 +70,13 @@ int main(int argc, const char* argv[]){
 	fstream infile(inputFile, ios_base::in);
 	while (infile >> a) { arr[b] = a; b++; }
 
-  // printf("All the data we want:\n%i\n%i\n%i\n%s\n", NUM_THREADS, NUM_ITERATIONS, argument, outputFile.c_str());
-
   // execution start time
   auto start_time = Clock::now();
 
   /* argument statement (from parser) is as follows:
    * bar: 1-sense, 2-pthread
-   * lock: 3-tas, 4-ttas, 5-ticket, 6-pthread */
-  switch (argument) {
+   * lock: 1-tas, 2-ttas, 3-ticket, 4-pthread */
+  switch (bar_arg) {
     // bar sense
     case 1:
       for (int i = 0; i < NUM_THREADS; i ++)
@@ -90,30 +93,36 @@ int main(int argc, const char* argv[]){
         pthread_join(threads[i], NULL);
       pthread_barrier_destroy(&bar);
       break;
+		// something didn't match up
+    default:
+      printf("An error occured in BAR switch.");
+      exit(-1);
+	}
 
+	switch (lock_arg) {
     // lock tas
-    case 3:
+    case 1:
       for (int i = 0; i < NUM_THREADS; i ++)
         pthread_create(&threads[i], NULL, counter_TAS, (void*)NULL);
       for (int i = 0; i < NUM_THREADS; i ++)
         pthread_join(threads[i], NULL);
       break;
     // lock ttas
-    case 4:
+    case 2:
       for (int i = 0; i < NUM_THREADS; i ++)
         pthread_create(&threads[i], NULL, counter_TTAS, (void*)NULL);
       for (int i = 0; i < NUM_THREADS; i ++)
         pthread_join(threads[i], NULL);
       break;
     // lock ticket
-    case 5:
+    case 3:
       for (int i = 0; i < NUM_THREADS; i ++)
         pthread_create(&threads[i], NULL, counter_ticket_lock, (void*)NULL);
       for (int i = 0; i < NUM_THREADS; i ++)
         pthread_join(threads[i], NULL);
       break;
     // lock pthread
-    case 6:
+    case 4:
       pthread_mutex_init(&mutexLock, NULL);
       for (int i = 0; i < NUM_THREADS; i ++)
         pthread_create(&threads[i], NULL, counter_lock_pthread, (void*)NULL);
@@ -121,10 +130,9 @@ int main(int argc, const char* argv[]){
         pthread_join(threads[i], NULL);
       pthread_mutex_destroy(&mutexLock);
       break;
-
     // something didn't match up
     default:
-      printf("An error occured in MAIN.");
+      printf("An error occured in LOCK switch.");
       exit(-1);
   }
 
@@ -165,7 +173,7 @@ void sense_wait() {
 void *counter_sense(void *) {
   int tid = atomicTID++;
   for(int i = 0; i < NUM_ITERATIONS; ++i) {
-    COUNTER++;
+    // COUNTER++;
     sense_wait();
   }
 }
@@ -175,7 +183,7 @@ void *counter_bar_pthread(void *) {
   int tid = atomicTID++;
   pthread_barrier_wait(&bar);
   for (int i = 0; i < NUM_ITERATIONS; i++) {
-    COUNTER++;
+    // COUNTER++;
     pthread_barrier_wait(&bar);
   }
 }
@@ -200,7 +208,7 @@ void tas_unlock() {
 void *counter_TAS(void *) {
   for(int i = 0; i < NUM_ITERATIONS; ++i) {
     tas_lock();
-    COUNTER++;
+    // COUNTER++;
     tas_unlock();
   }
 }
@@ -214,7 +222,7 @@ void ttas_lock() {
 void *counter_TTAS(void *) {
   ttas_lock();
   for(int i = 0; i < NUM_ITERATIONS; ++i) {
-    COUNTER++;
+    // COUNTER++;
     tas_unlock();
     ttas_lock();
   }
@@ -291,7 +299,7 @@ void bucketSort(int low, int high) {
 void* lk_bucketSort(void* args) {
 	size_t tid = *((size_t*)args);
 
-	int arrsplit = arrsize / NUM_THREADS;
+	int arrsplit = arraysize / NUM_THREADS;
 	int low = tid * arrsplit;
 	int high = ((tid + 1) * arrsplit);
 
