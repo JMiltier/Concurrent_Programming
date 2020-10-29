@@ -27,7 +27,7 @@ atomic<int> arr[1000000];	// passing thread number into pthread_create fn, so se
 int arrsize;
 atomic<int> b_count (0);
 // atomic<bool> b_lock (0);	// lock setter
-mutex b_locker; 					// lock for bucket sorting
+mutex b_lock; 					// lock for bucket sorting
 
 /* execution time struct */
 typedef chrono::high_resolution_clock Clock;
@@ -75,12 +75,10 @@ int main(int argc, const char* argv[]){
 		else {
 			int ret; size_t i;
 			for(i = 0; i < NUM_THREADS; i++){
-				b_locker.lock();
 				args[i] = i;
 				printf("creating thread %zu\n",args[i]+1);
 				// ret = pthread_create(&threads[i], NULL, &thread_main, &args[i]);
 				ret = pthread_create(&threads[i], NULL, &fj_mergeSort, &args[i]);
-				b_locker.unlock();
 				if(ret){ printf("ERROR; pthread_create: %d\n", ret); exit(-1); }
 			}
 
@@ -95,30 +93,31 @@ int main(int argc, const char* argv[]){
 			// imagining there is a better way to do this
 			mergeSort(0, arrsize-1);
 		}
-
-		// cleanup
-		free(threads);
-		free(args);
-		pthread_barrier_destroy(&bar);
 	}
 
 	else if (algorithm == "lkbucket"){
-		int ret; size_t i;
-		for(i = 0; i < NUM_THREADS; i++){
-			args[i] = i;
-			printf("creating thread %zu\n",args[i]+1);
-			ret = pthread_create(&threads[i], NULL, &lk_bucketSort, &args[i]);
-			if(ret){ printf("ERROR; pthread_create: %d\n", ret); exit(-1); }
-		}
+		if (NUM_THREADS == 1) bucketSort(0, arrsize - 1);
+		else {
+			int ret; size_t i;
+			for(i = 0; i < NUM_THREADS; i++){
+				args[i] = i;
+				printf("creating thread %zu\n",args[i]+1);
+				// lock_guard<mutex> lock(b_lock);
+				ret = pthread_create(&threads[i], NULL, &lk_bucketSort, &args[i]);
+				if(ret){ printf("ERROR; pthread_create: %d\n", ret); exit(-1); }
+			}
 
-		// join threads
+			// join threads
 			for(i = 0; i < NUM_THREADS; i++){
 				ret = pthread_join(threads[i], NULL);
 				if(ret){ printf("ERROR; pthread_join: %d\n", ret); exit(-1); }
 				printf("joined thread %zu\n",i+1);
 			}
-	}
 
+			// final sort since all buckets are split up
+			bucketSort(0, arrsize-1);
+		}
+	}
 	/* ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ END ALGO AND THREADS ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ */
 
 	// execution end time
@@ -133,6 +132,11 @@ int main(int argc, const char* argv[]){
 	outfile.open(outputFile);
 	for (int i = 0; i < arrsize; i++) outfile << arr[i] << endl;
 	outfile.close();
+
+	// cleanup
+	free(threads);
+	free(args);
+	pthread_barrier_destroy(&bar);
 }
 
 /* ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ MERGE SORT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ */
@@ -195,7 +199,7 @@ void* fj_mergeSort(void* args){
 /* ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ END MERGE SORT ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ */
 
 /* ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ BUCKET SORT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ */
-// Function to sort arr[] of size n using bucket sort
+// Function to sort arr[] from [left to right] bucket sort
 void bucketSort(int low, int high) {
 	int i, j, max_value = 0;
 
@@ -211,11 +215,13 @@ void bucketSort(int low, int high) {
 		buckets[arr[i]]++;
 
 	// concatenate all buckets into arr[]
-	for (i = 0; i <= buckets.capacity(); ++i)
-		for (j = 0; j <= buckets[i]; ++j) {
+	for (i = 0; i < buckets.capacity(); ++i)
+		for (j = 0; j < buckets[i]; ++j) {
 				arr[b_count] = i;
 				b_count++;
 		}
+
+	//lock_guard<mutex> unlock(b_lock);
 }
 
 void* lk_bucketSort(void* args) {
@@ -223,9 +229,9 @@ void* lk_bucketSort(void* args) {
 
 	int arrsplit = arrsize / NUM_THREADS;
 	int low = tid * arrsplit;
-	int high = ((tid + 1) * arrsplit) - 1;
+	int high = ((tid + 1) * arrsplit);
 
-	lock_guard<mutex> guard(b_locker);
+	lock_guard<mutex> guard(b_lock);
 	bucketSort(low, high);
 
 	return 0;
