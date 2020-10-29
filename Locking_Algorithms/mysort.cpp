@@ -290,3 +290,44 @@ void *counter_lock_pthread(void *) {
     pthread_mutex_unlock(&mutexLock);
   }
 }
+
+/* ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ BUCKET SORT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ */
+// Function to sort arr[] from [left to right] bucket sort
+void bucketSort(int low, int high) {
+	int i, j, max_value = 0;
+
+	// find max key value in arr
+	for (i = low; i <= high; ++i)
+		if (arr[i] > max_value) max_value = arr[i];
+
+	// create n empty local buckets
+	auto buckets = vector<unsigned >(static_cast<unsigned int>(max_value + 1));
+
+	// put array elements in different buckets
+	for (i = low; i <= high; ++i)
+		buckets[arr[i]]++;
+
+
+	// concatenate all buckets into arr[]
+	for (i = 0; i < buckets.capacity(); ++i)
+		for (j = 0; j < buckets[i]; ++j) {
+				arr[b_count] = i;
+				b_count++;
+		}
+
+	//lock_guard<mutex> unlock(b_lock);
+}
+
+void* lk_bucketSort(void* args) {
+	size_t tid = *((size_t*)args);
+
+	int arrsplit = arrsize / NUM_THREADS;
+	int low = tid * arrsplit;
+	int high = ((tid + 1) * arrsplit);
+
+	lock_guard<mutex> guard(b_lock);
+	bucketSort(low, high);
+
+	return 0;
+}
+/* ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ END BUCKET SORT ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ */
