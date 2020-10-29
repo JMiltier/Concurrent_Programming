@@ -2,33 +2,33 @@
 Using two different sorting algorithms and two different paralellization strategies(fork/join and locks), this program sorts a (specified) *.txt*  file of unique integers and outputs the sorted list to a different (specified) *.txt* file. The input *.txt* file will be an unsorted data structure [Standard Template Library (STL) vector]. This is to emulate the performance of the UNIX `sort-n` command.
 
 #### Sorting Algorithms:
-  1. **Quicksort** - picks element as pivot and partition exchanging
-  2. **Mergesort** - divides into two halfs, then merges sorted halfs
-  3. **Bucketsort** - sorts array into different bins, sorts the bins, then rejoins
+  1. **Mergesort** - divides into two halfs, then merges sorted halfs
+  2. **Bucketsort** - sorts array into different bins, sorts the bins, then rejoins
 
 #### 🗜️ Added functionality:
-  1. Fork/join parellelism - implementation of fork, join, and barriers
+  1. Fork/join parellelism - implementation of forking and joined with pthreads and barriers
   2. Locks - synchronization mechanism for enforcing limits of resource access; also known as mutex (mutual exlcusion). Used in conjunction with multiple threading a process.
 
 #### Merge Sort Paralellism
 - The first idea to run merge sort on multiple threads is to fork each process. However, the issues with forking is that it *copies* the parent process and runs in a different memory space (while also having the same content). Imagine trying to speed up sorting, when you just end up sorting the same array multiple times. Definitely not very efficient. Instead, passing parts of the original array to different arrays to sort is the way to go. Sort parts of the entire array at the same time, and then join them. **The Fix?** We need to have shared memory so that all threads assigned can sort out it's respective parts of the array. Threads will take turns running on a CPU core, so the max number of threads might me the most efficient when it lines up with the CPU core count. 
+
+#### Bucket Sort Using Locks
+- Based on the number of *threads* (*n*) input by the user, *n* number of sub-buckets will be created. Within each of the sub-buckets, bucket sort will be used to sort the integers. Then, a final call to bucket sort to then rejoin all of those buckets. 
+
 ---
 ## 🗄️ Code Organization
 
 ### 📁 Files
   1. `main.cpp` - primary C++ file for program execution
-  2. `Makefile` - create executable objects
-  3. `mergesort.h` - header file for merge sort using fork/join
-  4. `bucketsort.h` - header file for bucket sort using locks
-  5. `arg_parser.h` - error handling and parsing for program's input options
-  6. `README.pdf` - write-up for project
+  2. `Makefile` - create executable objects; C++11
+  3. `arg_parser.h` - error handling and parsing for program's input options
+  4. `README.pdf` - write-up for project
 
-### 💾 Additional files
+### 💾 Additional file
   1. `randomNumberGen.cpp`- creates a text file with a specified number of random numbers from [ 1 - number size ]. Default number is 10,000 unless specified when ran (as second argument).
   2. `pthread_add.h` - threading if compiling on macOS (will still run as normal for linux systems)
-  3. `quicksort.h` - header file for normal implementation of quick sorting
-  4. `test.c` - C file for testing thread creation
-  5. `Makefile.test` - Makefile for test.c
+
+
 
 ### Compiling
   Note: If zipped, first unzip file before proceeding.
@@ -41,7 +41,7 @@ Using two different sorting algorithms and two different paralellization strateg
 #### Program option/input parameters  
 `mysort [--name]`
 **OR**
-`mysort [source.txt] [-o out.txt] [-t NUM THREADS] [--alg=<fjmerge,fjquick,lkbucket>]`
+`mysort [source.txt] [-o out.txt] [-t NUM THREADS] [--alg=<fjmerge,lkbucket>]`
   1. `mysort --name`: prints name to console.
   2. `source.txt`: unsorted txt file of numbers, with each number on a new line
   3. `-o out.txt`: sorted txt file of numebrs, in which the program outputs/writes to
@@ -49,7 +49,7 @@ Using two different sorting algorithms and two different paralellization strateg
   5. `--alg=<fjmerge, lkbucket>`: specify which algorithm to use.
       - fjmerge: merge sort using fork/join  
       - lkbucket: bucket sort using locks  
-  - **Additional outputs**: time of execution in nanoseconds
+  - **Additional outputs**: time of execution in nanoseconds and seconds
 
 
 #### 🐜 Surviving Bugs

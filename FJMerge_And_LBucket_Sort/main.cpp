@@ -6,23 +6,22 @@
 #include <cstdlib>
 #include <atomic>
 #include <mutex>
+#include <algorithm>
 #include <fstream>
 #include <thread>
 #include <string>
 #include <vector>
 #include <time.h>
-#include "pthread_add.h"
+#include "pthread_add.h" // added for Mac use
 #include "arg_parser.h"
 
 using namespace std;
-
 
 pthread_t* threads;
 size_t* args;
 size_t NUM_THREADS;
 pthread_barrier_t bar;
-atomic<int> arr[1000000];	// passing thread number into pthread_create fn, so setting global
-int arrsize;
+int arrsize, arr[100000000];
 atomic<int> b_count (0);
 mutex b_lock; 					// lock for bucket sorting
 
@@ -133,7 +132,6 @@ int main(int argc, const char* argv[]){
 	outfile.close();
 
 	// cleanup
-	pthread_exit(NULL);
 	free(threads);
 	free(args);
 	pthread_barrier_destroy(&bar);

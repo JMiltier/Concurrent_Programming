@@ -18,8 +18,10 @@ struct arg_params arg_parser(int argc, const char* argv[]){
   struct arg_params args;
 
   /* ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ ARG CHECKER ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ */
-    if (argc == 2 && string(argv[1]) == "--name") printf("Josh Miltier\n"); // check for --name
-    else if (argc == 7) {} // continue on to execution
+    if (argc == 2 && string(argv[1]) == "--name"){
+      printf("Josh Miltier\n"); // check for --name
+      exit(-1);
+    } else if (argc == 7) {} // continue on to execution
     else { // catch all else
       printf("\nERROR: Program option parameters are invalid.\n"
             "       Expected 6 options, but got %i.\n"
