@@ -39,11 +39,6 @@ int main(int argc, const char* argv[]){
 	string inputFile = args_parsed.inputFile;
 	string outputFile = args_parsed.outputFile;
 
-	// init
-	threads = static_cast<pthread_t*>(malloc(NUM_THREADS*sizeof(pthread_t)));
-	args = static_cast<size_t*>(malloc(NUM_THREADS*sizeof(size_t)));
-	pthread_barrier_init(&bar, NULL, NUM_THREADS);
-
 	// create array from input file
 	fstream file(inputFile.c_str(), ios_base::in);
 	int a, b = 0;
@@ -56,33 +51,6 @@ int main(int argc, const char* argv[]){
 
 	// execution start time
 	auto start_time = Clock::now();
-
-	/* ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ ALGO AND THREADS ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ */
-	if (algorithm =="fjmerge") {
-		// if number of threads to use is one, no need to run through
-		if (NUM_THREADS == 1) mergeSort(0, arrsize - 1);
-		else {
-			int ret; size_t i;
-			for(i = 0; i < NUM_THREADS; i++){
-				args[i] = i;
-				printf("creating thread %zu\n",args[i]+1);
-				// ret = pthread_create(&threads[i], NULL, &thread_main, &args[i]);
-				ret = pthread_create(&threads[i], NULL, &fj_mergeSort, &args[i]);
-				if(ret){ printf("ERROR; pthread_create: %d\n", ret); exit(-1); }
-			}
-
-			// join threads
-			for(i = 0; i < NUM_THREADS; i++){
-				ret = pthread_join(threads[i], NULL);
-				if(ret){ printf("ERROR; pthread_join: %d\n", ret); exit(-1); }
-				printf("joined thread %zu\n",i+1);
-			}
-
-			// final merge, since broken up into NUM_THREAD sorted parts/chunks
-			// imagining there is a better way to do this
-			mergeSort(0, arrsize-1);
-		}
-	}
 
 	/* ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ END ALGO AND THREADS ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ */
 
