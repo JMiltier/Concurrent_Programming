@@ -25,7 +25,7 @@ NUMGENSRC=randomNumberGen.cpp
 all: $(SORTPRGM)
 .PHONY: clean
 
-$(SORTPRGM): $(SORTSRC)
+$(SORTPRGM): clean $(SORTSRC)
 	$(CC) $(STD) $(CFGLAGS) $(SORTSRC) -o $(SORTPRGM)
 
 $(NUMGENPRGM): $(NUMGENSRC)

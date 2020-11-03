@@ -68,6 +68,8 @@ void merge(int *arr, int low, int high, int mid, int len) {
     i = low;
     k = low;
     j = mid + 1;
+
+		#pragma omp parallel
     while (i <= mid && j <= high) {
         if (arr[i] < arr[j]) {
             c[k] = arr[i];
@@ -80,17 +82,22 @@ void merge(int *arr, int low, int high, int mid, int len) {
             j++;
         }
     }
+
+		#pragma omp parallel
     while (i <= mid) {
         c[k] = arr[i];
         k++;
         i++;
     }
+
+		#pragma omp parallel
     while (j <= high) {
         c[k] = arr[j];
         k++;
         j++;
     }
 
+		#pragma omp for
     for (i = low; i < k; i++)
         arr[i] = c[i];
 }
