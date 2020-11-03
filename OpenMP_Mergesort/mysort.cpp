@@ -1,18 +1,11 @@
 #include <iostream>
-#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <cstdlib>
-#include <atomic>
-#include <mutex>
-#include <algorithm>
 #include <fstream>
-#include <thread>
 #include <string>
-#include <vector>
 #include <time.h>
-#include "pthread_add.h" // added for Mac use
 #include "arg_parser.h"
 
 using namespace std;
@@ -21,8 +14,8 @@ using namespace std;
 typedef chrono::high_resolution_clock Clock;
 
 /* merge sort functions */
-void merge(int low, int high, int mid);
-void mergeSort(int low, int high);
+void merge(int *arr, int low, int high, int mid, int len);
+void mergeSort(int *arr, int low, int high, int len);
 
 /* =============================================== */
 /* ===================== MAIN ==================== */
