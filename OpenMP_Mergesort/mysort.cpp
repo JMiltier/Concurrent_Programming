@@ -17,20 +17,12 @@
 
 using namespace std;
 
-pthread_t* threads;
-size_t* args;
-pthread_barrier_t bar;
-int arrsize, arr[100000000];
-atomic<int> b_count (0);
-mutex b_lock; 					// lock for bucket sorting
-
 /* execution time struct */
 typedef chrono::high_resolution_clock Clock;
 
 /* merge sort functions */
 void merge(int low, int high, int mid);
 void mergeSort(int low, int high);
-void* fj_mergeSort(void* args);
 
 /* =============================================== */
 /* ===================== MAIN ==================== */
@@ -45,14 +37,15 @@ int main(int argc, const char* argv[]){
 	arrsize = 0;
 	string line;
 	while (getline(file, line)) arrsize++;
-	// arr[arrsize];
+	int arr[arrsize];
 	fstream infile(inputFile, ios_base::in);
 	while (infile >> a) { arr[b] = a; b++; }
 
 	// execution start time
 	auto start_time = Clock::now();
 
-	/* ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ END ALGO AND THREADS ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ */
+	// mergesort fn
+	mergeSort()
 
 	// execution end time
 	auto end_time = Clock::now();
