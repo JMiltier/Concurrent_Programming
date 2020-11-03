@@ -66,11 +66,6 @@ int main(int argc, const char* argv[]){
 	outfile.open(outputFile);
 	for (int i = 0; i < arrsize; i++) outfile << arr[i] << endl;
 	outfile.close();
-
-	// cleanup
-	free(threads);
-	free(args);
-	pthread_barrier_destroy(&bar);
 }
 
 /* ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ MERGE SORT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ */
