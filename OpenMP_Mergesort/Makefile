@@ -18,7 +18,7 @@ CFLAGS = -w
 STD = -std=c++11
 
 SORTPRGM=mysort
-SORTSRC=main.cpp
+SORTSRC=mysort.cpp
 NUMGENPRGM=numGen
 NUMGENSRC=randomNumberGen.cpp
 
@@ -26,7 +26,7 @@ all: $(SORTPRGM)
 .PHONY: clean
 
 $(SORTPRGM): $(SORTSRC)
-	$(CC) $(STD) $(CFGLAGS) $(SORTSRC) -o $(SORTPRGM) -lpthread
+	$(CC) $(STD) $(CFGLAGS) $(SORTSRC) -o $(SORTPRGM)
 
 $(NUMGENPRGM): $(NUMGENSRC)
 	$(CC) $(CFGLAGS) $(NUMGENSRC) -o $(NUMGENPRGM)

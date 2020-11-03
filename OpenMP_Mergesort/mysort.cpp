@@ -34,7 +34,7 @@ int main(int argc, const char* argv[]){
 	// create array from input file
 	fstream file(inputFile.c_str(), ios_base::in);
 	int a, b = 0;
-	arrsize = 0;
+	int arrsize = 0;
 	string line;
 	while (getline(file, line)) arrsize++;
 	int arr[arrsize];
@@ -44,8 +44,8 @@ int main(int argc, const char* argv[]){
 	// execution start time
 	auto start_time = Clock::now();
 
-	// mergesort fn
-	mergeSort()
+	// mergesor
+	mergeSort(arr, 0, arrsize - 1, arrsize);
 
 	// execution end time
 	auto end_time = Clock::now();
