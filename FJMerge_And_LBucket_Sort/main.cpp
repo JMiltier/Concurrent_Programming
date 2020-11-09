@@ -143,6 +143,7 @@ int main(int argc, const char* argv[]){
 	free(args);
 	pthread_barrier_destroy(&bar);
 
+	// ensure array was sorted
 	sort(arrCheck, arrCheck + arrsize);
 	arrayCheck(arrsize, arr, arrCheck);
 }
