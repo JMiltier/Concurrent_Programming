@@ -35,6 +35,8 @@ void* fj_mergeSort(void* args);
 /* bucket sort functions */
 void bucketSort(int low, int high);
 void* lk_bucketSort(void* args);
+/* array sorting checking */
+void arrayCheck(int arraysize, int *array1, int *array2) ;
 
 
 /* =============================================== */
@@ -59,7 +61,12 @@ int main(int argc, const char* argv[]){
 	while (getline(file, line)) arrsize++;
 	// arr[arrsize];
 	fstream infile(inputFile, ios_base::in);
-	while (infile >> a) { arr[b] = a; b++; }
+	int arrCheck[arrsize];
+	while (infile >> a) {
+		arr[b] = a;
+		arrCheck[b] = arr[b];
+		b++;
+	}
 
 	// execution start time
 	auto start_time = Clock::now();
@@ -135,6 +142,9 @@ int main(int argc, const char* argv[]){
 	free(threads);
 	free(args);
 	pthread_barrier_destroy(&bar);
+
+	sort(arrCheck, arrCheck + arrsize);
+	arrayCheck(arrsize, arr, arrCheck);
 }
 
 /* ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ MERGE SORT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ */
@@ -202,14 +212,14 @@ void bucketSort(int low, int high) {
 	int i, j, max_value = 0;
 
 	// find max key value in arr
-	for (i = low; i <= high; ++i)
+	for (i = low; i < high; ++i)
 		if (arr[i] > max_value) max_value = arr[i];
 
 	// create n empty local buckets
 	auto buckets = vector<unsigned >(static_cast<unsigned int>(max_value + 1));
 
 	// put array elements in different buckets
-	for (i = low; i <= high; ++i)
+	for (i = low; i < high; ++i) // change <= to <
 		buckets[arr[i]]++;
 
 
@@ -226,9 +236,11 @@ void bucketSort(int low, int high) {
 void* lk_bucketSort(void* args) {
 	size_t tid = *((size_t*)args);
 
+	printf("tid: %zu", tid);
+
 	int arrsplit = arrsize / NUM_THREADS;
 	int low = tid * arrsplit;
-	int high = ((tid + 1) * arrsplit);
+	int high = ((tid + 1) * arrsplit) - 1; // forgot to subtract 1
 
 	lock_guard<mutex> guard(b_lock);
 	bucketSort(low, high);
@@ -236,3 +248,13 @@ void* lk_bucketSort(void* args) {
 	return 0;
 }
 /* ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ END BUCKET SORT ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ */
+
+//check if array sorted correctly - by comparing two sorted arrays
+void arrayCheck(int arraysize, int *array1, int *array2) {
+  for (int i = 0; i < arraysize; i++) {
+    if (array1[i] != array2[i]) {
+        cout << "Array is incorrectly sorted!\n" << array1[i] << "!=" << array2[i] << " at position " << i << endl;
+        return;
+    }
+  }
+}
