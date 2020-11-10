@@ -12,10 +12,10 @@ CC = g++
 #  -g			adds debugging information to the executable file (dSYM files)
 #  -Wall	turns on most, but not all, compiler warnings
 #  -w			inhibits all warning messages
-CFLAGS = -w
+CFLAGS = -w -openmp
 
 # GCC standard support for different C++ dialects (98, 11, 14, 17, or 2a)
-STD = -std=c++11
+STD = -std=c++14
 
 SORTPRGM=mysort
 SORTSRC=mysort.cpp
@@ -26,10 +26,10 @@ all: $(SORTPRGM)
 .PHONY: clean
 
 $(SORTPRGM): clean $(SORTSRC)
-	$(CC) $(STD) $(CFGLAGS) $(SORTSRC) -o $(SORTPRGM)
+	$(CC) $(STD) $(CFLAGS) $(SORTSRC) -o $(SORTPRGM)
 
 $(NUMGENPRGM): $(NUMGENSRC)
-	$(CC) $(CFGLAGS) $(NUMGENSRC) -o $(NUMGENPRGM)
+	$(CC) $(CFLAGS) $(NUMGENSRC) -o $(NUMGENPRGM)
 
 clean:
 	rm -rf $(SORTPRGM) $(NUMGENPRGM)
