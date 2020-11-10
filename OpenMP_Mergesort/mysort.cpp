@@ -1,16 +1,12 @@
 #include <iostream>
-#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <cstdlib>
-#include <atomic>
-#include <mutex>
-#include <algorithm>
 #include <fstream>
 #include <thread>
+#include <algorithm>
 #include <string>
-#include <vector>
 #include <omp.h>
 #include "arg_parser.h"
 
@@ -20,10 +16,10 @@ using namespace std;
 typedef chrono::high_resolution_clock Clock;
 
 /* merge sort functions */
-void merge(int *arr, int low, int high, int mid, int len);
-void mergeSort(int *arr, int low, int high, int len);
 void mergeOpenMP(int *arr, int low, int high, int mid, int len);
 void mergeSortOpenMP(int *arr, int low, int high, int len);
+void merge(int *arr, int low, int high, int mid, int len);
+void mergeSort(int *arr, int low, int high, int len);
 /* array sort check */
 void arrayCheck(int asize, int *a1, int *a2);
 
@@ -54,12 +50,14 @@ int main(int argc, const char* argv[]){
 	// execution end time
 	auto end_time = Clock::now();
 
-  // execution start time
-	auto start_time2 = Clock::now();
-	// mergesort
-	mergeSort(arr2, 0, arrsize - 1, arrsize);
-	// execution end time
-	auto end_time2 = Clock::now();
+
+  /* The follow is setup for execution time comparison */
+  // // execution start time
+	// auto start_time2 = Clock::now();
+	// // mergesort
+	// mergeSort(arr2, 0, arrsize - 1, arrsize);
+	// // execution end time
+	// auto end_time2 = Clock::now();
 
 	// calculate and display execution time
 	unsigned long time_spent = chrono::duration_cast<chrono::nanoseconds>(end_time - start_time).count();
@@ -87,6 +85,74 @@ int main(int argc, const char* argv[]){
 }
 
 /* ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ MERGE SORT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ */
+void mergeOpenMP(int *arr, int low, int high, int mid, int len) {
+  int i, j, k, c[len];
+  i = low;
+  k = low;
+  j = mid + 1;
+
+  // attempt to parellize this block of code {}
+	#pragma omp parallel
+  {
+    // omp_get_thread_num();
+    // single thread, since reliant on ordering/incrementing
+    #pragma omp single
+    {
+      while (i <= mid && j <= high) {
+        if (arr[i] < arr[j]) {
+          c[k] = arr[i];
+          i++;
+        } else  {
+          c[k] = arr[j];
+          j++;
+        }
+        k++;
+      }
+    }
+
+    // single thread, since reliant on ordering/incrementing
+		#pragma omp single
+    {
+      while (i <= mid) {
+        c[k] = arr[i];
+        k++;
+        i++;
+      }
+    }
+
+    // single thread, since reliant on ordering/incrementing
+		#pragma omp single
+    {
+      while (j <= high) {
+        c[k] = arr[j];
+        k++;
+        j++;
+      }
+    }
+
+		#pragma omp for
+      for (i = low; i < k; i++) {
+        arr[i] = c[i];
+      }
+  } // end omp parallel
+}
+
+void mergeSortOpenMP(int *arr, int low, int high, int len) {
+  if (low < high){
+    //divide the array at mid and sort independently using merge sort
+    int mid=(low+high)/2;
+    // split in two sections
+    #pragma omp parallel sections
+    {
+      #pragma omp section
+      mergeSortOpenMP(arr,low,mid,len);
+      #pragma omp section
+      mergeSortOpenMP(arr,mid+1,high,len);
+    }
+      //merge or conquer sorted arrays
+      mergeOpenMP(arr,low,high,mid,len);
+  }
+}
 // Merge sort, from lab0
 void merge(int *arr, int low, int high, int mid, int len) {
   int i, j, k, c[len];
@@ -125,74 +191,14 @@ void merge(int *arr, int low, int high, int mid, int len) {
 }
 
 void mergeSort(int *arr, int low, int high, int len) {
-    if (low < high){
-        //divide the array at mid and sort independently using merge sort
-        int mid=(low+high)/2;
-        mergeSort(arr,low,mid,len);
-        mergeSort(arr,mid+1,high,len);
-        //merge or conquer sorted arrays
-        merge(arr,low,high,mid,len);
-    }
-}
-
-void mergeOpenMP(int *arr, int low, int high, int mid, int len) {
-  int i, j, k, c[len];
-  i = low;
-  k = low;
-  j = mid + 1;
-
-	#pragma omp parallel
-  {
-    #pragma omp single
-    {
-      while (i <= mid && j <= high) {
-          if (arr[i] < arr[j]) {
-              c[k] = arr[i];
-              k++;
-              i++;
-          }
-          else  {
-              c[k] = arr[j];
-              k++;
-              j++;
-          }
-      }
-    }
-
-		#pragma omp single
-    {
-      while (i <= mid) {
-          c[k] = arr[i];
-          k++;
-          i++;
-      }
-    }
-
-		#pragma omp single
-    {
-      while (j <= high) {
-          c[k] = arr[j];
-          k++;
-          j++;
-      }
-    }
-
-		#pragma omp for
-      for (i = low; i < k; i++) {
-        arr[i] = c[i];
-      }
+  if (low < high){
+    //divide the array at mid and sort independently using merge sort
+    int mid=(low+high)/2;
+    mergeSort(arr,low,mid,len);
+    mergeSort(arr,mid+1,high,len);
+    //merge or conquer sorted arrays
+    merge(arr,low,high,mid,len);
   }
-}
-
-void mergeSortOpenMP(int *arr, int low, int high, int len) {
-    if (low < high){
-        //divide the array at mid and sort independently using merge sort
-        int mid=(low+high)/2;
-        mergeSortOpenMP(arr,low,mid,len);
-        mergeSortOpenMP(arr,mid+1,high,len);
-        //merge or conquer sorted arrays
-        mergeOpenMP(arr,low,high,mid,len);
-    }
 }
 /* ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ END MERGE SORT ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ */
 

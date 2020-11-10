@@ -25,11 +25,11 @@ NUMGENSRC=randomNumberGen.cpp
 all: $(SORTPRGM)
 .PHONY: clean
 
-$(SORTPRGM): clean $(SORTSRC)
+$(SORTPRGM): $(SORTSRC)
 	$(CC) $(STD) $(CFLAGS) $(SORTSRC) -o $(SORTPRGM)
 
 $(NUMGENPRGM): $(NUMGENSRC)
-	$(CC) $(CFLAGS) $(NUMGENSRC) -o $(NUMGENPRGM)
+	$(CC) $(STD) $(NUMGENSRC) -o $(NUMGENPRGM)
 
 clean:
 	rm -rf $(SORTPRGM) $(NUMGENPRGM)

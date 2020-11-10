@@ -1,10 +1,15 @@
 # C++ OpenMP MergeSort
-Using two different sorting algorithms and two different paralellization strategies(fork/join and locks), this program sorts a (specified) *.txt*  file of unique integers and outputs the sorted list to a different (specified) *.txt* file. The input *.txt* file will be an unsorted data structure [Standard Template Library (STL) vector]. This is to emulate the performance of the UNIX `sort-n` command.
+Merge sorting integers using the OpenMP library for paralleization. Pthreads nor C/C++ atomics are used to manage/synchronize threads. This program sorts a (specified) *.txt* file of unique integers and outputs the sorted list to a different (specified) *.txt* file. The input *.txt* file will be an unsorted data structure [Standard Template Library (STL) vector].
 
 #### Sorting Algorithms:
   1. **Mergesort** - divides into two halfs, then merges sorted halfs
 
-#### Merge Sort using OpenMP
+#### MergeSort using OpenMP
+Utilizing OpenMP with MergeSort has proven to be easier to implement, though skeptical in a sense of what's really going on outside of the documentation. There was also no documentation for utilizing a while loop in a parallel manner, so ended up using a single thread to accomplish those. Overall, though it was easier to implement OpenMP than pthreads, it's was worth the extra time before to see how everything was being setup within the code itself. 
+
+Testing:
+  - Compare OpenMP MergeSort against a sorted array (using sort()) to ensure array was properly sorted. 
+  - Comparing execution time on OpenMP MergeSort against the traditional MergeSort (single threaded).
 
 ---
 ## 🗄️ Code Organization
@@ -42,3 +47,4 @@ Using two different sorting algorithms and two different paralellization strateg
 
 #### Resources
   1. [pragma directives](https://www.ibm.com/support/knowledgecenter/SSGH3R_12.1.0/com.ibm.xlcpp121.aix.doc/compiler_ref/tuoptppp.html)
+  2. [OpenMP from bowdoin.edu](http://www.bowdoin.edu/~ltoma/teaching/cs3225-GIS/fall16/Lectures/openmp.html)
