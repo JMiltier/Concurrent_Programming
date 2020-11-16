@@ -309,15 +309,14 @@ void bucketSort_sense_fn(int low, int high, int tid, void *args) {
 	for (i = low; i <= high; ++i)
 		buckets[arr[i]]++;
 
-
+  sense_wait();
 	// concatenate all buckets into arr[]
-	for (i = 0; i < buckets.capacity(); ++i)
+	for (i = 0; i < buckets.capacity(); ++i) {
 		for (j = 0; j < buckets[i]; ++j) {
 				arr[b_count] = i;
 				b_count++;
 		}
-
-	//lock_guard<mutex> unlock(b_lock);
+  }
 }
 
 void bucketSort_bar_pthread_fn(int low, int high, int tid, void *args) {
@@ -330,19 +329,20 @@ void bucketSort_bar_pthread_fn(int low, int high, int tid, void *args) {
 	// create n empty local buckets
 	auto buckets = vector<unsigned >(static_cast<unsigned int>(max_value + 1));
 
+  pthread_barrier_wait(&bar);
 	// put array elements in different buckets
 	for (i = low; i <= high; ++i)
 		buckets[arr[i]]++;
 
-
+  pthread_barrier_wait(&bar);
 	// concatenate all buckets into arr[]
-	for (i = 0; i < buckets.capacity(); ++i)
+	for (i = 0; i < buckets.capacity(); ++i) {
 		for (j = 0; j < buckets[i]; ++j) {
 				arr[b_count] = i;
 				b_count++;
 		}
-
-	//lock_guard<mutex> unlock(b_lock);
+  }
+  pthread_barrier_wait(&bar);
 }
 
 void bucketSort_TAS_fn(int low, int high, int tid, void *args) {
@@ -361,13 +361,14 @@ void bucketSort_TAS_fn(int low, int high, int tid, void *args) {
 
 
 	// concatenate all buckets into arr[]
-	for (i = 0; i < buckets.capacity(); ++i)
+	for (i = 0; i < buckets.capacity(); ++i) {
 		for (j = 0; j < buckets[i]; ++j) {
+        tas_lock();
 				arr[b_count] = i;
 				b_count++;
+        tas_unlock();
 		}
-
-	//lock_guard<mutex> unlock(b_lock);
+  }
 }
 void bucketSort_TTAS_fn(int low, int high, int tid, void *args) {
 	int i, j, max_value = 0;
@@ -385,13 +386,14 @@ void bucketSort_TTAS_fn(int low, int high, int tid, void *args) {
 
 
 	// concatenate all buckets into arr[]
-	for (i = 0; i < buckets.capacity(); ++i)
+	for (i = 0; i < buckets.capacity(); ++i) {
 		for (j = 0; j < buckets[i]; ++j) {
+        ttas_lock();
 				arr[b_count] = i;
 				b_count++;
+        tas_unlock();
 		}
-
-	//lock_guard<mutex> unlock(b_lock);
+  }
 }
 
 void bucketSort_ticket_lock_fn(int low, int high, int tid, void *args) {
@@ -408,13 +410,15 @@ void bucketSort_ticket_lock_fn(int low, int high, int tid, void *args) {
 	for (i = low; i <= high; ++i)
 		buckets[arr[i]]++;
 
-
+  ticket_lock();
 	// concatenate all buckets into arr[]
-	for (i = 0; i < buckets.capacity(); ++i)
+	for (i = 0; i < buckets.capacity(); ++i) {
 		for (j = 0; j < buckets[i]; ++j) {
 				arr[b_count] = i;
 				b_count++;
 		}
+  }
+  ticket_unlock();
 
 	//lock_guard<mutex> unlock(b_lock);
 }
@@ -433,15 +437,15 @@ void bucketSort_lock_pthread_fn(int low, int high, int tid, void *args) {
 	for (i = low; i <= high; ++i)
 		buckets[arr[i]]++;
 
-
 	// concatenate all buckets into arr[]
-	for (i = 0; i < buckets.capacity(); ++i)
+	for (i = 0; i < buckets.capacity(); ++i) {
 		for (j = 0; j < buckets[i]; ++j) {
-				arr[b_count] = i;
-				b_count++;
+      b_lock.lock();
+      arr[b_count] = i;
+      b_count++;
+      b_lock.unlock();
 		}
-
-	//lock_guard<mutex> unlock(b_lock);
+  }
 }
 
 void bucketSort(int low, int high) {
@@ -460,13 +464,12 @@ void bucketSort(int low, int high) {
 
 
 	// concatenate all buckets into arr[]
-	for (i = 0; i < buckets.capacity(); ++i)
+	for (i = 0; i < buckets.capacity(); ++i) {
 		for (j = 0; j < buckets[i]; ++j) {
 				arr[b_count] = i;
 				b_count++;
 		}
-
-	//lock_guard<mutex> unlock(b_lock);
+  }
 }
 
 void* lk_bucketSort(void* args) {
