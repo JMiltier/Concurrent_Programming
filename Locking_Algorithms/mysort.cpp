@@ -3,6 +3,7 @@
  * sorting integers based on bucket sort, using bar and lock arguments
  * * that choose which barrier and lock to use
  * Upon sorting, all integers will be saved to argument specified file
+ * Final check of sorted array will compare against sort() algo
  */
 
 #define _POSIX_C_SOURCE 200112L
@@ -44,6 +45,35 @@ mutex b_lock; 					// lock for bucket sorting
 /* execution time struct */
 typedef chrono::high_resolution_clock Clock;
 
+/* bar functions */
+void sense_wait();
+void *bucketSort_sense(void *);
+void *bucketSort_bar_pthread(void *);
+
+/* lock functions */
+bool tas();
+void tas_lock();
+void tas_unlock();
+void *bucketSort_TAS(void *);
+void ttas_lock();
+void *bucketSort_TTAS(void *);
+void ticket_lock();
+void ticket_unlock();
+void *bucketSort_ticket_lock(void *);
+void *bucketSort_lock_pthread(void *);
+
+/* bucket sort functions */
+void bucketSort_TAS_fn(int low, int high, int tid, void *args);
+void bucketSort_sense_fn(int low, int high, int tid, void *args);
+void bucketSort_bar_pthread_fn(int low, int high, int tid, void *args);
+void bucketSort_TTAS_fn(int low, int high, int tid, void *args);
+void bucketSort_ticket_lock_fn(int low, int high, int tid, void *args);
+void bucketSort_lock_pthread_fn(int low, int high, int tid, void *args);
+void bucketSort(int low, int high);
+void* lk_bucketSort(void* args);
+/* array checker */
+void arrayCheck(int asize, int *a1, int *a2);
+
 
 /* ===================== MAIN ==================== */
 int main(int argc, const char* argv[]){
@@ -67,8 +97,12 @@ int main(int argc, const char* argv[]){
 	string line;
 	while (getline(file, line)) arraysize++;
 	arr[arraysize];
+  int arrCheck[arraysize];
 	fstream infile(inputFile, ios_base::in);
-	while (infile >> a) { arr[b] = a; b++; }
+	while (infile >> a) {
+		arr[b] = arrCheck[b] = a;
+		b++;
+	}
 
   // execution start time
   auto start_time = Clock::now();
@@ -80,7 +114,7 @@ int main(int argc, const char* argv[]){
     // bar sense
     case 1:
       for (int i = 0; i < NUM_THREADS; i ++)
-        pthread_create(&threads[i], NULL, counter_sense, (void*)NULL);
+        pthread_create(&threads[i], NULL, bucketSort_sense, (void*)NULL);
       for (int i = 0; i < NUM_THREADS; i ++)
         pthread_join(threads[i], NULL);
       break;
@@ -88,7 +122,7 @@ int main(int argc, const char* argv[]){
     case 2:
       pthread_barrier_init(&bar, NULL, NUM_THREADS);
       for (int i = 0; i < NUM_THREADS; i ++)
-        pthread_create(&threads[i], NULL, counter_bar_pthread, (void*)NULL);
+        pthread_create(&threads[i], NULL, bucketSort_bar_pthread, (void*)NULL);
       for (int i = 0; i < NUM_THREADS; i ++)
         pthread_join(threads[i], NULL);
       pthread_barrier_destroy(&bar);
@@ -103,21 +137,21 @@ int main(int argc, const char* argv[]){
     // lock tas
     case 1:
       for (int i = 0; i < NUM_THREADS; i ++)
-        pthread_create(&threads[i], NULL, counter_TAS, (void*)NULL);
+        pthread_create(&threads[i], NULL, bucketSort_TAS, (void*)NULL);
       for (int i = 0; i < NUM_THREADS; i ++)
         pthread_join(threads[i], NULL);
       break;
     // lock ttas
     case 2:
       for (int i = 0; i < NUM_THREADS; i ++)
-        pthread_create(&threads[i], NULL, counter_TTAS, (void*)NULL);
+        pthread_create(&threads[i], NULL, bucketSort_TTAS, (void*)NULL);
       for (int i = 0; i < NUM_THREADS; i ++)
         pthread_join(threads[i], NULL);
       break;
     // lock ticket
     case 3:
       for (int i = 0; i < NUM_THREADS; i ++)
-        pthread_create(&threads[i], NULL, counter_ticket_lock, (void*)NULL);
+        pthread_create(&threads[i], NULL, bucketSort_ticket_lock, (void*)NULL);
       for (int i = 0; i < NUM_THREADS; i ++)
         pthread_join(threads[i], NULL);
       break;
@@ -125,7 +159,7 @@ int main(int argc, const char* argv[]){
     case 4:
       pthread_mutex_init(&mutexLock, NULL);
       for (int i = 0; i < NUM_THREADS; i ++)
-        pthread_create(&threads[i], NULL, counter_lock_pthread, (void*)NULL);
+        pthread_create(&threads[i], NULL, bucketSort_lock_pthread, (void*)NULL);
       for (int i = 0; i < NUM_THREADS; i ++)
         pthread_join(threads[i], NULL);
       pthread_mutex_destroy(&mutexLock);
@@ -154,6 +188,10 @@ int main(int argc, const char* argv[]){
 	free(threads);
 	free(args);
 	pthread_barrier_destroy(&bar);
+
+  /* check to make sure the array is sorted as expected */
+  sort(arrCheck, arrCheck + arraysize); // sort
+	arrayCheck(arraysize, arr, arrCheck); // check against bucketsort
 }
 
 /* *************** BAR FUNCTIONS *************** */
@@ -170,7 +208,7 @@ void sense_wait() {
   } else while(sense.load() != cur_sense);
 }
 
-void *counter_sense(void *) {
+void *bucketSort_sense(void *) {
   int tid = atomicTID++;
   for(int i = 0; i < NUM_ITERATIONS; ++i) {
     // COUNTER++;
@@ -179,7 +217,7 @@ void *counter_sense(void *) {
 }
 
 /* ****** pthread ****** */
-void *counter_bar_pthread(void *) {
+void *bucketSort_bar_pthread(void *) {
   int tid = atomicTID++;
   pthread_barrier_wait(&bar);
   for (int i = 0; i < NUM_ITERATIONS; i++) {
@@ -205,7 +243,7 @@ void tas_unlock() {
   tas_flag.store(false, SEQ_CST);
 }
 
-void *counter_TAS(void *) {
+void *bucketSort_TAS(void *) {
   for(int i = 0; i < NUM_ITERATIONS; ++i) {
     tas_lock();
     // COUNTER++;
@@ -219,7 +257,7 @@ void ttas_lock() {
         || tas() == false) {}
 }
 
-void *counter_TTAS(void *) {
+void *bucketSort_TTAS(void *) {
   ttas_lock();
   for(int i = 0; i < NUM_ITERATIONS; ++i) {
     // COUNTER++;
@@ -246,7 +284,7 @@ void ticket_unlock() {
   atomic_fetch_add(&now_serving, 1);
 }
 
-void *counter_ticket_lock(void *) {
+void *bucketSort_ticket_lock(void *) {
   ticket_lock();
   for(int i = 0; i < NUM_ITERATIONS; ++i) {
     if (!numberOver) COUNTER++;
@@ -257,7 +295,7 @@ void *counter_ticket_lock(void *) {
 }
 
 /* ****** pthread ****** */
-void *counter_lock_pthread(void *) {
+void *bucketSort_lock_pthread(void *) {
   int tid = atomicTID++;
   for(int i = 0; i < NUM_ITERATIONS; ++i) {
     while (COUNTER % (NUM_THREADS - 1) != tid) {
@@ -269,8 +307,156 @@ void *counter_lock_pthread(void *) {
   }
 }
 
-/* ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ BUCKET SORT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ */
-// Function to sort arr[] from [left to right] bucket sort
+/* ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ BUCKET SORTS ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ */
+void bucketSort_sense_fn(int low, int high, int tid, void *args) {
+	int i, j, max_value = 0;
+
+	// find max key value in arr
+	for (i = low; i <= high; ++i)
+		if (arr[i] > max_value) max_value = arr[i];
+
+	// create n empty local buckets
+	auto buckets = vector<unsigned >(static_cast<unsigned int>(max_value + 1));
+
+	// put array elements in different buckets
+	for (i = low; i <= high; ++i)
+		buckets[arr[i]]++;
+
+
+	// concatenate all buckets into arr[]
+	for (i = 0; i < buckets.capacity(); ++i)
+		for (j = 0; j < buckets[i]; ++j) {
+				arr[b_count] = i;
+				b_count++;
+		}
+
+	//lock_guard<mutex> unlock(b_lock);
+}
+
+void bucketSort_bar_pthread_fn(int low, int high, int tid, void *args) {
+	int i, j, max_value = 0;
+
+	// find max key value in arr
+	for (i = low; i <= high; ++i)
+		if (arr[i] > max_value) max_value = arr[i];
+
+	// create n empty local buckets
+	auto buckets = vector<unsigned >(static_cast<unsigned int>(max_value + 1));
+
+	// put array elements in different buckets
+	for (i = low; i <= high; ++i)
+		buckets[arr[i]]++;
+
+
+	// concatenate all buckets into arr[]
+	for (i = 0; i < buckets.capacity(); ++i)
+		for (j = 0; j < buckets[i]; ++j) {
+				arr[b_count] = i;
+				b_count++;
+		}
+
+	//lock_guard<mutex> unlock(b_lock);
+}
+
+void bucketSort_TAS_fn(int low, int high, int tid, void *args) {
+	int i, j, max_value = 0;
+
+	// find max key value in arr
+	for (i = low; i <= high; ++i)
+		if (arr[i] > max_value) max_value = arr[i];
+
+	// create n empty local buckets
+	auto buckets = vector<unsigned >(static_cast<unsigned int>(max_value + 1));
+
+	// put array elements in different buckets
+	for (i = low; i <= high; ++i)
+		buckets[arr[i]]++;
+
+
+	// concatenate all buckets into arr[]
+	for (i = 0; i < buckets.capacity(); ++i)
+		for (j = 0; j < buckets[i]; ++j) {
+				arr[b_count] = i;
+				b_count++;
+		}
+
+	//lock_guard<mutex> unlock(b_lock);
+}
+void bucketSort_TTAS_fn(int low, int high, int tid, void *args) {
+	int i, j, max_value = 0;
+
+	// find max key value in arr
+	for (i = low; i <= high; ++i)
+		if (arr[i] > max_value) max_value = arr[i];
+
+	// create n empty local buckets
+	auto buckets = vector<unsigned >(static_cast<unsigned int>(max_value + 1));
+
+	// put array elements in different buckets
+	for (i = low; i <= high; ++i)
+		buckets[arr[i]]++;
+
+
+	// concatenate all buckets into arr[]
+	for (i = 0; i < buckets.capacity(); ++i)
+		for (j = 0; j < buckets[i]; ++j) {
+				arr[b_count] = i;
+				b_count++;
+		}
+
+	//lock_guard<mutex> unlock(b_lock);
+}
+
+void bucketSort_ticket_lock_fn(int low, int high, int tid, void *args) {
+	int i, j, max_value = 0;
+
+	// find max key value in arr
+	for (i = low; i <= high; ++i)
+		if (arr[i] > max_value) max_value = arr[i];
+
+	// create n empty local buckets
+	auto buckets = vector<unsigned >(static_cast<unsigned int>(max_value + 1));
+
+	// put array elements in different buckets
+	for (i = low; i <= high; ++i)
+		buckets[arr[i]]++;
+
+
+	// concatenate all buckets into arr[]
+	for (i = 0; i < buckets.capacity(); ++i)
+		for (j = 0; j < buckets[i]; ++j) {
+				arr[b_count] = i;
+				b_count++;
+		}
+
+	//lock_guard<mutex> unlock(b_lock);
+}
+
+void bucketSort_lock_pthread_fn(int low, int high, int tid, void *args) {
+	int i, j, max_value = 0;
+
+	// find max key value in arr
+	for (i = low; i <= high; ++i)
+		if (arr[i] > max_value) max_value = arr[i];
+
+	// create n empty local buckets
+	auto buckets = vector<unsigned >(static_cast<unsigned int>(max_value + 1));
+
+	// put array elements in different buckets
+	for (i = low; i <= high; ++i)
+		buckets[arr[i]]++;
+
+
+	// concatenate all buckets into arr[]
+	for (i = 0; i < buckets.capacity(); ++i)
+		for (j = 0; j < buckets[i]; ++j) {
+				arr[b_count] = i;
+				b_count++;
+		}
+
+	//lock_guard<mutex> unlock(b_lock);
+}
+
 void bucketSort(int low, int high) {
 	int i, j, max_value = 0;
 
@@ -309,3 +495,13 @@ void* lk_bucketSort(void* args) {
 	return 0;
 }
 /* ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ END BUCKET SORT ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ */
+
+//check if array sorted correctly - by comparing two arrays (one sorted with sort())
+void arrayCheck(int asize, int *a1, int *aCheck2) {
+  for (int i = 0; i < asize; i++) {
+    if (a1[i] != a2[i]) {
+      printf("Array is incorrectly sorted!\nbucket_sort[%i] != sort()[%i] at position %i\n", a1[i], aCheck2[i], i);
+      return;
+    }
+  }
+}

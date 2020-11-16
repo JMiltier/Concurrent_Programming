@@ -51,7 +51,7 @@ struct arg_params arg_parser(int argc, const char* argv[]){
     // algorithm type <lkbucket> (argv 6)
     if (string(argv[6]) == "--alg=lkbucket") args.algorithm = "lkbucket";
     // algorithm not available
-    else { printf("ERROR: algorithm does not exist. Try 'fjmerge' or 'lkbucket'\n"); exit(-1); }
+    else { printf("ERROR: algorithm does not exist. Try 'lkbucket'\n"); exit(-1); }
 
     // bar type <sense> or <pthread> (argv 4)
     if (string(argv[7]) == "--bar=sense") args.bar= 1;
