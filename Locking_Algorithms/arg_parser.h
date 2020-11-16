@@ -12,7 +12,7 @@ using namespace std;
 struct arg_params {
   string inputFile, outputFile, algorithm;
   size_t NUM_THREADS;
-  int bar, lock;
+  int argument;
 };
 
 struct arg_params arg_parser(int argc, const char* argv[]){
@@ -22,10 +22,10 @@ struct arg_params arg_parser(int argc, const char* argv[]){
     if (argc == 2 && string(argv[1]) == "--name"){
       printf("Josh Miltier\n"); // check for --name
       exit(-1);
-    } else if (argc == 9) {} // continue on to execution
+    } else if (argc == 8) {} // continue on to execution
     else { // catch all else
       printf("\nERROR: Program option parameters are invalid.\n"
-             "         Expected 8 options, but got %i.\n"
+             "         Expected 7 options, but got %i.\n"
              "         Refer to the README for execution instructions.\n\n", argc-1);
       exit(-1);
     }
@@ -53,21 +53,16 @@ struct arg_params arg_parser(int argc, const char* argv[]){
     // algorithm not available
     else { printf("ERROR: algorithm does not exist. Try 'bucket'\n"); exit(-1); }
 
-    // bar type <sense> or <pthread> (argv 4)
-    if (string(argv[7]) == "--bar=sense") args.bar= 1;
-    else if (string(argv[7]) == "--bar=pthread") args.bar= 2;
+    // bar type <sense> or <pthread> (argv 7)
+    if (string(argv[7]) == "--bar=sense") args.argument= 1;
+    else if (string(argv[7]) == "--bar=pthread") args.argument= 2;
+    // lock type <tas, ttas, ticket, mcs, pthread> (argv 7)
+    else if (string(argv[7]) == "--lock=tas") args.argument = 3;
+    else if (string(argv[7]) == "--lock=ttas") args.argument = 4;
+    else if (string(argv[7]) == "--lock=ticket") args.argument = 5;
+    else if (string(argv[7]) == "--lock=pthread") args.argument = 6;
     else {
-      printf("ERROR: argument does not exist. Try '--bar=' with an available specified method. Refer to README if needed.\n");
-      exit(-1);
-    }
-
-    // lock type <tas, ttas, ticket, mcs, pthread> (argv 4)
-    if (string(argv[8]) == "--lock=tas") args.lock = 1;
-    else if (string(argv[8]) == "--lock=ttas") args.lock = 2;
-    else if (string(argv[8]) == "--lock=ticket") args.lock = 3;
-    else if (string(argv[8]) == "--lock=pthread") args.lock = 4;
-    else {
-      printf("ERROR: argument does not exist. Try '--lock=' with an available specified method. Refer to README if needed.\n");
+      printf("ERROR: argument does not exist. Try '--lock=' or '--bar=' with an available specified method. Refer to README if needed.\n");
       exit(-1);
     }
     /* ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ END ARG PARSER ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ */

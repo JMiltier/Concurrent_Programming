@@ -82,8 +82,7 @@ int main(int argc, const char* argv[]){
 	string outputFile = args_parsed.outputFile;
 	NUM_THREADS = args_parsed.NUM_THREADS;
 	// string algorithm = args_parsed.algorithm;
-	int bar_arg = args_parsed.bar;
-  int lock_arg = args_parsed.lock;
+	int argument = args_parsed.argument;
 
   // init
   threads = static_cast<pthread_t*>(malloc(NUM_THREADS*sizeof(pthread_t)));
@@ -109,8 +108,8 @@ int main(int argc, const char* argv[]){
 
   /* argument statement (from parser) is as follows:
    * bar: 1-sense, 2-pthread
-   * lock: 1-tas, 2-ttas, 3-ticket, 4-pthread */
-  switch (bar_arg) {
+   * lock: 3-tas, 4-ttas, 5-ticket, 6-pthread */
+  switch (argument) {
     // bar sense
     case 1:
       for (int i = 0; i < NUM_THREADS; i ++)
@@ -127,36 +126,29 @@ int main(int argc, const char* argv[]){
         pthread_join(threads[i], NULL);
       pthread_barrier_destroy(&bar);
       break;
-		// something didn't match up
-    default:
-      printf("An error occured in BAR switch.");
-      exit(-1);
-	}
-
-	switch (lock_arg) {
     // lock tas
-    case 1:
+    case 3:
       for (int i = 0; i < NUM_THREADS; i ++)
         pthread_create(&threads[i], NULL, bucketSort_TAS, (void*)NULL);
       for (int i = 0; i < NUM_THREADS; i ++)
         pthread_join(threads[i], NULL);
       break;
     // lock ttas
-    case 2:
+    case 4:
       for (int i = 0; i < NUM_THREADS; i ++)
         pthread_create(&threads[i], NULL, bucketSort_TTAS, (void*)NULL);
       for (int i = 0; i < NUM_THREADS; i ++)
         pthread_join(threads[i], NULL);
       break;
     // lock ticket
-    case 3:
+    case 5:
       for (int i = 0; i < NUM_THREADS; i ++)
         pthread_create(&threads[i], NULL, bucketSort_ticket_lock, (void*)NULL);
       for (int i = 0; i < NUM_THREADS; i ++)
         pthread_join(threads[i], NULL);
       break;
     // lock pthread
-    case 4:
+    case 6:
       pthread_mutex_init(&mutexLock, NULL);
       for (int i = 0; i < NUM_THREADS; i ++)
         pthread_create(&threads[i], NULL, bucketSort_lock_pthread, (void*)NULL);
@@ -166,7 +158,7 @@ int main(int argc, const char* argv[]){
       break;
     // something didn't match up
     default:
-      printf("An error occured in LOCK switch.");
+      printf("An error occured in main argument switch.");
       exit(-1);
   }
 
@@ -424,14 +416,10 @@ void bucketSort_ticket_lock_fn(int low, int high, int tid, void *args) {
 }
 
 void bucketSort_lock_pthread_fn(int low, int high, int tid, void *args) {
-	int i, j, max_value = 0;
 
-	// find max key value in arr
-	for (i = low; i <= high; ++i)
-		if (arr[i] > max_value) max_value = arr[i];
-
-	// create n empty local buckets
-	auto buckets = vector<unsigned >(static_cast<unsigned int>(max_value + 1));
+  // on allocate the bucket size we need
+  auto buckets = vector<unsigned>(arraysize/NUM_THREADS);
+	int i, j;
 
 	// put array elements in different buckets
 	for (i = low; i <= high; ++i)
