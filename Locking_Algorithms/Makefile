@@ -17,7 +17,7 @@ CC = g++
 CFLAGS = -w
 
 # GCC standard support for different C++ dialects (98, 11, 14, 17, or 2a)
-STD = -std=c++11
+STD = -std=c++14
 
 # variables
 SORTPRGM=mysort
@@ -30,7 +30,7 @@ NUMGENSRC=randomNumberGen.cpp
 all: $(CNTRPRGM) $(SORTPRGM)
 
 # counter
-$(CNTRPRGM): clean $(CNTRSRC)
+$(CNTRPRGM): $(CNTRSRC)
 	$(CC) $(STD) $(CFGLAGS) $(CNTRSRC) -o $(CNTRPRGM)
 
 # mysort

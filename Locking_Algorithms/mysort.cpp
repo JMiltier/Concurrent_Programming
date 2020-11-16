@@ -33,9 +33,9 @@ size_t* args;
 size_t NUM_THREADS;
 pthread_barrier_t bar;
 pthread_mutex_t mutexLock;
-atomic<int> next_num = 0, now_serving = 0, atomicTID = 0;
-atomic<int> sense = 0, cnt = 0, count = 0;
-atomic<bool> tas_flag = 0;
+atomic<int> next_num (0), now_serving (0), atomicTID (0);
+atomic<int> sense (0), cnt (0), count (0);
+atomic<bool> tas_flag (0);
 int arraysize, arr[100000], thread_num;
 int COUNTER = 0;
 int numberOver = 0;
@@ -81,7 +81,7 @@ int main(int argc, const char* argv[]){
   string inputFile = args_parsed.inputFile;
 	string outputFile = args_parsed.outputFile;
 	NUM_THREADS = args_parsed.NUM_THREADS;
-	string algorithm = args_parsed.algorithm;
+	// string algorithm = args_parsed.algorithm;
 	int bar_arg = args_parsed.bar;
   int lock_arg = args_parsed.lock;
 
@@ -96,7 +96,7 @@ int main(int argc, const char* argv[]){
 	arraysize = 0;
 	string line;
 	while (getline(file, line)) arraysize++;
-	arr[arraysize];
+	// arr[arraysize];
   int arrCheck[arraysize];
 	fstream infile(inputFile, ios_base::in);
 	while (infile >> a) {
@@ -214,6 +214,7 @@ void *bucketSort_sense(void *args) {
   int low = (tid * arraysize) / NUM_THREADS;
   int high = (( tid + 1 ) * arraysize) / NUM_THREADS - 1;
   bucketSort_sense_fn(low, high, tid, args);
+  return 0;
 }
 
 /* ****** pthread ****** */
@@ -222,6 +223,7 @@ void *bucketSort_bar_pthread(void *args) {
   int low = (tid * arraysize) / NUM_THREADS;
   int high = (( tid + 1 ) * arraysize) / NUM_THREADS - 1;
   bucketSort_bar_pthread_fn(low, high, tid, args);
+  return 0;
 }
 
 /* *************** LOCK FUNCTIONS *************** */
@@ -246,6 +248,7 @@ void *bucketSort_TAS(void *args) {
   int low = (tid * arraysize) / NUM_THREADS;
   int high = (( tid + 1 ) * arraysize) / NUM_THREADS - 1;
   bucketSort_TAS_fn(low, high, tid, args);
+  return 0;
 }
 
 /* ****** ttas ****** */
@@ -259,22 +262,17 @@ void *bucketSort_TTAS(void *args) {
   int low = (tid * arraysize) / NUM_THREADS;
   int high = (( tid + 1 ) * arraysize) / NUM_THREADS - 1;
   bucketSort_TTAS_fn(low, high, tid, args);
+  return 0;
 }
 
 /* ****** ticket ****** */
 void ticket_lock() {
   // fai is fetch and increment, but not in C++?
   int num = atomic_fetch_add(&next_num, 1);
-  while(now_serving.load(SEQ_CST) != num) {
-    if (COUNTER > NUM_ITERATIONS*NUM_THREADS) {
-      numberOver = 1;
-      break;
-    }
-  }
+  while(now_serving.load(SEQ_CST) != num);
 }
 
 void ticket_unlock() {
-  // fai is fetch and increment, but not in C++?
   atomic_fetch_add(&now_serving, 1);
 }
 
@@ -283,6 +281,7 @@ void *bucketSort_ticket_lock(void *args) {
   int low = (tid * arraysize) / NUM_THREADS;
   int high = (( tid + 1 ) * arraysize) / NUM_THREADS - 1;
   bucketSort_ticket_lock_fn(low, high, tid, args);
+  return 0;
 }
 
 /* ****** pthread ****** */
@@ -291,6 +290,7 @@ void *bucketSort_lock_pthread(void *args) {
   int low = (tid * arraysize) / NUM_THREADS;
   int high = (( tid + 1 ) * arraysize) / NUM_THREADS - 1;
   bucketSort_lock_pthread_fn(low, high, tid, args);
+  return 0;
 }
 
 
@@ -489,8 +489,8 @@ void* lk_bucketSort(void* args) {
 //check if array sorted correctly - by comparing two arrays (one sorted with sort())
 void arrayCheck(int asize, int *a1, int *aCheck2) {
   for (int i = 0; i < asize; i++) {
-    if (a1[i] != a2[i]) {
-      printf("Array is incorrectly sorted!\nbucket_sort[%i] != sort()[%i] at position %i\n", a1[i], aCheck2[i], i);
+    if (a1[i] != aCheck2[i]) {
+      printf("Array is incorrectly sorted!\nbucket_sort(%i) != sort(%i) at position [%i]\n", a1[i], aCheck2[i], i);
       return;
     }
   }
