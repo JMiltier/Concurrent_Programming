@@ -34,7 +34,7 @@ $(CNTRPRGM): $(CNTRSRC)
 	$(CC) $(STD) $(CFGLAGS) $(CNTRSRC) -o $(CNTRPRGM)
 
 # mysort
-$(SORTPRGM): $(SORTSRC)
+$(SORTPRGM): clean $(SORTSRC)
 	$(CC) $(STD) $(CFGLAGS) $(SORTSRC) -o $(SORTPRGM)
 
 # random numbers generation
