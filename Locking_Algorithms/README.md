@@ -87,7 +87,7 @@ Using two different sorting algorithms and two different paralellization strateg
 `perf stat --repeat 10 -e L1-dcache-loads,L1-dcache-load-misses,branch-loads,branch-load-misses,page-faults ./counter -t 10 -i=1000 --bar=<sense, pthread> -o out.txt`  
 `perf stat --repeat 10 -e L1-dcache-loads,L1-dcache-load-misses,branch-loads,branch-load-misses,page-faults ./mysort source.txt -o out.txt -t 10 --alg=bucket --bar=<sense, pthread>`
 
-### Table (Iteration/Array at 1000, threads at 10)
+#### Table (Iteration/Array at 1000, threads at 10)
 Program    | Barrier | Run Time (s) | L1 cache hit rate | branch-prediction hit rate | page-fault
 :--------- | :-----: | :----------- | :---------------- | :------------------------- | :---------
 Counter    | sense   | 0.001862     | 99.70%            | 99.86%                     | 154
@@ -110,7 +110,7 @@ BucketSort | pthread | 0.000531     | 96.56%            | 97.58%                
 `perf stat --repeat 10 -e L1-dcache-loads,L1-dcache-load-misses,branch-loads,branch-load-misses,page-faults ./counter -t 10 -i=1000 --lock=<tas,ttas,ticket,pthread> -o out.txt`  
 `perf stat --repeat 10 -e L1-dcache-loads,L1-dcache-load-misses,branch-loads,branch-load-misses,page-faults ./mysort source.txt -o out.txt -t 10 --alg=bucket --lock=<tas,ttas,ticket,pthread>`
 
-### Table (Iteration/Array at 1000, threads at 10)
+#### Table (Iteration/Array at 1000, threads at 10)
 Program    | Lock    | Run Time (s) | L1 cache hit rate | branch-prediction hit rate | page-fault
 :--------- | :------ | :----------- | :---------------- | :------------------------- | :---------
 Counter    | tas     | 0.000574     | 92.37%            | 97.01%                     | 144
