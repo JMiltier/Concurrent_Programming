@@ -75,16 +75,16 @@ Using two different sorting algorithms and two different paralellization strateg
 ## Program stats, average of 10 repeated runs
 ### Barriers
 #### For L1 cache hit rate
-`perf stat -e L1-dcache-loads -e L1-dcache-load-misses ./counter -t 10 -i=1000 --bar=<sense, pthread> -o out.txt`
+`perf stat -e L1-dcache-loads -e L1-dcache-load-misses ./counter -t 10 -i=1000 --bar=<sense, pthread> -o out.txt`  
 `perf stat -e L1-dcache-loads -e L1-dcache-load-misses ./mysort source.txt -o out.txt -t 10 --alg=bucket --bar=<sense, pthread>`
 #### For branch-prediction hit rate
-`perf stat -e branch-loads -e branch-load-misses ./counter -t 10 -i=1000 --bar=<sense, pthread> -o out.txt`
+`perf stat -e branch-loads -e branch-load-misses ./counter -t 10 -i=1000 --bar=<sense, pthread> -o out.txt`  
 `perf stat -e branch-loads -e branch-load-misses ./mysort source.txt -o out.txt -t 10 --alg=bucket --bar=<sense, pthread>`
 #### For L1 cache hit rate
-`perf stat -e page-faults ./counter -t 10 -i=1000 --bar=<sense, pthread> -o out.txt`
+`perf stat -e page-faults ./counter -t 10 -i=1000 --bar=<sense, pthread> -o out.txt`  
 `perf stat -e page-faults ./mysort source.txt -o out.txt -t 10 --alg=bucket --bar=<sense, pthread>`
 #### Or all at once
-`perf stat --repeat 10 -e L1-dcache-loads,L1-dcache-load-misses,branch-loads,branch-load-misses,page-faults ./counter -t 10 -i=1000 --bar=<sense, pthread> -o out.txt`
+`perf stat --repeat 10 -e L1-dcache-loads,L1-dcache-load-misses,branch-loads,branch-load-misses,page-faults ./counter -t 10 -i=1000 --bar=<sense, pthread> -o out.txt`  
 `perf stat --repeat 10 -e L1-dcache-loads,L1-dcache-load-misses,branch-loads,branch-load-misses,page-faults ./mysort source.txt -o out.txt -t 10 --alg=bucket --bar=<sense, pthread>`
 
 ### Table (Iteration/Array at 1000, threads at 10)
@@ -98,16 +98,16 @@ BucketSort | pthread | 0.000531     | 96.56%            | 97.58%                
 
 ### Locks
 #### For L1 cache hit rate
-`perf stat -e L1-dcache-loads -e L1-dcache-load-misses ./counter -t 10 -i=1000 --lock=<tas,ttas,ticket,pthread> -o out.txt`
+`perf stat -e L1-dcache-loads -e L1-dcache-load-misses ./counter -t 10 -i=1000 --lock=<tas,ttas,ticket,pthread> -o out.txt`  
 `perf stat -e L1-dcache-loads -e L1-dcache-load-misses ./mysort source.txt -o out.txt -t 10 --alg=bucket --lock=<tas,ttas,ticket,pthread>`
 #### For branch-prediction hit rate
-`perf stat -e branch-loads -e branch-load-misses ./counter -t 10 -i=1000 --lock=<tas,ttas,ticket,pthread> -o out.txt`
+`perf stat -e branch-loads -e branch-load-misses ./counter -t 10 -i=1000 --lock=<tas,ttas,ticket,pthread> -o out.txt`  
 `perf stat -e branch-loads -e branch-load-misses ./mysort source.txt -o out.txt -t 10 --alg=bucket --lock=<tas,ttas,ticket,pthread>`
 #### For L1 cache hit rate
-`perf stat -e page-faults ./counter -t 10 -i=1000 --lock=<tas,ttas,ticket,pthread> -o out.txt`
+`perf stat -e page-faults ./counter -t 10 -i=1000 --lock=<tas,ttas,ticket,pthread> -o out.txt`  
 `perf stat -e page-faults ./mysort source.txt -o out.txt -t 10 --alg=bucket --lock=<tas,ttas,ticket,pthread>`
 #### Or all at once
-`perf stat --repeat 10 -e L1-dcache-loads,L1-dcache-load-misses,branch-loads,branch-load-misses,page-faults ./counter -t 10 -i=1000 --lock=<tas,ttas,ticket,pthread> -o out.txt`
+`perf stat --repeat 10 -e L1-dcache-loads,L1-dcache-load-misses,branch-loads,branch-load-misses,page-faults ./counter -t 10 -i=1000 --lock=<tas,ttas,ticket,pthread> -o out.txt`  
 `perf stat --repeat 10 -e L1-dcache-loads,L1-dcache-load-misses,branch-loads,branch-load-misses,page-faults ./mysort source.txt -o out.txt -t 10 --alg=bucket --lock=<tas,ttas,ticket,pthread>`
 
 ### Table (Iteration/Array at 1000, threads at 10)
