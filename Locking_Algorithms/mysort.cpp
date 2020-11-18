@@ -30,15 +30,13 @@ using namespace std;
 
 pthread_t* threads;
 size_t* args;
-size_t NUM_THREADS;
+size_t NUM_THREADS = 0;
 pthread_barrier_t bar;
 pthread_mutex_t mutexLock;
 atomic<int> next_num (0), now_serving (0), atomicTID (0);
 atomic<int> sense (0), cnt (0), count (0);
 atomic<bool> tas_flag (0);
-int arraysize = 0, arr[100000], thread_num;
-int COUNTER = 0;
-int numberOver = 0;
+int arr[100000], arraysize = 0;
 atomic<int> b_count (0);
 mutex b_lock;					 // lock for bucket sorting
 
@@ -86,7 +84,6 @@ int main(int argc, const char* argv[]){
 	// init
 	threads = static_cast<pthread_t*>(malloc(NUM_THREADS*sizeof(pthread_t)));
 	args = static_cast<size_t*>(malloc(NUM_THREADS*sizeof(size_t)));
-	pthread_barrier_init(&bar, NULL, NUM_THREADS);
 
 	// read in array of integers from input file
 	fstream file(inputFile.c_str(), ios_base::in);
@@ -147,12 +144,10 @@ int main(int argc, const char* argv[]){
 			break;
 		// lock pthread
 		case 6:
-			pthread_mutex_init(&mutexLock, NULL);
 			for (int i = 0; i < NUM_THREADS; i ++)
 				pthread_create(&threads[i], NULL, bucketSort_lock_pthread, (void*)NULL);
 			for (int i = 0; i < NUM_THREADS; i ++)
 				pthread_join(threads[i], NULL);
-			pthread_mutex_destroy(&mutexLock);
 			break;
 		// something didn't match up
 		default:
@@ -160,6 +155,8 @@ int main(int argc, const char* argv[]){
 			exit(-1);
 	}
 
+	// execute a final sort
+	sort(arr, arr+arraysize);
 	// execution end time
 	auto end_time = Clock::now();
 	// unsigned int 4,294,967,295, which is only 4.3 seconds
@@ -168,6 +165,9 @@ int main(int argc, const char* argv[]){
 	printf("Time elapsed is %lu nanoseconds\n", time_spent);
 	printf("               %f seconds\n", time_spent/1e9);
 
+	/* check to make sure the array is sorted as expected */
+	sort(arrCheck, arrCheck + arraysize); // sort
+	arrayCheck(arraysize, arr, arrCheck); // check against bucketsort
 
 	/* WRITE SORTED ARRAY TO FILE */
 	ofstream outfile;
@@ -175,13 +175,9 @@ int main(int argc, const char* argv[]){
 	for (int i = 0; i < arraysize; i++) outfile << arr[i] << endl;
 	outfile.close();
 
-	free(threads);
-	free(args);
-	pthread_barrier_destroy(&bar);
-
-	/* check to make sure the array is sorted as expected */
-	sort(arrCheck, arrCheck + arraysize); // sort
-	arrayCheck(arraysize, arr, arrCheck); // check against bucketsort
+	// mem cleanup
+	// free(threads);
+	// free(args);
 }
 
 
@@ -192,7 +188,7 @@ void sense_wait() {
 	cur_sense = !cur_sense;
 	int cnt_copy = atomic_fetch_add(&cnt, 1);
 	if (cnt_copy == NUM_THREADS - 1) {
-		cnt.store(0, memory_order_relaxed);
+		cnt.store(0, RELAXED);
 		sense.store(cur_sense);
 	} else while(sense.load() != cur_sense);
 }
@@ -204,18 +200,22 @@ void *bucketSort_sense(void *args) {
 	return 0;
 }
 void bucketSort_sense_fn(int low, int high, int tid, void *args) {
-	int i, j, max_value = 0;
+	int max_value = 0;
+
 	// find max key value in arr
 	for (int i = low; i <= high; ++i)
 		if (arr[i] > max_value) max_value = arr[i];
+
 	// create n empty local buckets
 	auto buckets = vector<unsigned >(static_cast<unsigned int>(max_value + 1));
+
 	// put array elements in different buckets
 	for (int i = low; i <= high; ++i)
 		buckets[arr[i]]++;
+
 	// concatenate all buckets into arr[]
-	for (int i = 0; i < buckets.capacity(); ++i) {
-		for (int j = 0; j < buckets[i]; ++j) {
+	for (int i = 0; i < buckets.capacity(); i++) {
+		for (int j = 0; j < buckets[i]; j++) {
 				arr[b_count] = i;
 				b_count++;
 		}
@@ -240,7 +240,7 @@ void bucketSort_bar_pthread_fn(int low, int high, int tid, void *args) {
 	auto buckets = vector<unsigned >(static_cast<unsigned int>(max_value + 1));
 	pthread_barrier_wait(&bar);
 	// put array elements in different buckets
-	for (i = low; i <= high; ++i)
+	for (i = low; i < high; ++i)
 		buckets[arr[i]]++;
 	pthread_barrier_wait(&bar);
 	// concatenate all buckets into arr[]

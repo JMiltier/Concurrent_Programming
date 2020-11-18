@@ -49,13 +49,13 @@ Using two different sorting algorithms and two different paralellization strateg
 
 #### Program option/input parameters for `mysort`
   `mysort [--name]`
-    - `counter --name`: prints name to console.
+    - `mysort --name`: prints name to console.
   **OR**
-  `mysort [source.txt] [-o out.txt] [-t NUM THREADS] [--alg=<lkbucket>] [--bar=<sense,pthread>] [--lock=<tas,ttas,ticket,mcs,pthread>]`
+  `mysort [source.txt] [-o out.txt] [-t NUM THREADS] [--alg=<bucket>] [--bar=<sense,pthread>] [--lock=<tas,ttas,ticket,mcs,pthread>]`
   1. `source.txt`: input file for unsorted and random list of numbers, each on a new line
   2. `-o out.txt`: output fil for sorted list of numbers (from 1.), each on a new line
   3. `-t NUM_THREADS`: specify how many threads to use during execution (including master thread)
-  4. `--alg=<lkbucket>`: sorting algorithm
+  4. `--alg=<bucket>`: sorting algorithm
   5. `--bar=<sense,pthread>`: type of bar
   6. `--lock=<tas,ttas,ticket,mcs,pthread>`: type of lock 
 
@@ -65,7 +65,59 @@ Using two different sorting algorithms and two different paralellization strateg
   - Non-atomic counter somtimes 
 
 #### Resources:
+1. [perf](https://perf.wiki.kernel.org/index.php/Tutorial) [perf stat](https://man7.org/linux/man-pages/man1/perf-stat.1.html)
 1. [measuring execution time](https://solarianprogrammer.com/2019/04/17/c17-programming-measuring-execution-time-delaying-program/)
 2. [clock and time functions](https://linux.die.net/man/2/clock_gettime)
 3. [chrono high resolution time accuracy](https://www.tutorialspoint.com/how-to-create-a-high-resolution-timer-with-cplusplus-and-linux)
 4. [atomic fetch add](https://apimirror.com/c/atomic/atomic_fetch_add) - since fai not available
+
+
+## Program stats, average of 10 repeated runs
+### Barriers
+#### For L1 cache hit rate
+`perf stat -e L1-dcache-loads -e L1-dcache-load-misses ./counter -t 10 -i=1000 --bar=<sense, pthread> -o out.txt`
+`perf stat -e L1-dcache-loads -e L1-dcache-load-misses ./mysort source.txt -o out.txt -t 10 --alg=bucket --bar=<sense, pthread>`
+#### For branch-prediction hit rate
+`perf stat -e branch-loads -e branch-load-misses ./counter -t 10 -i=1000 --bar=<sense, pthread> -o out.txt`
+`perf stat -e branch-loads -e branch-load-misses ./mysort source.txt -o out.txt -t 10 --alg=bucket --bar=<sense, pthread>`
+#### For L1 cache hit rate
+`perf stat -e page-faults ./counter -t 10 -i=1000 --bar=<sense, pthread> -o out.txt`
+`perf stat -e page-faults ./mysort source.txt -o out.txt -t 10 --alg=bucket --bar=<sense, pthread>`
+#### Or all at once
+`perf stat --repeat 10 -e L1-dcache-loads,L1-dcache-load-misses,branch-loads,branch-load-misses,page-faults ./counter -t 10 -i=1000 --bar=<sense, pthread> -o out.txt`
+`perf stat --repeat 10 -e L1-dcache-loads,L1-dcache-load-misses,branch-loads,branch-load-misses,page-faults ./mysort source.txt -o out.txt -t 10 --alg=bucket --bar=<sense, pthread>`
+
+### Table (Iteration/Array at 1000, threads at 10)
+Program    | Barrier | Run Time (s) | L1 cache hit rate | branch-prediction hit rate | page-fault
+:--------- | :-----: | :----------- | :---------------- | :------------------------- | :---------
+Counter    | sense   | 0.001862     | 99.70%            | 99.86%                     | 154
+Counter    | pthread | 0.012391     | 90.04%            | 99.01%                     | 148
+BucketSort | sense   | 0.000154     | 99.32%            | 99.46%                     | 187
+BucketSort | pthread | 0.000531     | 96.56%            | 97.58%                     | 186
+
+
+### Locks
+#### For L1 cache hit rate
+`perf stat -e L1-dcache-loads -e L1-dcache-load-misses ./counter -t 10 -i=1000 --lock=<tas,ttas,ticket,pthread> -o out.txt`
+`perf stat -e L1-dcache-loads -e L1-dcache-load-misses ./mysort source.txt -o out.txt -t 10 --alg=bucket --lock=<tas,ttas,ticket,pthread>`
+#### For branch-prediction hit rate
+`perf stat -e branch-loads -e branch-load-misses ./counter -t 10 -i=1000 --lock=<tas,ttas,ticket,pthread> -o out.txt`
+`perf stat -e branch-loads -e branch-load-misses ./mysort source.txt -o out.txt -t 10 --alg=bucket --lock=<tas,ttas,ticket,pthread>`
+#### For L1 cache hit rate
+`perf stat -e page-faults ./counter -t 10 -i=1000 --lock=<tas,ttas,ticket,pthread> -o out.txt`
+`perf stat -e page-faults ./mysort source.txt -o out.txt -t 10 --alg=bucket --lock=<tas,ttas,ticket,pthread>`
+#### Or all at once
+`perf stat --repeat 10 -e L1-dcache-loads,L1-dcache-load-misses,branch-loads,branch-load-misses,page-faults ./counter -t 10 -i=1000 --lock=<tas,ttas,ticket,pthread> -o out.txt`
+`perf stat --repeat 10 -e L1-dcache-loads,L1-dcache-load-misses,branch-loads,branch-load-misses,page-faults ./mysort source.txt -o out.txt -t 10 --alg=bucket --lock=<tas,ttas,ticket,pthread>`
+
+### Table (Iteration/Array at 1000, threads at 10)
+Program    | Lock    | Run Time (s) | L1 cache hit rate | branch-prediction hit rate | page-fault
+:--------- | :------ | :----------- | :---------------- | :------------------------- | :---------
+Counter    | tas     | 0.000574     | 92.37%            | 97.01%                     | 144
+Counter    | ttas    | 0.000705     | 93.40%            | 97.07%                     | 145
+Counter    | ticket  | 0.001021     | 96.17%            | 98.69%                     | 145
+Counter    | pthread | 0.001050     | 97.06%            | 99.01%                     | 145
+BucketSort | tas     | 0.000346     | 96.99%            | 97.75%                     | 171
+BucketSort | ttas    | 0.000371     | 97.02%            | 97.78%                     | 170
+BucketSort | ticket  | 0.000358     | 97.30%            | 97.92%                     | 166
+BucketSort | pthread | 0.000349     | 96.53%            | 97.46%                     | 171

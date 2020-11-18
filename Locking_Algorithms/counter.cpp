@@ -27,7 +27,7 @@ using namespace std;
 #define RELAXED memory_order_relaxed
 
 /* initialization */
-int NUM_THREADS = 0;
+size_t NUM_THREADS = 0;
 int NUM_ITERATIONS = 0;
 int COUNTER = 0;
 int numberOver = 0;

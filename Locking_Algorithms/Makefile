@@ -17,7 +17,7 @@ CC = g++
 CFLAGS = -w
 
 # GCC standard support for different C++ dialects (98, 11, 14, 17, or 2a)
-STD = -std=c++14
+STD = -std=c++11 -pthread
 
 # variables
 SORTPRGM=mysort
