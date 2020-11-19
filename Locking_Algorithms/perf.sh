@@ -4,7 +4,7 @@ echo ''
 echo ''
 echo '----------------------------- BARRIERS -----------------------------'
 echo '___________________________ SENSE BARRIER __________________________'
-perf stat --repeat 10 -e L1-dcache-loads,L1-dcache-load-misses,branch-loads,branch-load-misses,page-faults ./counter -t 10 -i=1000 --bar=sense -o out.txt
+perf stat --repeat 1000 -e L1-dcache-loads,L1-dcache-load-misses,branch-loads,branch-load-misses,page-faults ./counter -t 10 -i=1000 --bar=sense -o out.txt
 echo '__________________________ PTHREAD BARRIER _________________________'
 perf stat --repeat 10 -e L1-dcache-loads,L1-dcache-load-misses,branch-loads,branch-load-misses,page-faults ./counter -t 10 -i=1000 --bar=pthread -o out.txt
 echo ''
@@ -33,7 +33,7 @@ echo ''
 echo ''
 echo '----------------------------- BARRIERS -----------------------------'
 echo '___________________________ SENSE BARRIER __________________________'
-perf stat --repeat 10 -e L1-dcache-loads,L1-dcache-load-misses,branch-loads,branch-load-misses,page-faults ./mysort source.txt -o out.txt -t 10 --alg=bucket --bar=sense
+perf stat --repeat 1000 -e L1-dcache-loads,L1-dcache-load-misses,branch-loads,branch-load-misses,page-faults ./mysort source.txt -o out.txt -t 10 --alg=bucket --bar=sense
 echo '__________________________ PTHREAD BARRIER _________________________'
 perf stat --repeat 10 -e L1-dcache-loads,L1-dcache-load-misses,branch-loads,branch-load-misses,page-faults ./mysort source.txt -o out.txt -t 10 --alg=bucket --bar=pthread
 echo ''

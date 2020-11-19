@@ -33,7 +33,7 @@ atomic<int> COUNTER (0);
 int numberOver = 0;
 pthread_barrier_t bar;
 pthread_mutex_t mutexLock;
-atomic<int> next_num (0), now_serving (0), tid (0);
+atomic<int> next_num (0), now_serving (0);
 atomic<int> sense (0), cnt (0);
 atomic<bool> tas_flag (0);
 mutex b_lock;					 // pthread_mutex_t issues?
@@ -79,48 +79,48 @@ int main(int argc, const char* argv[]){
   switch (argument) {
     // bar sense
     case 1:
-      for (int i = 0; i < NUM_THREADS; i ++)
+      for (int i = 0; i < NUM_THREADS; i++)
         pthread_create(&threads[i], NULL, counter_sense, (void*)NULL);
-      for (int i = 0; i < NUM_THREADS; i ++)
+      for (int i = 0; i < NUM_THREADS; i++)
         pthread_join(threads[i], NULL);
       break;
     // bar pthread
     case 2:
       pthread_barrier_init(&bar, NULL, NUM_THREADS);
-      for (int i = 0; i < NUM_THREADS; i ++)
+      for (int i = 0; i < NUM_THREADS; i++)
         pthread_create(&threads[i], NULL, counter_bar_pthread, (void*)NULL);
-      for (int i = 0; i < NUM_THREADS; i ++)
+      for (int i = 0; i < NUM_THREADS; i++)
         pthread_join(threads[i], NULL);
       pthread_barrier_destroy(&bar);
       break;
 
     // lock tas
     case 3:
-      for (int i = 0; i < NUM_THREADS; i ++)
+      for (int i = 0; i < NUM_THREADS; i++)
         pthread_create(&threads[i], NULL, counter_TAS, (void*)NULL);
-      for (int i = 0; i < NUM_THREADS; i ++)
+      for (int i = 0; i < NUM_THREADS; i++)
         pthread_join(threads[i], NULL);
       break;
     // lock ttas
     case 4:
-      for (int i = 0; i < NUM_THREADS; i ++)
+      for (int i = 0; i < NUM_THREADS; i++)
         pthread_create(&threads[i], NULL, counter_TTAS, (void*)NULL);
-      for (int i = 0; i < NUM_THREADS; i ++)
+      for (int i = 0; i < NUM_THREADS; i++)
         pthread_join(threads[i], NULL);
       break;
     // lock ticket
     case 5:
-      for (int i = 0; i < NUM_THREADS; i ++)
+      for (int i = 0; i < NUM_THREADS; i++)
         pthread_create(&threads[i], NULL, counter_ticket_lock, (void*)NULL);
-      for (int i = 0; i < NUM_THREADS; i ++)
+      for (int i = 0; i < NUM_THREADS; i++)
         pthread_join(threads[i], NULL);
       break;
     // lock pthread
     case 6:
       pthread_mutex_init(&mutexLock, NULL);
-      for (int i = 0; i < NUM_THREADS; i ++)
+      for (int i = 0; i < NUM_THREADS; i++)
         pthread_create(&threads[i], NULL, counter_lock_pthread, (void*)NULL);
-      for (int i = 0; i < NUM_THREADS; i ++)
+      for (int i = 0; i < NUM_THREADS; i++)
         pthread_join(threads[i], NULL);
       pthread_mutex_destroy(&mutexLock);
       break;
@@ -140,6 +140,10 @@ int main(int argc, const char* argv[]){
   printf("                %f seconds\n", time_spent/1e9);
   printf("Counter is: %u\n", unsigned(COUNTER));
 
+  // For when running long repeats, comment above and uncomment this
+  // if (COUNTER != NUM_ITERATIONS*NUM_THREADS)
+  //   printf("Counter is: %u\n", unsigned(COUNTER));
+
   // write to file
   FILE * fp;
   fp = fopen(outputFile.c_str(), "w");
@@ -153,19 +157,18 @@ int main(int argc, const char* argv[]){
 /* *************** BAR FUNCTIONS *************** */
 /* ****** sense ****** */
 void sense_wait() {
-  int n = NUM_THREADS;
+  thread_local bool cur_sense=0;
+  if (cur_sense==0) cur_sense=1;
+  else cur_sense=0;
 
-  thread_local bool cur_sense = 0;
-  cur_sense = !cur_sense;
   int cnt_copy = atomic_fetch_add(&cnt, 1);
-  if (cnt_copy == n - 1) {
-    cnt.store(0, memory_order_relaxed);
-    sense.store(cur_sense);
-  } else while(sense.load() != cur_sense);
+  if (cnt_copy == NUM_THREADS - 1) {
+    cnt.store(0, RELAXED);
+    sense.store(cur_sense, SEQ_CST);
+  } else while(sense.load(SEQ_CST) != cur_sense){};
 }
 
 void *counter_sense(void *) {
-  int tid = tid++;
   for(int i = 0; i < NUM_ITERATIONS; ++i) {
     COUNTER++;
     sense_wait();
@@ -175,8 +178,6 @@ void *counter_sense(void *) {
 
 /* ****** pthread ****** */
 void *counter_bar_pthread(void *) {
-  int tid = tid++;
-  pthread_barrier_wait(&bar);
   for (int i = 0; i < NUM_ITERATIONS; i++) {
     COUNTER++;
     pthread_barrier_wait(&bar);
@@ -233,12 +234,7 @@ void *counter_TTAS(void *) {
 void ticket_lock() {
   // fai is fetch and increment, but not in C++?
   int num = atomic_fetch_add(&next_num, 1);
-  while(now_serving.load(SEQ_CST) != num) {
-    if (COUNTER > NUM_ITERATIONS*NUM_THREADS) {
-      numberOver = 1;
-      break;
-    }
-  }
+  while(now_serving.load(SEQ_CST) != num) {};
 }
 
 void ticket_unlock() {
@@ -249,7 +245,7 @@ void ticket_unlock() {
 void *counter_ticket_lock(void *) {
   ticket_lock();
   for(int i = 0; i < NUM_ITERATIONS; ++i) {
-    if (!numberOver) COUNTER++;
+    COUNTER++;
     ticket_unlock();
     ticket_lock();
   }
@@ -259,11 +255,12 @@ void *counter_ticket_lock(void *) {
 
 /* ****** pthread ****** */
 void *counter_lock_pthread(void *) {
-  int tid = tid++;
+  pthread_mutex_lock(&mutexLock);
   for(int i = 0; i < NUM_ITERATIONS; i++) {
-      pthread_mutex_lock(&mutexLock);
-      COUNTER++;
-      pthread_mutex_unlock(&mutexLock);
+    COUNTER++;
+    pthread_mutex_unlock(&mutexLock);
+    pthread_mutex_lock(&mutexLock);
   }
+  pthread_mutex_unlock(&mutexLock);
   return NULL;
 }

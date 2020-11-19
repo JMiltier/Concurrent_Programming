@@ -17,7 +17,7 @@ CC = g++
 CFLAGS = -w
 
 # GCC standard support for different C++ dialects (98, 11, 14, 17, or 2a)
-STD = -std=c++11 -pthread
+STD = -std=c++11
 
 # variables
 SORTPRGM=mysort
@@ -27,19 +27,19 @@ CNTRSRC=counter.cpp
 NUMGENPRGM=numGen
 NUMGENSRC=randomNumberGen.cpp
 
-all: $(CNTRPRGM) $(SORTPRGM)
+all: clean $(CNTRPRGM) $(SORTPRGM)
 
 # counter
 $(CNTRPRGM): $(CNTRSRC)
-	$(CC) $(STD) $(CFGLAGS) $(CNTRSRC) -o $(CNTRPRGM)
+	$(CC) $(STD) $(CFLAGS) $(CNTRSRC) -o $(CNTRPRGM) -lpthread
 
 # mysort
-$(SORTPRGM): clean $(SORTSRC)
-	$(CC) $(STD) $(CFGLAGS) $(SORTSRC) -o $(SORTPRGM)
+$(SORTPRGM): $(SORTSRC)
+	$(CC) $(STD) $(CFLAGS) $(SORTSRC) -o $(SORTPRGM) -lpthread
 
 # random numbers generation
 $(NUMGENPRGM): $(NUMGENSRC)
-	$(CC) $(CFGLAGS) $(NUMGENSRC) -o $(NUMGENPRGM)
+	$(CC) $(CFLAGS) $(NUMGENSRC) -o $(NUMGENPRGM)
 
 # clean all objects
 clean:

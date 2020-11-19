@@ -59,22 +59,7 @@ Using two different sorting algorithms and two different paralellization strateg
   5. `--bar=<sense,pthread>`: type of bar
   6. `--lock=<tas,ttas,ticket,mcs,pthread>`: type of lock 
 
-#### 🐜 Surviving Bugs
-  - Input/output files are loaded/saved as is. Does not check for txt file types.
-  - Numbers within input txt file must be integers (not checked) for the program to work.
-  - Non-atomic counter somtimes 
-
-#### Resources:
-1. [bucket sort (variaion)](https://gist.github.com/benapier/3df28b56946ae6a550805acca6f1db34)
-1. [perf](https://perf.wiki.kernel.org/index.php/Tutorial) [perf stat](https://man7.org/linux/man-pages/man1/perf-stat.1.html)
-1. [measuring execution time](https://solarianprogrammer.com/2019/04/17/c17-programming-measuring-execution-time-delaying-program/)
-2. [clock and time functions](https://linux.die.net/man/2/clock_gettime)
-3. [chrono high resolution time accuracy](https://www.tutorialspoint.com/how-to-create-a-high-resolution-timer-with-cplusplus-and-linux)
-4. [atomic fetch add](https://apimirror.com/c/atomic/atomic_fetch_add) - since fai not available
-9. Class lecture slides, along with 80+ hours of 'tinkering'
-
-
-## Program stats, average of 10 repeated runs
+## Program stats average, based on 10 repeated runs
 ### Barriers
 #### For L1 cache hit rate
 `perf stat -e L1-dcache-loads -e L1-dcache-load-misses ./counter -t 10 -i=1000 --bar=<sense, pthread> -o out.txt`  
@@ -123,3 +108,20 @@ BucketSort | tas     | 0.000346     | 96.99%            | 97.75%                
 BucketSort | ttas    | 0.000371     | 97.02%            | 97.78%                     | 170
 BucketSort | ticket  | 0.000358     | 97.30%            | 97.92%                     | 166
 BucketSort | pthread | 0.000349     | 96.53%            | 97.46%                     | 171
+
+
+#### 🐜 Surviving Bugs
+  - Input/output files are loaded/saved as is. Does not check for txt file types or if data is integers.
+  - Joining of threads is out of order for locks, so sometimes fails bucket sorting.
+
+#### Resources:
+1. [bucket sort (variaion)](https://gist.github.com/benapier/3df28b56946ae6a550805acca6f1db34)
+2. [multithreading pthread](https://www.bogotobogo.com/cplusplus/multithreading_pthread.php)
+3. [pthread locks](https://randu.org/tutorials/threads/)
+3. [mutex locks for linux threads](https://www.geeksforgeeks.org/mutex-lock-for-linux-thread-synchronization/)
+1. [perf](https://perf.wiki.kernel.org/index.php/Tutorial) [perf stat](https://man7.org/linux/man-pages/man1/perf-stat.1.html)
+1. [measuring execution time](https://solarianprogrammer.com/2019/04/17/c17-programming-measuring-execution-time-delaying-program/)
+2. [clock and time functions](https://linux.die.net/man/2/clock_gettime)
+3. [chrono high resolution time accuracy](https://www.tutorialspoint.com/how-to-create-a-high-resolution-timer-with-cplusplus-and-linux)
+4. [atomic fetch add](https://apimirror.com/c/atomic/atomic_fetch_add) - since fai not available
+9. Class lecture slides, along with 80+ hours of 'tinkering'
