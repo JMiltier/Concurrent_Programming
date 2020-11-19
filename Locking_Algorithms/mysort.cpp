@@ -37,7 +37,8 @@ pthread_mutexattr_t mutexAttr;
 atomic<int> sense (0), cnt (0), count (0);
 atomic<int> next_num (0), now_serving (0);
 atomic<bool> tas_flag (0);
-int arr[100000], arraysize = 0;
+int arraysize = 0;
+vector<int> arr;
 atomic<int> b_count (0);
 
 /* execution time struct */
@@ -88,7 +89,7 @@ int main(int argc, const char* argv[]){
 	int a, b = 0;
 	string line;
 	while (getline(file, line)) arraysize++;
-	// arr[arraysize];
+	arr.resize(arraysize);
 	int arrCheck[arraysize];
 	fstream infile(inputFile, ios_base::in);
 	while (infile >> a) {
