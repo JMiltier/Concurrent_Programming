@@ -90,10 +90,11 @@ int main(int argc, const char* argv[]){
 	string line;
 	while (getline(file, line)) arraysize++;
 	arr.resize(arraysize);
+	int arrYa[arraysize];
 	int arrCheck[arraysize];
 	fstream infile(inputFile, ios_base::in);
 	while (infile >> a) {
-		arr[b] = arrCheck[b] = a;
+		arr[b] = arrCheck[b] = arrYa[b] = a;
 		b++;
 	}
 
@@ -160,8 +161,11 @@ int main(int argc, const char* argv[]){
 			exit(-1);
 	}
 
+	for (int i = 0; i < arraysize; i++) {
+		arrYa[i] = arr[i];
+	}
 	// execute a final sort
-	sort(arr, arr+arraysize);
+	sort(arrYa, arrYa+arraysize);
 	// execution end time
 	auto end_time = Clock::now();
 	// unsigned int 4,294,967,295, which is only 4.3 seconds
@@ -172,12 +176,12 @@ int main(int argc, const char* argv[]){
 
 	/* check to make sure the array is sorted as expected */
 	sort(arrCheck, arrCheck + arraysize); // sort
-	arrayCheck(arraysize, arr, arrCheck); // check against bucketsort
+	arrayCheck(arraysize, arrYa, arrCheck); // check against bucketsort
 
 	/* WRITE SORTED ARRAY TO FILE */
 	ofstream outfile;
 	outfile.open(outputFile);
-	for (int i = 0; i < arraysize; i++) outfile << arr[i] << endl;
+	for (int i = 0; i < arraysize; i++) outfile << arrYa[i] << endl;
 	outfile.close();
 
 	// free dynamic memory
