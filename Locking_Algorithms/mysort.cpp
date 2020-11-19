@@ -30,11 +30,11 @@ using namespace std;
 
 pthread_t* threads;
 size_t* args;
-size_t NUM_THREADS = 0;
+int NUM_THREADS = 0;
 pthread_barrier_t bar;
 pthread_mutex_t mutexLock;
-atomic<int> next_num (0), now_serving (0), atomicTID (0);
 atomic<int> sense (0), cnt (0), count (0);
+atomic<int> next_num (0), now_serving (0), atomicTID (0);
 atomic<bool> tas_flag (0);
 int arr[100000], arraysize = 0;
 atomic<int> b_count (0);
@@ -81,7 +81,7 @@ int main(int argc, const char* argv[]){
 	// string algorithm = args_parsed.algorithm;
 	int argument = args_parsed.argument;
 
-	// init
+	// init memory allocations
 	threads = static_cast<pthread_t*>(malloc(NUM_THREADS*sizeof(pthread_t)));
 	args = static_cast<size_t*>(malloc(NUM_THREADS*sizeof(size_t)));
 
@@ -144,10 +144,12 @@ int main(int argc, const char* argv[]){
 			break;
 		// lock pthread
 		case 6:
+			pthread_mutex_init(&mutexLock, NULL);
 			for (int i = 0; i < NUM_THREADS; i ++)
 				pthread_create(&threads[i], NULL, bucketSort_lock_pthread, (void*)NULL);
 			for (int i = 0; i < NUM_THREADS; i ++)
 				pthread_join(threads[i], NULL);
+			pthread_mutex_destroy(&mutexLock);
 			break;
 		// something didn't match up
 		default:
@@ -175,11 +177,14 @@ int main(int argc, const char* argv[]){
 	for (int i = 0; i < arraysize; i++) outfile << arr[i] << endl;
 	outfile.close();
 
-	// mem cleanup
-	// free(threads);
-	// free(args);
+	// free dynamic memory
+	free(threads);
+	free(args);
 }
 
+/* ************************************************************** */
+/* ************************* FUNCTIONS ************************** */
+/* ************************************************************** */
 
 /* *************** BAR FUNCTIONS *************** */
 /* ****** sense ****** */
@@ -203,24 +208,27 @@ void bucketSort_sense_fn(int low, int high, int tid, void *args) {
 	int max_value = 0;
 
 	// find max key value in arr
-	for (int i = low; i <= high; ++i)
+	for (int i = low; i <= high; i++)
 		if (arr[i] > max_value) max_value = arr[i];
 
 	// create n empty local buckets
 	auto buckets = vector<unsigned >(static_cast<unsigned int>(max_value + 1));
 
+	// make sure all threads are here
+	sense_wait();
 	// put array elements in different buckets
-	for (int i = low; i <= high; ++i)
+	for (int i = low; i <= high; i++)
 		buckets[arr[i]]++;
 
+	// and then make sure threads are here
+	sense_wait();
 	// concatenate all buckets into arr[]
 	for (int i = 0; i < buckets.capacity(); i++) {
 		for (int j = 0; j < buckets[i]; j++) {
-				arr[b_count] = i;
-				b_count++;
+				arr[b_count++] = i;
+				// b_count++;
 		}
 	}
-	sense_wait();
 }
 
 /* ****** pthread ****** */
@@ -232,22 +240,25 @@ void *bucketSort_bar_pthread(void *args) {
 	return 0;
 }
 void bucketSort_bar_pthread_fn(int low, int high, int tid, void *args) {
-	int i, j, max_value = 0;
+	int max_value = 0;
+
 	// find max key value in arr
-	for (i = low; i <= high; ++i)
+	for (int i = low; i <= high; i++)
 		if (arr[i] > max_value) max_value = arr[i];
+
 	// create n empty local buckets
 	auto buckets = vector<unsigned >(static_cast<unsigned int>(max_value + 1));
+
 	pthread_barrier_wait(&bar);
 	// put array elements in different buckets
-	for (i = low; i < high; ++i)
+	for (int i = low; i <= high; i++)
 		buckets[arr[i]]++;
+
 	pthread_barrier_wait(&bar);
 	// concatenate all buckets into arr[]
-	for (i = 0; i < buckets.capacity(); ++i) {
-		for (j = 0; j < buckets[i]; ++j) {
-				arr[b_count] = i;
-				b_count++;
+	for (int i =  0; i < buckets.capacity(); i++) {
+		for (int j =  0; j < buckets[i]; j++) {
+				arr[b_count++] = i;
 		}
 	}
 	pthread_barrier_wait(&bar);
@@ -269,30 +280,35 @@ void tas_unlock() {
 }
 void *bucketSort_TAS(void *args) {
 	int tid = atomicTID++;
-	int low = (tid * arraysize) / NUM_THREADS;
-	int high = (( tid + 1 ) * arraysize) / NUM_THREADS - 1;
+	int low = ((tid - 1) * arraysize) / NUM_THREADS;
+	int high = ((tid * arraysize) / NUM_THREADS) - 1;
 	bucketSort_TAS_fn(low, high, tid, args);
 	return 0;
 }
 void bucketSort_TAS_fn(int low, int high, int tid, void *args) {
-	int i, j, max_value = 0;
+	int max_value = 0;
+
 	// find max key value in arr
-	for (i = low; i <= high; ++i)
+	for (int i = low; i <= high; i++)
 		if (arr[i] > max_value) max_value = arr[i];
+
 	// create n empty local buckets
 	auto buckets = vector<unsigned >(static_cast<unsigned int>(max_value + 1));
+
 	// put array elements in different buckets
-	for (i = low; i <= high; ++i)
+	for (int i = low; i <= high; i++)
 		buckets[arr[i]]++;
+
+	tas_lock();
 	// concatenate all buckets into arr[]
-	for (i = 0; i < buckets.capacity(); ++i) {
-		for (j = 0; j < buckets[i]; ++j) {
-				tas_lock();
-				arr[b_count] = i;
-				b_count++;
+	for (int i =  0; i < buckets.capacity(); i++) {
+		for (int j =  0; j < buckets[i]; j++) {
+				arr[b_count++] = i;
 				tas_unlock();
+				tas_lock();
 		}
 	}
+	tas_unlock();
 }
 
 /* ****** ttas ****** */
@@ -302,31 +318,37 @@ void ttas_lock() {
 }
 void *bucketSort_TTAS(void *args) {
 	int tid = atomicTID++;
-	int low = (tid * arraysize) / NUM_THREADS;
-	int high = (( tid + 1 ) * arraysize) / NUM_THREADS - 1;
+	int low = ((tid - 1) * arraysize) / NUM_THREADS;
+	int high = ((tid * arraysize) / NUM_THREADS) - 1;
 	bucketSort_TTAS_fn(low, high, tid, args);
 	return 0;
 }
 void bucketSort_TTAS_fn(int low, int high, int tid, void *args) {
-	int i, j, max_value = 0;
+	int max_value = 0;
+
 	// find max key value in arr
-	for (i = low; i <= high; ++i)
+	for (int i = low; i <= high; i++)
 		if (arr[i] > max_value) max_value = arr[i];
+
 	// create n empty local buckets
 	auto buckets = vector<unsigned >(static_cast<unsigned int>(max_value + 1));
+
 	// put array elements in different buckets
-	for (i = low; i <= high; ++i)
+	for (int i = low; i <= high; i++)
 		buckets[arr[i]]++;
+
+	ttas_lock();
 	// concatenate all buckets into arr[]
-	for (i = 0; i < buckets.capacity(); ++i) {
-		for (j = 0; j < buckets[i]; ++j) {
-				ttas_lock();
-				arr[b_count] = i;
-				b_count++;
+	for (int i =  0; i < buckets.capacity(); i++) {
+		for (int j =  0; j < buckets[i]; j++) {
+				arr[b_count++] = i;
 				tas_unlock();
+				ttas_lock();
 		}
 	}
+	tas_unlock();
 }
+
 
 /* ****** ticket ****** */
 void ticket_lock() {
@@ -339,75 +361,89 @@ void ticket_unlock() {
 }
 void *bucketSort_ticket_lock(void *args) {
 	int tid = atomicTID++;
-	int low = (tid * arraysize) / NUM_THREADS;
-	int high = (( tid + 1 ) * arraysize) / NUM_THREADS - 1;
+	int low = ((tid - 1) * arraysize) / NUM_THREADS;
+	int high = ((tid * arraysize) / NUM_THREADS) - 1;
 	bucketSort_ticket_lock_fn(low, high, tid, args);
 	return 0;
 }
 void bucketSort_ticket_lock_fn(int low, int high, int tid, void *args) {
-	int i, j, max_value = 0;
+	int max_value = 0;
+
 	// find max key value in arr
-	for (i = low; i <= high; ++i)
+	for (int i = low; i <= high; i++)
 		if (arr[i] > max_value) max_value = arr[i];
+
 	// create n empty local buckets
 	auto buckets = vector<unsigned >(static_cast<unsigned int>(max_value + 1));
+
 	// put array elements in different buckets
-	for (i = low; i <= high; ++i)
+	for (int i = low; i <= high; i++)
 		buckets[arr[i]]++;
+
 	ticket_lock();
 	// concatenate all buckets into arr[]
-	for (i = 0; i < buckets.capacity(); ++i) {
-		for (j = 0; j < buckets[i]; ++j) {
-				arr[b_count] = i;
-				b_count++;
+	for (int i =  0; i < buckets.capacity(); i++) {
+		for (int j =  0; j < buckets[i]; j++) {
+				arr[b_count++] = i;
+				ticket_unlock();
+    		ticket_lock();
 		}
 	}
 	ticket_unlock();
-	//lock_guard<mutex> unlock(b_lock);
 }
 
 /* ****** pthread ****** */
 void *bucketSort_lock_pthread(void *args) {
 	int tid = atomicTID++;
-	int low = (tid * arraysize) / NUM_THREADS;
-	int high = (( tid + 1 ) * arraysize) / NUM_THREADS - 1;
+	int low = ((tid - 1) * arraysize) / NUM_THREADS;
+	int high = ((tid * arraysize) / NUM_THREADS) - 1;
 	bucketSort_lock_pthread_fn(low, high, tid, args);
 	return 0;
 }
 void bucketSort_lock_pthread_fn(int low, int high, int tid, void *args) {
-	// on allocate the bucket size we need
-	auto buckets = vector<unsigned>(arraysize/NUM_THREADS);
-	int i, j;
+	int max_value = 0;
+
+	// find max key value in arr
+	for (int i = low; i <= high; i++)
+		if (arr[i] > max_value) max_value = arr[i];
+
+	// create n empty local buckets
+	auto buckets = vector<unsigned >(static_cast<unsigned int>(max_value + 1));
+
 	// put array elements in different buckets
-	for (i = low; i <= high; ++i)
+	for (int i = low; i <= high; i++)
 		buckets[arr[i]]++;
+
+	pthread_mutex_lock(&mutexLock);
 	// concatenate all buckets into arr[]
-	for (i = 0; i < buckets.capacity(); ++i) {
-		for (j = 0; j < buckets[i]; ++j) {
-			b_lock.lock();
-			arr[b_count] = i;
-			b_count++;
-			b_lock.unlock();
+	for (int i = 0; i < buckets.capacity(); i++) {
+		for (int j = 0; j < buckets[i]; j++) {
+			arr[b_count++] = i;
 		}
 	}
+	pthread_mutex_unlock(&mutexLock);
 }
 
 /* ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ BUCKET SORT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ */
 void bucketSort(int low, int high) {
-	int i, j, max_value = 0;
+	int max_value = 0;
+
 	// find max key value in arr
-	for (i = low; i <= high; ++i)
+
+	for (int i = low; i <= high; i++)
 		if (arr[i] > max_value) max_value = arr[i];
+
 	// create n empty local buckets
 	auto buckets = vector<unsigned >(static_cast<unsigned int>(max_value + 1));
+
 	// put array elements in different buckets
-	for (i = low; i <= high; ++i)
+	for (int i = low; i <= high; i++)
 		buckets[arr[i]]++;
+
 	// concatenate all buckets into arr[]
-	for (i = 0; i < buckets.capacity(); ++i) {
-		for (j = 0; j < buckets[i]; ++j) {
-				arr[b_count] = i;
-				b_count++;
+	for (int i =  0; i < buckets.capacity(); i++) {
+		for (int j =  0; j < buckets[i]; j++) {
+				arr[b_count++] = i;
 		}
 	}
 }

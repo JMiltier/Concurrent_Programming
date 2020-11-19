@@ -29,13 +29,14 @@ using namespace std;
 /* initialization */
 size_t NUM_THREADS = 0;
 int NUM_ITERATIONS = 0;
-int COUNTER = 0;
+atomic<int> COUNTER (0);
 int numberOver = 0;
 pthread_barrier_t bar;
 pthread_mutex_t mutexLock;
 atomic<int> next_num (0), now_serving (0), tid (0);
 atomic<int> sense (0), cnt (0);
 atomic<bool> tas_flag (0);
+mutex b_lock;					 // pthread_mutex_t issues?
 
 /* execution time struct and function */
 typedef chrono::high_resolution_clock Clock;
@@ -137,13 +138,13 @@ int main(int argc, const char* argv[]){
   unsigned long time_spent = chrono::duration_cast<chrono::nanoseconds>(end_time - start_time).count();
   printf("Time elapsed is %lu nanoseconds\n", time_spent);
   printf("                %f seconds\n", time_spent/1e9);
-  printf("Counter is: %i\n", COUNTER);
+  printf("Counter is: %u\n", unsigned(COUNTER));
 
   // write to file
   FILE * fp;
   fp = fopen(outputFile.c_str(), "w");
   if (fp == NULL) return -1;
-  fprintf(fp, "%d\n", COUNTER);
+  fprintf(fp, "%u\n", unsigned(COUNTER));
   fclose(fp);
 
   return 0;
@@ -201,11 +202,13 @@ void tas_unlock() {
 }
 
 void *counter_TAS(void *) {
+  tas_lock();
   for(int i = 0; i < NUM_ITERATIONS; ++i) {
-    tas_lock();
     COUNTER++;
     tas_unlock();
+    tas_lock();
   }
+  tas_unlock();
   return NULL;
 }
 
@@ -257,13 +260,10 @@ void *counter_ticket_lock(void *) {
 /* ****** pthread ****** */
 void *counter_lock_pthread(void *) {
   int tid = tid++;
-  for(int i = 0; i < NUM_ITERATIONS; ++i) {
-    while (COUNTER % (NUM_THREADS - 1) != tid) {
-      if (COUNTER >= NUM_ITERATIONS) break;
-    }
-    pthread_mutex_lock(&mutexLock);
-    COUNTER++;
-    pthread_mutex_unlock(&mutexLock);
+  for(int i = 0; i < NUM_ITERATIONS; i++) {
+      pthread_mutex_lock(&mutexLock);
+      COUNTER++;
+      pthread_mutex_unlock(&mutexLock);
   }
   return NULL;
 }

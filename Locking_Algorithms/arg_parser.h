@@ -11,8 +11,7 @@ using namespace std;
 
 struct arg_params {
   string inputFile, outputFile, algorithm;
-  size_t NUM_THREADS;
-  int argument;
+  int NUM_THREADS, argument;
 };
 
 struct arg_params arg_parser(int argc, const char* argv[]){

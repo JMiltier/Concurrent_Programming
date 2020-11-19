@@ -65,11 +65,13 @@ Using two different sorting algorithms and two different paralellization strateg
   - Non-atomic counter somtimes 
 
 #### Resources:
+1. [bucket sort (variaion)](https://gist.github.com/benapier/3df28b56946ae6a550805acca6f1db34)
 1. [perf](https://perf.wiki.kernel.org/index.php/Tutorial) [perf stat](https://man7.org/linux/man-pages/man1/perf-stat.1.html)
 1. [measuring execution time](https://solarianprogrammer.com/2019/04/17/c17-programming-measuring-execution-time-delaying-program/)
 2. [clock and time functions](https://linux.die.net/man/2/clock_gettime)
 3. [chrono high resolution time accuracy](https://www.tutorialspoint.com/how-to-create-a-high-resolution-timer-with-cplusplus-and-linux)
 4. [atomic fetch add](https://apimirror.com/c/atomic/atomic_fetch_add) - since fai not available
+9. Class lecture slides, along with 80+ hours of 'tinkering'
 
 
 ## Program stats, average of 10 repeated runs
