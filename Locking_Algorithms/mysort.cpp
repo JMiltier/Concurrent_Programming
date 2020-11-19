@@ -44,29 +44,27 @@ typedef chrono::high_resolution_clock Clock;
 
 /* bar functions */
 void sense_wait();
-void *bucketSort_sense(void *args);
-void *bucketSort_bar_pthread(void *args);
+void *bucketSort_sense(void *);
+void *bucketSort_bar_pthread(void *);
 /* lock functions */
 bool tas();
 void tas_lock();
 void tas_unlock();
-void *bucketSort_TAS(void *args);
+void *bucketSort_TAS(void *);
 void ttas_lock();
-void *bucketSort_TTAS(void *args);
+void *bucketSort_TTAS(void *);
 void ticket_lock();
 void ticket_unlock();
-void *bucketSort_ticket_lock(void *args);
-void *bucketSort_lock_pthread(void *args);
+void *bucketSort_ticket_lock(void *);
+void *bucketSort_lock_pthread(void *);
 
 /* bucket sort functions */
-void bucketSort_sense_fn(int low, int high, int tid);
-void bucketSort_bar_pthread_fn(int low, int high, int tid);
-void bucketSort_TAS_fn(int low, int high, int tid);
-void bucketSort_TTAS_fn(int low, int high, int tid);
-void bucketSort_ticket_lock_fn(int low, int high, int tid);
-void bucketSort_lock_pthread_fn(int low, int high, int tid);
-void bucketSort(int low, int high);
-void* lk_bucketSort(void* args);
+void bucketSort_sense_fn(int low, int high);
+void bucketSort_bar_pthread_fn(int low, int high);
+void bucketSort_TAS_fn(int low, int high);
+void bucketSort_TTAS_fn(int low, int high);
+void bucketSort_ticket_lock_fn(int low, int high);
+void bucketSort_lock_pthread_fn(int low, int high);
 /* array checker */
 void arrayCheck(int asize, int *a1, int *a2);
 
@@ -157,14 +155,14 @@ int main(int argc, const char* argv[]){
 	}
 
 	// execute a final sort
-	// sort(arr, arr+arraysize);
+	sort(arr, arr+arraysize);
 	// execution end time
 	auto end_time = Clock::now();
 	// unsigned int 4,294,967,295, which is only 4.3 seconds
 	// unsigned long, plan on never running out (over 5 centuries)
 	unsigned long time_spent = chrono::duration_cast<chrono::nanoseconds>(end_time - start_time).count();
 	printf("Time elapsed is %lu nanoseconds\n", time_spent);
-	printf("               %f seconds\n", time_spent/1e9);
+	printf("                %f seconds\n", time_spent/1e9);
 
 	/* check to make sure the array is sorted as expected */
 	sort(arrCheck, arrCheck + arraysize); // sort
@@ -196,14 +194,14 @@ void sense_wait() {
 		sense.store(cur_sense);
 	} else while(sense.load() != cur_sense);
 }
-void *bucketSort_sense(void *args) {
+void *bucketSort_sense(void *) {
 	int tid = atomicTID++;
 	int low = (tid  * arraysize) / NUM_THREADS;
 	int high = (((tid + 1) * arraysize) / NUM_THREADS) - 1;
-	bucketSort_sense_fn(low, high, tid);
+	bucketSort_sense_fn(low, high);
 	return 0;
 }
-void bucketSort_sense_fn(int low, int high, int tid){
+void bucketSort_sense_fn(int low, int high){
 	int max_value = 0;
 
 	// find max key value in arr
@@ -231,14 +229,14 @@ void bucketSort_sense_fn(int low, int high, int tid){
 }
 
 /* ****** pthread ****** */
-void *bucketSort_bar_pthread(void *args) {
+void *bucketSort_bar_pthread(void *) {
 	int tid = atomicTID++;
 	int low = (tid  * arraysize) / NUM_THREADS;
 	int high = (((tid + 1) * arraysize) / NUM_THREADS) - 1;
-	bucketSort_bar_pthread_fn(low, high, tid);
+	bucketSort_bar_pthread_fn(low, high);
 	return 0;
 }
-void bucketSort_bar_pthread_fn(int low, int high, int tid){
+void bucketSort_bar_pthread_fn(int low, int high){
 	int max_value = 0;
 
 	// find max key value in arr
@@ -281,10 +279,10 @@ void *bucketSort_TAS(void *args) {
 	int tid = atomicTID++;
 	int low = (tid  * arraysize) / NUM_THREADS;
 	int high = (((tid + 1) * arraysize) / NUM_THREADS) - 1;
-	bucketSort_TAS_fn(low, high, tid);
+	bucketSort_TAS_fn(low, high);
 	return 0;
 }
-void bucketSort_TAS_fn(int low, int high, int tid){
+void bucketSort_TAS_fn(int low, int high){
 	int max_value = 0;
 
 	// find max key value in arr
@@ -319,10 +317,10 @@ void *bucketSort_TTAS(void *args) {
 	int tid = atomicTID++;
 	int low = (tid  * arraysize) / NUM_THREADS;
 	int high = (((tid + 1) * arraysize) / NUM_THREADS) - 1;
-	bucketSort_TTAS_fn(low, high, tid);
+	bucketSort_TTAS_fn(low, high);
 	return 0;
 }
-void bucketSort_TTAS_fn(int low, int high, int tid){
+void bucketSort_TTAS_fn(int low, int high){
 	int max_value = 0;
 
 	// find max key value in arr
@@ -361,10 +359,10 @@ void *bucketSort_ticket_lock(void *args) {
 	int tid = atomicTID++;
 	int low = (tid  * arraysize) / NUM_THREADS;
 	int high = (((tid + 1) * arraysize) / NUM_THREADS) - 1;
-	bucketSort_ticket_lock_fn(low, high, tid);
+	bucketSort_ticket_lock_fn(low, high);
 	return 0;
 }
-void bucketSort_ticket_lock_fn(int low, int high, int tid){
+void bucketSort_ticket_lock_fn(int low, int high){
 	int max_value = 0;
 
 	// find max key value in arr
@@ -395,10 +393,10 @@ void *bucketSort_lock_pthread(void *) {
 	int tid = atomicTID++;
 	int low = (tid  * arraysize) / NUM_THREADS;
 	int high = (((tid + 1) * arraysize) / NUM_THREADS) - 1;
-	bucketSort_lock_pthread_fn(low, high, tid);
+	bucketSort_lock_pthread_fn(low, high);
 	return 0;
 }
-void bucketSort_lock_pthread_fn(int low, int high, int tid) {
+void bucketSort_lock_pthread_fn(int low, int high) {
 	int max_value = 0;
 
 	// find max key value in arr
