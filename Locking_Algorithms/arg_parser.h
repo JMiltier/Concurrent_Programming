@@ -11,7 +11,8 @@ using namespace std;
 
 struct arg_params {
   string inputFile, outputFile, algorithm;
-  int NUM_THREADS, argument;
+  size_t NUM_THREADS;
+  int argument;
 };
 
 struct arg_params arg_parser(int argc, const char* argv[]){
@@ -43,6 +44,7 @@ struct arg_params arg_parser(int argc, const char* argv[]){
     if (!string(argv[4]).rfind("-t", 0)) {
       args.NUM_THREADS = atoi( argv[5] );
       if (args.NUM_THREADS > 150) { printf("ERROR; too many threads\n"); exit(-1); }
+      else if (args.NUM_THREADS < 1) { printf("ERROR; not enough threads\n"); exit(-1); }
     } else {
       printf("ERROR: incorrect flag for number of threads.   Expected: '-t'  Actual: '%s'\n", argv[4]); exit(-1);
     }

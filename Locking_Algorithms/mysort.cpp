@@ -30,7 +30,7 @@ using namespace std;
 
 pthread_t* threads;
 size_t* args;
-int NUM_THREADS = 0;
+size_t NUM_THREADS = 0;
 pthread_barrier_t bar;
 pthread_mutex_t mutexLock;
 atomic<int> sense (0), cnt (0), count (0);
@@ -38,7 +38,6 @@ atomic<int> next_num (0), now_serving (0), atomicTID (0);
 atomic<bool> tas_flag (0);
 int arr[100000], arraysize = 0;
 atomic<int> b_count (0);
-mutex b_lock;					 // lock for bucket sorting
 
 /* execution time struct */
 typedef chrono::high_resolution_clock Clock;
@@ -60,12 +59,12 @@ void *bucketSort_ticket_lock(void *args);
 void *bucketSort_lock_pthread(void *args);
 
 /* bucket sort functions */
-void bucketSort_sense_fn(int low, int high, int tid, void *args);
-void bucketSort_bar_pthread_fn(int low, int high, int tid, void *args);
-void bucketSort_TAS_fn(int low, int high, int tid, void *args);
-void bucketSort_TTAS_fn(int low, int high, int tid, void *args);
-void bucketSort_ticket_lock_fn(int low, int high, int tid, void *args);
-void bucketSort_lock_pthread_fn(int low, int high, int tid, void *args);
+void bucketSort_sense_fn(int low, int high, int tid);
+void bucketSort_bar_pthread_fn(int low, int high, int tid);
+void bucketSort_TAS_fn(int low, int high, int tid);
+void bucketSort_TTAS_fn(int low, int high, int tid);
+void bucketSort_ticket_lock_fn(int low, int high, int tid);
+void bucketSort_lock_pthread_fn(int low, int high, int tid);
 void bucketSort(int low, int high);
 void* lk_bucketSort(void* args);
 /* array checker */
@@ -102,52 +101,52 @@ int main(int argc, const char* argv[]){
 	auto start_time = Clock::now();
 
 	/* argument statement (from parser) is as follows:
-	 * bar: 1-sense, 2-pthread
-	 * lock: 3-tas, 4-ttas, 5-ticket, 6-pthread */
+	* bar: 1-sense, 2-pthread
+	* lock: 3-tas, 4-ttas, 5-ticket, 6-pthread */
 	switch (argument) {
 		// bar sense
 		case 1:
-			for (int i = 0; i < NUM_THREADS; i ++)
+			for (int i = 0; i < NUM_THREADS; i++)
 				pthread_create(&threads[i], NULL, bucketSort_sense, (void*)NULL);
-			for (int i = 0; i < NUM_THREADS; i ++)
+			for (int i = 0; i < NUM_THREADS; i++)
 				pthread_join(threads[i], NULL);
 			break;
 		// bar pthread
 		case 2:
 			pthread_barrier_init(&bar, NULL, NUM_THREADS);
-			for (int i = 0; i < NUM_THREADS; i ++)
+			for (int i = 0; i < NUM_THREADS; i++)
 				pthread_create(&threads[i], NULL, bucketSort_bar_pthread, (void*)NULL);
-			for (int i = 0; i < NUM_THREADS; i ++)
+			for (int i = 0; i < NUM_THREADS; i++)
 				pthread_join(threads[i], NULL);
 			pthread_barrier_destroy(&bar);
 			break;
 		// lock tas
 		case 3:
-			for (int i = 0; i < NUM_THREADS; i ++)
+			for (int i = 0; i < NUM_THREADS; i++)
 				pthread_create(&threads[i], NULL, bucketSort_TAS, (void*)NULL);
-			for (int i = 0; i < NUM_THREADS; i ++)
+			for (int i = 0; i < NUM_THREADS; i++)
 				pthread_join(threads[i], NULL);
 			break;
 		// lock ttas
 		case 4:
-			for (int i = 0; i < NUM_THREADS; i ++)
+			for (int i = 0; i < NUM_THREADS; i++)
 				pthread_create(&threads[i], NULL, bucketSort_TTAS, (void*)NULL);
-			for (int i = 0; i < NUM_THREADS; i ++)
+			for (int i = 0; i < NUM_THREADS; i++)
 				pthread_join(threads[i], NULL);
 			break;
 		// lock ticket
 		case 5:
-			for (int i = 0; i < NUM_THREADS; i ++)
+			for (int i = 0; i < NUM_THREADS; i++)
 				pthread_create(&threads[i], NULL, bucketSort_ticket_lock, (void*)NULL);
-			for (int i = 0; i < NUM_THREADS; i ++)
+			for (int i = 0; i < NUM_THREADS; i++)
 				pthread_join(threads[i], NULL);
 			break;
 		// lock pthread
 		case 6:
 			pthread_mutex_init(&mutexLock, NULL);
-			for (int i = 0; i < NUM_THREADS; i ++)
+			for (int i = 0; i < NUM_THREADS; i++)
 				pthread_create(&threads[i], NULL, bucketSort_lock_pthread, (void*)NULL);
-			for (int i = 0; i < NUM_THREADS; i ++)
+			for (int i = 0; i < NUM_THREADS; i++)
 				pthread_join(threads[i], NULL);
 			pthread_mutex_destroy(&mutexLock);
 			break;
@@ -158,7 +157,7 @@ int main(int argc, const char* argv[]){
 	}
 
 	// execute a final sort
-	sort(arr, arr+arraysize);
+	// sort(arr, arr+arraysize);
 	// execution end time
 	auto end_time = Clock::now();
 	// unsigned int 4,294,967,295, which is only 4.3 seconds
@@ -199,12 +198,12 @@ void sense_wait() {
 }
 void *bucketSort_sense(void *args) {
 	int tid = atomicTID++;
-	int low = ((tid - 1) * arraysize) / NUM_THREADS;
-	int high = ((tid * arraysize) / NUM_THREADS) - 1;
-	bucketSort_sense_fn(low, high, tid, args);
+	int low = (tid  * arraysize) / NUM_THREADS;
+	int high = (((tid + 1) * arraysize) / NUM_THREADS) - 1;
+	bucketSort_sense_fn(low, high, tid);
 	return 0;
 }
-void bucketSort_sense_fn(int low, int high, int tid, void *args) {
+void bucketSort_sense_fn(int low, int high, int tid){
 	int max_value = 0;
 
 	// find max key value in arr
@@ -234,12 +233,12 @@ void bucketSort_sense_fn(int low, int high, int tid, void *args) {
 /* ****** pthread ****** */
 void *bucketSort_bar_pthread(void *args) {
 	int tid = atomicTID++;
-	int low = ((tid - 1) * arraysize) / NUM_THREADS;
-	int high = ((tid * arraysize) / NUM_THREADS) - 1;
-	bucketSort_bar_pthread_fn(low, high, tid, args);
+	int low = (tid  * arraysize) / NUM_THREADS;
+	int high = (((tid + 1) * arraysize) / NUM_THREADS) - 1;
+	bucketSort_bar_pthread_fn(low, high, tid);
 	return 0;
 }
-void bucketSort_bar_pthread_fn(int low, int high, int tid, void *args) {
+void bucketSort_bar_pthread_fn(int low, int high, int tid){
 	int max_value = 0;
 
 	// find max key value in arr
@@ -280,12 +279,12 @@ void tas_unlock() {
 }
 void *bucketSort_TAS(void *args) {
 	int tid = atomicTID++;
-	int low = ((tid - 1) * arraysize) / NUM_THREADS;
-	int high = ((tid * arraysize) / NUM_THREADS) - 1;
-	bucketSort_TAS_fn(low, high, tid, args);
+	int low = (tid  * arraysize) / NUM_THREADS;
+	int high = (((tid + 1) * arraysize) / NUM_THREADS) - 1;
+	bucketSort_TAS_fn(low, high, tid);
 	return 0;
 }
-void bucketSort_TAS_fn(int low, int high, int tid, void *args) {
+void bucketSort_TAS_fn(int low, int high, int tid){
 	int max_value = 0;
 
 	// find max key value in arr
@@ -318,12 +317,12 @@ void ttas_lock() {
 }
 void *bucketSort_TTAS(void *args) {
 	int tid = atomicTID++;
-	int low = ((tid - 1) * arraysize) / NUM_THREADS;
-	int high = ((tid * arraysize) / NUM_THREADS) - 1;
-	bucketSort_TTAS_fn(low, high, tid, args);
+	int low = (tid  * arraysize) / NUM_THREADS;
+	int high = (((tid + 1) * arraysize) / NUM_THREADS) - 1;
+	bucketSort_TTAS_fn(low, high, tid);
 	return 0;
 }
-void bucketSort_TTAS_fn(int low, int high, int tid, void *args) {
+void bucketSort_TTAS_fn(int low, int high, int tid){
 	int max_value = 0;
 
 	// find max key value in arr
@@ -349,7 +348,6 @@ void bucketSort_TTAS_fn(int low, int high, int tid, void *args) {
 	tas_unlock();
 }
 
-
 /* ****** ticket ****** */
 void ticket_lock() {
 	// fai is fetch and increment, but not in C++?
@@ -361,12 +359,12 @@ void ticket_unlock() {
 }
 void *bucketSort_ticket_lock(void *args) {
 	int tid = atomicTID++;
-	int low = ((tid - 1) * arraysize) / NUM_THREADS;
-	int high = ((tid * arraysize) / NUM_THREADS) - 1;
-	bucketSort_ticket_lock_fn(low, high, tid, args);
+	int low = (tid  * arraysize) / NUM_THREADS;
+	int high = (((tid + 1) * arraysize) / NUM_THREADS) - 1;
+	bucketSort_ticket_lock_fn(low, high, tid);
 	return 0;
 }
-void bucketSort_ticket_lock_fn(int low, int high, int tid, void *args) {
+void bucketSort_ticket_lock_fn(int low, int high, int tid){
 	int max_value = 0;
 
 	// find max key value in arr
@@ -393,14 +391,14 @@ void bucketSort_ticket_lock_fn(int low, int high, int tid, void *args) {
 }
 
 /* ****** pthread ****** */
-void *bucketSort_lock_pthread(void *args) {
+void *bucketSort_lock_pthread(void *) {
 	int tid = atomicTID++;
-	int low = ((tid - 1) * arraysize) / NUM_THREADS;
-	int high = ((tid * arraysize) / NUM_THREADS) - 1;
-	bucketSort_lock_pthread_fn(low, high, tid, args);
+	int low = (tid  * arraysize) / NUM_THREADS;
+	int high = (((tid + 1) * arraysize) / NUM_THREADS) - 1;
+	bucketSort_lock_pthread_fn(low, high, tid);
 	return 0;
 }
-void bucketSort_lock_pthread_fn(int low, int high, int tid, void *args) {
+void bucketSort_lock_pthread_fn(int low, int high, int tid) {
 	int max_value = 0;
 
 	// find max key value in arr
@@ -414,50 +412,17 @@ void bucketSort_lock_pthread_fn(int low, int high, int tid, void *args) {
 	for (int i = low; i <= high; i++)
 		buckets[arr[i]]++;
 
-	pthread_mutex_lock(&mutexLock);
 	// concatenate all buckets into arr[]
 	for (int i = 0; i < buckets.capacity(); i++) {
 		for (int j = 0; j < buckets[i]; j++) {
+			pthread_mutex_lock(&mutexLock);
 			arr[b_count++] = i;
-		}
-	}
-	pthread_mutex_unlock(&mutexLock);
-}
-
-/* ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ BUCKET SORT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ */
-void bucketSort(int low, int high) {
-	int max_value = 0;
-
-	// find max key value in arr
-
-	for (int i = low; i <= high; i++)
-		if (arr[i] > max_value) max_value = arr[i];
-
-	// create n empty local buckets
-	auto buckets = vector<unsigned >(static_cast<unsigned int>(max_value + 1));
-
-	// put array elements in different buckets
-	for (int i = low; i <= high; i++)
-		buckets[arr[i]]++;
-
-	// concatenate all buckets into arr[]
-	for (int i =  0; i < buckets.capacity(); i++) {
-		for (int j =  0; j < buckets[i]; j++) {
-				arr[b_count++] = i;
+			pthread_mutex_unlock(&mutexLock);
 		}
 	}
 }
-void* lk_bucketSort(void* args) {
-	size_t tid = *((size_t*)args);
-	int arrsplit = arraysize / NUM_THREADS;
-	int low = tid * arrsplit;
-	int high = ((tid + 1) * arrsplit);
-	lock_guard<mutex> guard(b_lock);
-	bucketSort(low, high);
-	return 0;
-}
 
-//check if array sorted correctly - by comparing two arrays (one sorted with sort())
+// check if array sorted correctly - by comparing two arrays (one sorted with sort())
 void arrayCheck(int asize, int *a1, int *aCheck2) {
 	for (int i = 0; i < asize; i++) {
 		if (a1[i] != aCheck2[i]) {
