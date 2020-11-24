@@ -36,7 +36,7 @@ pthread_mutex_t mutexLock;
 pthread_mutexattr_t mutexAttr;
 atomic<int> sense (0), cnt (0), count (0);
 atomic<int> next_num (0), now_serving (0);
-atomic<bool> tas_flag (0);
+atomic<bool> tas_flag (false);
 int arraysize = 0;
 vector<int> arr;
 atomic<int> b_count (0);
@@ -49,9 +49,9 @@ void sense_wait();
 void *bucketSort_sense(void *);
 void *bucketSort_bar_pthread(void *);
 /* lock functions */
-bool tas();
-void tas_lock();
-void tas_unlock();
+static bool tas();
+static void tas_lock();
+static void tas_unlock();
 void *bucketSort_TAS(void *arg);
 void ttas_lock();
 void *bucketSort_TTAS(void *arg);
@@ -145,14 +145,11 @@ int main(int argc, const char* argv[]){
 			break;
 		// lock pthread
 		case 6:
-			pthread_mutexattr_init(&mutexAttr);
-			pthread_mutexattr_setpshared(&mutexAttr, PTHREAD_PROCESS_SHARED);
 			pthread_mutex_init(&mutexLock, NULL);
 			for (int i = 0; i < NUM_THREADS; i++)
 				pthread_create(&threads[i], NULL, bucketSort_lock_pthread, (void*)i);
 			for (int i = 0; i < NUM_THREADS; i++)
 				pthread_join(threads[i], NULL);
-			pthread_mutexattr_destroy(&mutexAttr);
 			pthread_mutex_destroy(&mutexLock);
 			break;
 		// something didn't match up
@@ -274,16 +271,16 @@ void bucketSort_bar_pthread_fn(int low, int high){
 
 /* *************** LOCK FUNCTIONS *************** */
 /* ****** tas ****** */
-bool tas() {
+static bool tas() {
 	if (tas_flag == false){
-		tas_flag = true;
-		return true;
+		tas_flag.store(true, SEQ_CST);
+		return tas_flag;
 	} else return false;
 }
-void tas_lock() {
+static void tas_lock() {
 	while(tas() == false) {}
 }
-void tas_unlock() {
+static void tas_unlock() {
 	tas_flag.store(false, SEQ_CST);
 }
 void *bucketSort_TAS(void *arg) {
@@ -321,8 +318,8 @@ void bucketSort_TAS_fn(int low, int high){
 
 /* ****** ttas ****** */
 void ttas_lock() {
-	while(tas_flag.load(SEQ_CST) == true
-				|| tas() == false) {}
+	while(tas_flag.load(SEQ_CST))
+		if(tas() == false) return;
 }
 void *bucketSort_TTAS(void *arg) {
 	int tid = (int)(size_t)arg;

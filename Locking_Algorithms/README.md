@@ -1,12 +1,36 @@
 # 🔒 C++ locking algorithms
 Using two different sorting algorithms and two different paralellization strategies(fork/join and locks), this program sorts a (specified) *.txt*  file of unique integers and outputs the sorted list to a different (specified) *.txt* file. The input *.txt* file will be an unsorted data structure [Standard Template Library (STL) vector]. This is to emulate the performance of the UNIX `sort-n` command.
 
+#### Barrier Algorithms:
+  1. **Sense-reversal barrier** - Each sequential barrier uses an opposite value of the previous barrier's value as a pass/stop state. By not using the same value, this barrier algorithm solves for potential deadlocking issues. For example, if barrier 1 uses the value 0 to stop the threads, barrier 2 will use 1 to stop, barrier 3 will use 0, barrier 4 will use 1, and so forth. In the algorithm, it simply flips (0/1) the value each time. 
+  2. **Pthread barrier** - Implementation of pthread locks is setup from initializing how many threads to expect at the barrier. Once all threads have arrived, the barrier call will *unlock* and the threads will continue until either finished, or another barrier is set. Once the threads are complete, they will join to the main thread as a sense of notification that the worker threads are complete (and then dead).
+
 #### Locking Algorithms:
-  1. **Test-and-set (TAS) lock** - test a lock (true/false; obtain when false), and then set lock
-  2. **Test-and-test-and-set (TTAS) lock** - modified version of TAS, and tests until unlocked (set false)
-  3. **Ticket lock** - atomic counters
-  4. **MCS Lock** - <not implemented> 
-  5. **Sense-reversal barrier** -
+  1. **Test-and-set (TAS) lock** - using a single atomic value, TAS functionality tests a lock (true/false; obtain when false), and then sets lock. In the algorithm, a constant spinning loop tests against the lock to see when it's set to false (0). And once 0, it obtains the lock by setting the atomic value to 1. One issue with TAS is it's unfairness with not guaranteeing FIFO ordering for threading competing against the lock. This algorithm is easy to implement, but horrible for scaling. 
+  2. **Test-and-test-and-set (TTAS) lock** - more elaborate locking based on a modified version of TAS. In additional to test the lock, it also continuously checks the memory to see if the lock has been obtained. Once free, it attempts to take the lock by using test and set. So the additional 'test' comes from testing the memory of the lock, before trying to test and set it. 
+  3. **Ticket lock** - a queue like algorithm that uses two atomic counters, one which designates who is up, and who is next. Though this could lead to starvation of some threads, it allows for the next thread (among all) to know it's got CPU access next. This is also a spinlock, where the next in the queue waits until it's equal to the value now available. Both of these counters will increment as the locks/unlocks occur. 
+  4. **MCS bock** - <not implemented> 
+  5. **Pthread lock** - using mutex locks and an atomic shared variable 
+
+#### Sorting List Structure
+  - Migrated from an *array*, and switched to using a *vector*. Some differences (and ultimate reasoning for decision) are outlined below.  
+
+                | Array   | Vector  | Additional Notes |
+  |:----        | :---:   | :----:  |  :--
+  |Synchronized | No      | Yes     |   1
+  |Implement | Statically or Dynamically | Dynamic arrays with list interface | 2
+  |Size         | Fixed | Dynamic |   3 
+  |Deallocation | Explicitly  | Automatically | 4
+  |Size Determination | undetermined | O(1) time | 5
+  |Reallocation | Explicitly  | Implicitly  | 6
+  |Returned through func? | No | Yes 
+  |Copied Directly? | No  | Yes
+  |Assigned Directly? | No | Yes
+
+
+  1. Only one thread at a time can access the code with vectors, while arrays allow for multiple threads to work on it at the same time. This is turn causes thread waiting for vectors.
+  2. 
+  3. Size: The size of an array is fixed, and expensive to reallocate. Vectors, on the other hand, are resizable since they are allocated on heap memory. 
 
 #### 🗜️ Added functionality:
   1. Fork/join parellelism - implementation of fork, join, and barriers
@@ -124,4 +148,5 @@ BucketSort | pthread | 0.000349     | 96.53%            | 97.46%                
 2. [clock and time functions](https://linux.die.net/man/2/clock_gettime)
 3. [chrono high resolution time accuracy](https://www.tutorialspoint.com/how-to-create-a-high-resolution-timer-with-cplusplus-and-linux)
 4. [atomic fetch add](https://apimirror.com/c/atomic/atomic_fetch_add) - since fai not available
+10. [Advantages of vector over array in C++](https://www.geeksforgeeks.org/advantages-of-vector-over-array-in-c/)
 9. Class lecture slides, along with 80+ hours of 'tinkering'
