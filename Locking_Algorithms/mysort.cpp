@@ -34,12 +34,11 @@ size_t NUM_THREADS = 0;
 pthread_barrier_t bar;
 pthread_mutex_t mutexLock;
 pthread_mutexattr_t mutexAttr;
-atomic<int> sense (0), cnt (0), count (0);
+atomic<int> sense (0), cnt (0), count (0), b_count (0);
 atomic<int> next_num (0), now_serving (0);
 atomic<bool> tas_flag (false);
+vector<int> arr, arrCheck;
 int arraysize = 0;
-vector<int> arr;
-atomic<int> b_count (0);
 
 /* execution time struct */
 typedef chrono::high_resolution_clock Clock;
@@ -68,7 +67,7 @@ void bucketSort_TTAS_fn(int low, int high);
 void bucketSort_ticket_lock_fn(int low, int high);
 void bucketSort_lock_pthread_fn(int low, int high);
 /* array checker */
-void arrayCheck(int asize, int *a1, int *a2);
+void arrayCheck(int asize, vector<int> a1, vector<int> aCheck2);
 
 
 /* ===================== MAIN ==================== */
@@ -90,13 +89,12 @@ int main(int argc, const char* argv[]){
 	string line;
 	while (getline(file, line)) arraysize++;
 	arr.resize(arraysize);
-	int arrYa[arraysize];
-	int arrCheck[arraysize];
+	arrCheck.resize(arraysize);
 	fstream infile(inputFile, ios_base::in);
 	while (infile >> a) {
-		arr[b] = arrCheck[b] = arrYa[b] = a;
-		b++;
+		arr[b++] = a;
 	}
+	arrCheck = arr;
 
 	// execution start time
 	auto start_time = Clock::now();
@@ -158,11 +156,8 @@ int main(int argc, const char* argv[]){
 			exit(-1);
 	}
 
-	for (int i = 0; i < arraysize; i++) {
-		arrYa[i] = arr[i];
-	}
 	// execute a final sort
-	sort(arrYa, arrYa+arraysize);
+	sort(arr.begin(), arr.end());
 	// execution end time
 	auto end_time = Clock::now();
 	// unsigned int 4,294,967,295, which is only 4.3 seconds
@@ -172,13 +167,13 @@ int main(int argc, const char* argv[]){
 	// printf("                %f seconds\n", time_spent/1e9);
 
 	/* check to make sure the array is sorted as expected */
-	sort(arrCheck, arrCheck + arraysize); // sort
-	arrayCheck(arraysize, arrYa, arrCheck); // check against bucketsort
+	sort(arrCheck.begin(), arrCheck.end()); // sort
+	arrayCheck(arraysize, arr, arrCheck); // check against bucketsort
 
 	/* WRITE SORTED ARRAY TO FILE */
 	ofstream outfile;
 	outfile.open(outputFile);
-	for (int i = 0; i < arraysize; i++) outfile << arrYa[i] << endl;
+	for (int i = 0; i < arraysize; i++) outfile << arr[i] << endl;
 	outfile.close();
 
 	// free dynamic memory
@@ -429,7 +424,7 @@ void bucketSort_lock_pthread_fn(int low, int high) {
 }
 
 // check if array sorted correctly - by comparing two arrays (one sorted with sort())
-void arrayCheck(int asize, int *a1, int *aCheck2) {
+void arrayCheck(int asize, vector<int> a1, vector<int> aCheck2) {
 	for (int i = 0; i < asize; i++) {
 		if (a1[i] != aCheck2[i]) {
 			printf("Array is incorrectly sorted!\nbucket_sort(%i) != sort(%i) at position [%i]\n", a1[i], aCheck2[i], i);
