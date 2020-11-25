@@ -1,5 +1,4 @@
 # 🔒 C++ barrier & locking algorithms
----
 A benchmark (counter) is used to increment a global atomic counter (integer) using various barrier and locking algorithms (listed below). Additionally, the same algorithms are used while using a bucket sort algorithm. This sorting algorithm takes an unsorted (specified) *.txt* file of unique (random) integers and outputs a sorted list of integers to a different (specified) *.txt* file.
 
 #### Counter program (benchmark)
@@ -40,8 +39,6 @@ Using the same algorithms as the benchmark program, this bucket sorting algorith
   5. Vectors can be copied directly (example: vec1 = vec2), where arrays need to be iterated when copied. Same applied for assignment. (arr1 = arr2 would produce an error)
 
 ## Code Organization
----
-
 #### 📁 Files
   1. `Makefile` - used to create and remove executable C++11 objects 
   2. `mysort.cpp` - bucket sort using bars and locks
@@ -63,7 +60,6 @@ Using the same algorithms as the benchmark program, this bucket sorting algorith
   4. Additionally, `make numGen` will generate the executable object to generate random numbers to a .txt file (set to *source.txt*).
 
 ## Execution
----
 #### Program option/input parameters for `counter`
 ```shell
 > counter [--name]
@@ -106,7 +102,6 @@ Example of program execution for mysort, reading from an input file of source.tx
 ```
 
 ## Analyzing program performances, using `perf`
----
 ## Barriers
 #### For L1 cache hit rate
 ```shell
