@@ -1,3 +1,5 @@
+#ifdef __APPLE__
+
 #ifndef CNT_ARG_PARSER
 #define CNT_ARG_PARSER
 
@@ -72,3 +74,4 @@ struct arg_params arg_parser(int argc, const char* argv[]){
 }
 
 #endif // CNT_ARG_PARSER
+#endif // __APPLE__

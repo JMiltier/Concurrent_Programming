@@ -1,3 +1,5 @@
+#ifdef __APPLE__
+
 #ifndef ARG_PARSER
 #define ARG_PARSER
 
@@ -70,3 +72,4 @@ struct arg_params arg_parser(int argc, const char* argv[]){
 }
 
 #endif // ARG_PARSER
+#endif // __APPLE__

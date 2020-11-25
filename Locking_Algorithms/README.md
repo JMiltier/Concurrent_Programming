@@ -71,6 +71,7 @@ Using the same algorithms as the benchmark program, this bucket sorting algorith
 <div style="page-break-after: always; visibility: hidden">\pagebreak</div>
 
 ## Execution
+---
 #### Program option/input parameters for `counter`
 ```shell
 > counter [--name]
@@ -114,7 +115,7 @@ Example of program execution for mysort, reading from an input file of source.tx
 
 <div style="page-break-after: always; visibility: hidden">\pagebreak</div>
 
-## Program stats average, using `perf`
+## Analyzing program performances, using `perf`
 ---
 ## Barriers
 #### For L1 cache hit rate
