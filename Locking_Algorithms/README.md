@@ -201,7 +201,6 @@ Overall among benchmarking and mysort performance tests, locking algorithms seem
 19. [atomic fetch add](https://apimirror.com/c/atomic/atomic_fetch_add) - since 'fai' not available
 20. [Advantages of vector over array in C++](https://www.geeksforgeeks.org/advantages-of-vector-over-array-in-c/)
 21. [Awesome videos on locks and atomics](https://herbsutter.com/2013/02/11/atomic-weapons-the-c-memory-model-and-modern-hardware/)
-22. Class lecture slides, along with 80+ hours of 'tinkering'
 
 <!-- CREATE README PDF -->
 <!-- md2pdf README.md --highlight-style atom-one-dark --pdf-options '{ "format": "Letter", "margin": "20mm", "printBackground": true }' -->
