@@ -17,7 +17,6 @@ Using the same algorithms as the benchmark program, this bucket sorting algorith
   2. **Test-and-test-and-set (TTAS) lock** - more elaborate locking based on a modified version of TAS. In additional to test the lock, it also continuously checks the memory to see if the lock has been obtained. Once free, it attempts to take the lock by using test and set. So the additional 'test' comes from testing the memory of the lock, before trying to test and set it. 
   3. **Ticket lock** - a queue like algorithm that uses two atomic counters, one which designates who is up, and who is next. Though this could lead to starvation of some threads, it allows for the next thread (among all) to know it's got CPU access next. This is also a spinlock, where the next in the queue waits until it's equal to the value now available. Both of these counters will increment as the locks/unlocks occur. 
   4. **Pthread lock** - using a single mutex lock and an atomic shared variable, this lock first initializes the mutex lock, and then locks/unlocks (sets) the lock using the built in pthread library. This lock also destroys the lock once all threads have merged back to the master thread.
-<div style="page-break-after: always; visibility: hidden">\pagebreak</div>
 
 ### Sorting List Structure
   - Migrated from an *array*, and switched to using a *vector*. Some differences (and ultimate reasoning for decision) are outlined below.
