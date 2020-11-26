@@ -1,0 +1,12 @@
+*.pdf
+*.zip
+*.text
+*.txt
+*.webloc
+*.dSYM
+*.out
+Test Machines*
+/jomi*
+
+# executable file
+counter
