@@ -107,7 +107,7 @@ mysort  | pthread | 0.000531     | 96.56%            | 97.58%                   
 
 ### Lock Perf Table (Iteration/Array at 1000, 10 threads, and 10 repeated runs (average))
 Program | Lock    | Run Time (s) | L1 cache hit rate | branch-prediction hit rate | page-fault
-:--------- | :------ | :----------- | :---------------- | :------------------------- | :---------
+:------ | :------ | :----------- | :---------------- | :------------------------- | :---------
 counter | tas     | 0.000574     | 92.37%            | 97.01%                     | 144
 counter | ttas    | 0.000705     | 93.40%            | 97.07%                     | 145
 counter | ticket  | 0.001021     | 96.17%            | 98.69%                     | 145
