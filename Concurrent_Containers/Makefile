@@ -27,7 +27,7 @@ CNTRSRC=counter.cpp
 NUMGENPRGM=numGen
 NUMGENSRC=randomNumberGen.cpp
 
-all: clean $(CNTRPRGM) $(SORTPRGM)
+all: clean $(CNTNRPRGM)
 
 # containers
 $(CNTNRPRGM): $(CNTNRSRC)
@@ -43,4 +43,4 @@ $(NUMGENPRGM): $(NUMGENSRC)
 
 # clean all objects
 clean:
-	rm -rf $(SORTPRGM) $(CNTRPRGM) $(NUMGENPRGM)
+	rm -rf $(CNTNRPRGM) $(NUMGENPRGM)

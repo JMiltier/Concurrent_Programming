@@ -19,8 +19,9 @@
 using namespace std;
 
 /* variables */
-size_t NUM_THREADS = 0;
-size_t NUM_ITERATIONS = 0;
+pthread_t* threads;
+size_t NUM_THREADS, algorithm, s, a, b=0;
+string inputFile, line;
 vector<int> test_vec;
 
 /* execution time struct */

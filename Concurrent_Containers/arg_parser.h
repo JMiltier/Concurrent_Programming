@@ -22,10 +22,10 @@ struct arg_params arg_parser(int argc, const char* argv[]){
     if (argc == 2 && string(argv[1]) == "--name"){
       printf("Josh Miltier\n"); // check for --name
       exit(-1);
-    } else if (argc == 8) {} // continue on to execution
+    } else if (argc == 5) {} // continue on to execution
     else { // catch all else
       printf("\nERROR: Program option parameters are invalid.\n"
-             "         Expected 7 options, but got %i.\n"
+             "         Expected 4 options, but got %i.\n"
              "         Refer to the README for execution instructions.\n\n", argc-1);
       exit(-1);
     }
@@ -55,12 +55,12 @@ struct arg_params arg_parser(int argc, const char* argv[]){
     // }
 
     // container type <sgl_stack,sgl_queue,treiber_stack,ms_stack> (argv 4)
-    if (string(argv[4]) == "--container=sgl_stack") args.ALGORITHM= 1;
-    else if (string(argv[4]) == "--container=sgl_queue") args.ALGORITHM= 2;
-    else if (string(argv[4]) == "--container=treiber_stack") args.ALGORITHM = 3;
-    else if (string(argv[4]) == "--container=ms_stack") args.ALGORITHM = 4;
-    else if (string(argv[4]) == "--container=1") args.ALGORITHM = 5;
-    else if (string(argv[4]) == "--container=2") args.ALGORITHM = 6;
+    if (string(argv[4]) == "--algorithm=sgl_stack") args.ALGORITHM= 1;
+    else if (string(argv[4]) == "--algorithm=sgl_queue") args.ALGORITHM= 2;
+    else if (string(argv[4]) == "--algorithm=treiber_stack") args.ALGORITHM = 3;
+    else if (string(argv[4]) == "--algorithm=ms_stack") args.ALGORITHM = 4;
+    else if (string(argv[4]) == "--algorithm=1") args.ALGORITHM = 5;
+    else if (string(argv[4]) == "--algorithm=2") args.ALGORITHM = 6;
     else {
       printf("ERROR: argument does not exist. Try '--container=' with an available specified method. Refer to README if needed.\n");
       exit(-1);

@@ -13,10 +13,10 @@ A series of code execution that only commits all if the entire run is completed 
 For the sake of resources available, and class slides, concurrent containers seemed to have the greatest amount of references. As discovered, these are added to the resources section at the end of this document. 
 
 ## Algorithm Descriptions
-#### Single Global Lock (SGL) Stack
-#### Single Global Lock (SGL) Queue
-#### Treiber Stack
-#### Michael and Scott (M&S) stack
+#### Single Global Lock (SGL) Stack (LIFO)
+#### Single Global Lock (SGL) Queue (FIFO)
+#### Treiber Stack (LIFO)
+#### Michael and Scott (M&S) Stack (LIFO)
 
 ## Code Organization
 #### 📁 Files
