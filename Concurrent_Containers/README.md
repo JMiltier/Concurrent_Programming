@@ -17,6 +17,7 @@ For the sake of resources available, and class slides, concurrent containers see
 #### SGL Queue
 #### Treiber Stack
 #### Michael and Scott (M&S) stack
+
 ## Code Organization
 #### 📁 Files
   1. `Makefile` - used to create and remove executable C++11 objects 
