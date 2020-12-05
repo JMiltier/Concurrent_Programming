@@ -13,8 +13,8 @@ A series of code execution that only commits all if the entire run is completed 
 For the sake of resources available, and class slides, concurrent containers seemed to have the greatest amount of references. As discovered, these are added to the resources section at the end of this document. 
 
 ## Algorithm Descriptions
-#### SGL Stack
-#### SGL Queue
+#### Single Global Lock (SGL) Stack
+#### Single Global Lock (SGL) Queue
 #### Treiber Stack
 #### Michael and Scott (M&S) stack
 
@@ -38,24 +38,22 @@ For the sake of resources available, and class slides, concurrent containers see
   4. Additionally, `make numGen` will generate the executable object to generate random numbers to a .txt file (set to *source.txt*).
 
 ## Execution
-#### Program option/input parameters for `counter`
+#### Program option/input parameters for `containers`
 ```shell
-> counter [--name]
+> containers [--name]
 ```
-`counter --name`: prints name to console.  
+`containers --name`: prints name to console.  
 **OR**  
 ```shell
-> counter [-t NUM THREADS] [-i=NUM_ITERATIONS] [--bar=<sense,pthread>] [--lock=<tas,ttas,ticket,mcs,pthread>] [-o out.txt]
+> containers [-t NUM THREADS] [-i=NUM_ITERATIONS] 
 ```
   1. `-t NUM_THREADS`: specify how many threads to use during execution (including master thread)
   2. `-i=NUM_ITERATIONS`: number of times to increment counter on each thread
-  3. `--bar=<sense,pthread>`: type of barrier algorithm to use
-  4. `--lock=<tas,ttas,ticket,mcs,pthread>`: type of locking algorithm to use
-  5. `-o out.txt`: sorted txt file of numebrs, in which the program outputs/writes to
+  3. `--container=<sgl_stack,sgl_queue,treiber_stack,ms_stack>`: type of barrier algorithm to use
   - **Additional outputs**: time of execution in nanoseconds  
 Example of program execution, using 10 threads, 1000 iterations for each thread, TAS locking algorithm, and writing to file out.txt:
 ```shell
-> ./counter -t 10 -i=1000 --lock=tas -o out.txt
+> ./containers -t 10 -i=1000 --lock=tas -o out.txt
 ```
 
 ## Analyzing program performances, using `perf`
@@ -131,10 +129,13 @@ Overall among benchmarking and mysort performance tests, locking algorithms seem
   - Creating/Joining of threads is out of order for locks, so sometimes fails bucket sorting.
 
 #### Resources:
-1. [Scalable Lock-free Stack Algorithm](https://people.csail.mit.edu/shanir/publications/Lock_Free.pdf)
+1. [*Scalable Lock-free Stack Algorithm](https://people.csail.mit.edu/shanir/publications/Lock_Free.pdf)
 2. [Flat Combining the Synchronization-Parallelism Tradeoff](http://mcg.cs.tau.ac.il/papers/spaa2010-fc.pdf)
 3. [The Baskets Queue](https://people.csail.mit.edu/shanir/publications/Baskets%20Queue.pdf) 
 4. [Concurrent Queue](https://github.com/cameron314/concurrentqueue)
+5. [A queue among three threads](https://www.geeksforgeeks.org/sharing-queue-among-three-threads/)
+6. [Lock-free programming](http://www.cs.cmu.edu/afs/cs/academic/class/15418-f18/www/lectures/17_lockfree.pdf)
+7. [Multi-threading](https://www.bogotobogo.com/cplusplus/multithreaded4_cplusplus11B.php)
 
 <!-- CREATE README PDF -->
 <!-- md2pdf README.md --highlight-style atom-one-dark --pdf-options '{ "format": "Letter", "margin": "20mm", "printBackground": true }' -->

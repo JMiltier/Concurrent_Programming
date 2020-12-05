@@ -20,8 +20,8 @@ CFLAGS = -w
 STD = -std=c++11
 
 # variables
-SORTPRGM=mysort
-SORTSRC=mysort.cpp
+CNTNRPRGM=containers
+CNTNRSRC=containers.cpp
 CNTRPRGM=counter
 CNTRSRC=counter.cpp
 NUMGENPRGM=numGen
@@ -29,13 +29,13 @@ NUMGENSRC=randomNumberGen.cpp
 
 all: clean $(CNTRPRGM) $(SORTPRGM)
 
-# counter
-$(CNTRPRGM): $(CNTRSRC)
-	$(CC) $(STD) $(CFLAGS) $(CNTRSRC) -o $(CNTRPRGM) -lpthread
+# containers
+$(CNTNRPRGM): $(CNTNRSRC)
+	$(CC) $(STD) $(CFLAGS) $(CNTNRSRC) -o $(CNTNRPRGM)
 
 # mysort
 $(SORTPRGM): $(SORTSRC)
-	$(CC) $(STD) $(CFLAGS) $(SORTSRC) -o $(SORTPRGM) -lpthread
+	$(CC) $(STD) $(CFLAGS) $(SORTSRC) -o $(SORTPRGM)
 
 # random numbers generation
 $(NUMGENPRGM): $(NUMGENSRC)
