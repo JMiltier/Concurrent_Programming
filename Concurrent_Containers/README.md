@@ -1,10 +1,10 @@
 # C++ Parallel Algorithms
 
-
 #### Concurrent Tree
 A tree, whether a binary search tree (BST), radix tree, red-black tree (RBT), or any other tree imagineable, allowing for multiple reads/writes/deletes functionalities for parallism. Ideally, all reads are lock-free, meaning any read threads should not block. These read threads should always see a consistent version of the tree, and should never block writing threads. As for the writing threads, they should block other writing threads, but not any reading threads. Writing threads blocking writing threads ensures consistency when modifying the tree. [Additional info](https://www.cs.cmu.edu/~yihans/papers/tutorial.pdf) and for [BST](https://stanford-ppl.github.io/website/papers/ppopp207-bronson.pdf)
 
 #### Concurrent Containers
+Several concurrent algorithms with an elimination: SGL stack and queue, Treiber stack, and M&S stack. Additionally flat-combining stack and queue. 
 
 #### Transactions
 A series of code execution that only commits all if the entire run is completed successfully. Othwerise, it will abort (fail) and roll back. Doing this in parallel seems odd, being that it may be need to wait on one (sequentially) function to run before another. This seems extremely useful for database management. More importantly, there seems that there may be some additional troubleshooting for transactions that may not be discovered until further implemented. [Additional read](https://ashutoshtripathi.com/2017/11/28/concurrent-executions-in-transaction/)
@@ -12,10 +12,15 @@ A series of code execution that only commits all if the entire run is completed 
 #### Decision of Parallel Algorithm to implement
 For the sake of resources available, and class slides, concurrent containers seemed to have the greatest amount of references. As discovered, these are added to the resources section at the end of this document. 
 
+## Algorithm Descriptions
+#### SGL Stack
+#### SGL Queue
+#### Treiber Stack
+#### Michael and Scott (M&S) stack
 ## Code Organization
 #### 📁 Files
   1. `Makefile` - used to create and remove executable C++11 objects 
-  2. `container.cpp` - bucket sort using bars and locks
+  2. `container.cpp` - main file
   3. `arg_parser.h` - parsing and error handling for mysort program input options
   6. `README.pdf` - write-up for project (this file)
 
