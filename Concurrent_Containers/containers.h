@@ -18,8 +18,10 @@
 
 using namespace std;
 
+/* variables */
 size_t NUM_THREADS = 0;
 size_t NUM_ITERATIONS = 0;
 vector<int> test_vec;
+
 /* execution time struct */
 typedef chrono::high_resolution_clock Clock;

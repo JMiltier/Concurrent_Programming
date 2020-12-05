@@ -45,15 +45,15 @@ For the sake of resources available, and class slides, concurrent containers see
 `containers --name`: prints name to console.  
 **OR**  
 ```shell
-> containers [-t NUM THREADS] [-i=NUM_ITERATIONS] 
+> containers [-t NUM THREADS] [-i=NUM_ITERATIONS] --container=<sgl_stack,sgl_queue,treiber_stack,ms_stack>
 ```
   1. `-t NUM_THREADS`: specify how many threads to use during execution (including master thread)
-  2. `-i=NUM_ITERATIONS`: number of times to increment counter on each thread
-  3. `--container=<sgl_stack,sgl_queue,treiber_stack,ms_stack>`: type of barrier algorithm to use
+  <!-- 2. `-i=NUM_ITERATIONS`: number of times to increment counter on each thread -->
+  2. `--container=<sgl_stack,sgl_queue,treiber_stack,ms_stack>`: type of algorithm to use
   - **Additional outputs**: time of execution in nanoseconds  
-Example of program execution, using 10 threads, 1000 iterations for each thread, TAS locking algorithm, and writing to file out.txt:
+Example of program execution, using 10 threads, and sgl_stack algorithm
 ```shell
-> ./containers -t 10 -i=1000 --lock=tas -o out.txt
+> ./containers -t 10 --container=sgl_stack
 ```
 
 ## Analyzing program performances, using `perf`
@@ -136,6 +136,8 @@ Overall among benchmarking and mysort performance tests, locking algorithms seem
 5. [A queue among three threads](https://www.geeksforgeeks.org/sharing-queue-among-three-threads/)
 6. [Lock-free programming](http://www.cs.cmu.edu/afs/cs/academic/class/15418-f18/www/lectures/17_lockfree.pdf)
 7. [Multi-threading](https://www.bogotobogo.com/cplusplus/multithreaded4_cplusplus11B.php)
+8. [Stack push](https://www.cplusplus.com/reference/stack/stack/push/) & [pop](https://www.cplusplus.com/reference/stack/stack/pop/) 
+9. [Queue push](https://www.cplusplus.com/reference/queue/queue/push/) & [pop](https://www.cplusplus.com/reference/queue/queue/pop/)
 
 <!-- CREATE README PDF -->
 <!-- md2pdf README.md --highlight-style atom-one-dark --pdf-options '{ "format": "Letter", "margin": "20mm", "printBackground": true }' -->
