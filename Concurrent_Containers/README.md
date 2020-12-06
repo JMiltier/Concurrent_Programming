@@ -143,6 +143,7 @@ Overall among benchmarking and mysort performance tests, locking algorithms seem
 11. [Treiber Stack]()
 12. [Lock-Free Programming](https://www.cs.cmu.edu/~410-s05/lectures/L31_LockFree.pdf)
 13. [A Scalable Correct Time-Stamped Stack](https://dl.acm.org/doi/pdf/10.1145/2775051.2676963)
+14. [Old counted ptr header file (not currently implemented)](http://ootips.org/yonat/4dev/counted_ptr.h)
 
 <!-- CREATE README PDF -->
 <!-- md2pdf README.md --highlight-style atom-one-dark --pdf-options '{ "format": "Letter", "margin": "20mm", "printBackground": true }' -->

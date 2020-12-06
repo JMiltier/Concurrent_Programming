@@ -31,7 +31,8 @@ string inputFile, line;
 vector<int> test_vec;
 stack<int> sgl_s, *sgl_stack = &sgl_s;
 queue<int> sgl_q, *sgl_queue = &sgl_q;
-tstack ts, *treiberStack = &ts;
+tstack ts, *tre_stack = &ts;
+msqueue ms, *ms_queue = &ms;
 
 /* execution time struct */
 typedef chrono::high_resolution_clock Clock;
@@ -72,9 +73,9 @@ void *treiber_stack(void *i) {
   size_t start = split * tid;
   size_t end = split * (tid+1);
   for (int i = start; i < end; ++i) {
-	  treiberStack->push(test_vec[i]);
+	  tre_stack->push(test_vec[i]);
   }
-  treiberStack->pop();
+  tre_stack->pop();
 	return NULL;
 }
 
@@ -85,8 +86,8 @@ void *MS_queue(void *i) {
   size_t start = split * tid;
   size_t end = split * (tid+1);
   for (int i = start; i < end; ++i) {
-	  treiberStack->push(test_vec[i]);
+	  ms_queue->enqueue(test_vec[i]);
   }
-  treiberStack->pop();
+  ms_queue->dequeue();
 	return NULL;
 }
