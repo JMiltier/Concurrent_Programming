@@ -29,21 +29,22 @@ pthread_t *threads;
 size_t NUM_THREADS, algorithm, s, a, b=0;
 string inputFile, line;
 vector<int> test_vec;
-stack<int> sgl_s;
-stack<int> *sgl_stack = &sgl_s;
-queue<int> sgl_q;
-queue<int> *sgl_queue = &sgl_q;
+stack<int> sgl_s, *sgl_stack = &sgl_s;
+queue<int> sgl_q, *sgl_queue = &sgl_q;
 
 /* execution time struct */
 typedef chrono::high_resolution_clock Clock;
 
 /* thread handlers */
-// void *SGL_stack(void *i);
-
 void *SGL_stack(void *i) {
-  printf("called correctly\n");
-	size_t num = (s-1) / NUM_THREADS;
-  printf("size %i, and num %i\n", s, num);
-	SGL_s_push(sgl_stack, test_vec[num]);
+  int tid = (int)(size_t)i;
+	size_t split = test_vec.size() / NUM_THREADS;
+  size_t start = split * tid;
+  size_t end = split * (tid+1);
+  for (int i = start; i < end; ++i) {
+	  SGL_s_push(sgl_stack, test_vec[i]);
+  }
+  if (sgl_stack->size() == split * NUM_THREADS)
+    SGL_s_pop(sgl_stack);
 	return NULL;
 }
