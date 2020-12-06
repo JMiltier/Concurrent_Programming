@@ -35,7 +35,8 @@ queue<int> sgl_q, *sgl_queue = &sgl_q;
 /* execution time struct */
 typedef chrono::high_resolution_clock Clock;
 
-/* thread handlers */
+/*************** thread handlers ***************/
+// SGL STACK
 void *SGL_stack(void *i) {
   int tid = (int)(size_t)i;
 	size_t split = test_vec.size() / NUM_THREADS;
@@ -49,8 +50,22 @@ void *SGL_stack(void *i) {
 	return NULL;
 }
 
-/* thread handlers */
+// SGL QUEUE
 void *SGL_queue(void *i) {
+  int tid = (int)(size_t)i;
+	size_t split = test_vec.size() / NUM_THREADS;
+  size_t start = split * tid;
+  size_t end = split * (tid+1);
+  for (int i = start; i < end; ++i) {
+	  SGL_q_push(sgl_queue, test_vec[i]);
+  }
+  if (sgl_queue->size() == split * NUM_THREADS)
+    SGL_q_pop(sgl_queue);
+	return NULL;
+}
+
+// TREIBER STACK
+void *treiber_stack(void *i) {
   int tid = (int)(size_t)i;
 	size_t split = test_vec.size() / NUM_THREADS;
   size_t start = split * tid;

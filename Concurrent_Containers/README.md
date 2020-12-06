@@ -16,6 +16,7 @@ For the sake of resources available, and class slides, concurrent containers see
 #### Single Global Lock (SGL) Stack (LIFO)
 #### Single Global Lock (SGL) Queue (FIFO)
 #### Treiber Stack (LIFO)
+The Treiber stack algorithm is a scalable lock-free stack utilizing the fine-grained concurrency primitive compare-and-swap. It is believed that R. Kent Treiber  The Treiber stack algorithm is a scalable lock-free stack utilizing the fine-grained concurrency primitive compare-and-swap. It is believed that R. Kent Treiber was the first to publish it in his 1986 article "Systems Programming: Coping with Parallelism".
 #### Michael and Scott (M&S) Stack (LIFO)
 
 ## Code Organization
@@ -138,6 +139,10 @@ Overall among benchmarking and mysort performance tests, locking algorithms seem
 7. [Multi-threading](https://www.bogotobogo.com/cplusplus/multithreaded4_cplusplus11B.php)
 8. [Stack push](https://www.cplusplus.com/reference/stack/stack/push/) & [pop](https://www.cplusplus.com/reference/stack/stack/pop/) 
 9. [Queue push](https://www.cplusplus.com/reference/queue/queue/push/) & [pop](https://www.cplusplus.com/reference/queue/queue/pop/)
+10. [Wiki Treiber Stack](https://en.wikipedia.org/wiki/Treiber_stack)
+11. [Treiber Stack]()
+12. [Lock-Free Programming](https://www.cs.cmu.edu/~410-s05/lectures/L31_LockFree.pdf)
+13. [A Scalable Correct Time-Stamped Stack](https://dl.acm.org/doi/pdf/10.1145/2775051.2676963)
 
 <!-- CREATE README PDF -->
 <!-- md2pdf README.md --highlight-style atom-one-dark --pdf-options '{ "format": "Letter", "margin": "20mm", "printBackground": true }' -->
