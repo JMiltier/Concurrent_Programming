@@ -44,5 +44,6 @@ To run:
       1. `makefile numGen`
    OR
       2. compile: g++ -o numGen randomNumberGen.cpp
-         then execute: ./numGen <amount of numbers>
+
+   then execute: ./numGen <amount of numbers>
 */

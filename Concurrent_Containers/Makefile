@@ -31,7 +31,7 @@ all: clean $(CNTNRPRGM)
 
 # containers
 $(CNTNRPRGM): $(CNTNRSRC)
-	$(CC) $(STD) $(CFLAGS) $(CNTNRSRC) -o $(CNTNRPRGM)
+	$(CC) $(STD) $(CFLAGS) $(CNTNRSRC) -o $(CNTNRPRGM) -pthread
 
 # mysort
 $(SORTPRGM): $(SORTSRC)
