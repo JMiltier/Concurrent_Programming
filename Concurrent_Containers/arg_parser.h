@@ -54,11 +54,11 @@ struct arg_params arg_parser(int argc, const char* argv[]){
     //   str2int >> args.NUM_ITERATIONS;
     // }
 
-    // container type <sgl_stack,sgl_queue,treiber_stack,ms_stack> (argv 4)
+    // container type <sgl_stack,sgl_queue,treiber_stack,ms_queue> (argv 4)
     if (string(argv[4]) == "--algorithm=sgl_stack") args.ALGORITHM= 1;
     else if (string(argv[4]) == "--algorithm=sgl_queue") args.ALGORITHM= 2;
     else if (string(argv[4]) == "--algorithm=treiber_stack") args.ALGORITHM = 3;
-    else if (string(argv[4]) == "--algorithm=ms_stack") args.ALGORITHM = 4;
+    else if (string(argv[4]) == "--algorithm=ms_queue") args.ALGORITHM = 4;
     else if (string(argv[4]) == "--algorithm=1") args.ALGORITHM = 5;
     else if (string(argv[4]) == "--algorithm=2") args.ALGORITHM = 6;
     else {

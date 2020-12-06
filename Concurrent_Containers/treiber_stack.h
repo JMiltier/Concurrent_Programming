@@ -13,7 +13,8 @@
 using namespace std;
 
 // from lecture 30 slides
-class treiber_stack {
+// does not include changes for ABA and reclamation races
+class tstack {
   public:
     class node {
       public:
@@ -26,7 +27,7 @@ class treiber_stack {
   int pop();
 };
 
-void treiber_stack::push(int val) {
+void tstack::push(int val) {
   node *n = new node(val);
   node *t;
   do{
@@ -35,7 +36,7 @@ void treiber_stack::push(int val) {
   }while (!top.CAS(t,n,ACQREL));
 }
 
-int treiber_stack::pop() {
+int tstack::pop() {
   node *t, *n;
   int v;
   do{

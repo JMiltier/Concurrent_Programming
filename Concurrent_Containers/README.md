@@ -17,7 +17,7 @@ For the sake of resources available, and class slides, concurrent containers see
 #### Single Global Lock (SGL) Queue (FIFO)
 #### Treiber Stack (LIFO)
 The Treiber stack algorithm is a scalable lock-free stack utilizing the fine-grained concurrency primitive compare-and-swap. It is believed that R. Kent Treiber  The Treiber stack algorithm is a scalable lock-free stack utilizing the fine-grained concurrency primitive compare-and-swap. It is believed that R. Kent Treiber was the first to publish it in his 1986 article "Systems Programming: Coping with Parallelism".
-#### Michael and Scott (M&S) Stack (LIFO)
+#### Michael and Scott (M&S) QUEUE (FIFO)
 
 ## Code Organization
 #### 📁 Files
@@ -46,15 +46,15 @@ The Treiber stack algorithm is a scalable lock-free stack utilizing the fine-gra
 `containers --name`: prints name to console.  
 **OR**  
 ```shell
-> containers [-t NUM THREADS] [-i=NUM_ITERATIONS] --container=<sgl_stack,sgl_queue,treiber_stack,ms_stack>
+> containers [-t NUM THREADS] [-i=NUM_ITERATIONS] --container=<sgl_stack,sgl_queue,treiber_stack,ms_queue>
 ```
   1. `-t NUM_THREADS`: specify how many threads to use during execution (including master thread)
   <!-- 2. `-i=NUM_ITERATIONS`: number of times to increment counter on each thread -->
-  2. `--container=<sgl_stack,sgl_queue,treiber_stack,ms_stack>`: type of algorithm to use
+  2. `--container=<sgl_stack,sgl_queue,treiber_stack,ms_queue>`: type of algorithm to use
   - **Additional outputs**: time of execution in nanoseconds  
 Example of program execution, using 10 threads, and sgl_stack algorithm
 ```shell
-> ./containers -t 10 --container=sgl_stack
+> ./containers source.txt -t 10 --container=sgl_stack
 ```
 
 ## Analyzing program performances, using `perf`

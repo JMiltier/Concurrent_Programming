@@ -25,7 +25,7 @@ int main(int argc, const char* argv[]){
 	sgl_stack->size();
 
 	/* algorithm statement (from parser) is as follows:
-	* 1-sgl_stack, 2-sgl_queue, 3-treiber_stack */
+	* 1-sgl_stack, 2-sgl_queue, 3-treiber_stack, 4-ms_queue */
 	switch (algorithm) {
 		// sgl_stack
 		case 1:
@@ -44,7 +44,14 @@ int main(int argc, const char* argv[]){
 		// treiber_stack
 		case 3:
 			for (size_t i = 0; i < NUM_THREADS; i++)
-				pthread_create(&threads[i], NULL, SGL_queue, (void*)i);
+				pthread_create(&threads[i], NULL, treiber_stack, (void*)i);
+			for (size_t i = 0; i < NUM_THREADS; i++)
+				pthread_join(threads[i], NULL);
+			break;
+		// MS_queue
+		case 4:
+			for (size_t i = 0; i < NUM_THREADS; i++)
+				pthread_create(&threads[i], NULL, MS_queue, (void*)i);
 			for (size_t i = 0; i < NUM_THREADS; i++)
 				pthread_join(threads[i], NULL);
 			break;
