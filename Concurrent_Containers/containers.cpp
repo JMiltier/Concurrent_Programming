@@ -34,6 +34,13 @@ int main(int argc, const char* argv[]){
 			for (size_t i = 0; i < NUM_THREADS; i++)
 				pthread_join(threads[i], NULL);
 			break;
+		// sgl_queue
+		case 2:
+			for (size_t i = 0; i < NUM_THREADS; i++)
+				pthread_create(&threads[i], NULL, SGL_queue, (void*)i);
+			for (size_t i = 0; i < NUM_THREADS; i++)
+				pthread_join(threads[i], NULL);
+			break;
 		// something didn't match up
 		default:
 			printf("An error occured in main argument switch\n");

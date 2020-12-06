@@ -48,3 +48,17 @@ void *SGL_stack(void *i) {
     SGL_s_pop(sgl_stack);
 	return NULL;
 }
+
+/* thread handlers */
+void *SGL_queue(void *i) {
+  int tid = (int)(size_t)i;
+	size_t split = test_vec.size() / NUM_THREADS;
+  size_t start = split * tid;
+  size_t end = split * (tid+1);
+  for (int i = start; i < end; ++i) {
+	  SGL_q_push(sgl_queue, test_vec[i]);
+  }
+  if (sgl_queue->size() == split * NUM_THREADS)
+    SGL_q_pop(sgl_queue);
+	return NULL;
+}
