@@ -26,7 +26,8 @@ int main(int argc, const char* argv[]){
 	sgl_stack->size();
 
 	/* algorithm statement (from parser) is as follows:
-	* 1-sgl_stack, 2-sgl_queue, 3-treiber_stack, 4-ms_queue, 5-baskets_queue */
+	* 1-sgl_stack, 2-sgl_queue, 3-treiber_stack, 4-ms_queue
+	* 5-baskets_queue, 6-elim_t_stack, 7-elim_sgl_stack */
 	switch (algorithm) {
 		// sgl_stack
 		case 1:
@@ -58,6 +59,22 @@ int main(int argc, const char* argv[]){
 			break;
 		// baskets_queue
 		case 5:
+			init_queue(bas_queue);
+			for (size_t i = 0; i < NUM_THREADS; i++)
+				pthread_create(&threads[i], NULL, baskets_queue, (void*)i);
+			for (size_t i = 0; i < NUM_THREADS; i++)
+				pthread_join(threads[i], NULL);
+			break;
+		// elim_t_stack
+		case 6:
+			init_queue(bas_queue);
+			for (size_t i = 0; i < NUM_THREADS; i++)
+				pthread_create(&threads[i], NULL, baskets_queue, (void*)i);
+			for (size_t i = 0; i < NUM_THREADS; i++)
+				pthread_join(threads[i], NULL);
+			break;
+		// elim_sgl_stack
+		case 7:
 			init_queue(bas_queue);
 			for (size_t i = 0; i < NUM_THREADS; i++)
 				pthread_create(&threads[i], NULL, baskets_queue, (void*)i);

@@ -20,6 +20,8 @@
 #include "sgl_stack.h"
 #include "treiber_stack.h"
 #include "baskets_queue.h"
+#include "elim_sgl_stack.h"
+#include "elim_t_stack.h"
 
 using namespace std;
 

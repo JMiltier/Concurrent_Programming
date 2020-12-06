@@ -19,6 +19,11 @@ For the sake of resources available, and class slides, concurrent containers see
 The Treiber stack algorithm is a scalable lock-free stack utilizing the fine-grained concurrency primitive compare-and-swap. It is believed that R. Kent Treiber  The Treiber stack algorithm is a scalable lock-free stack utilizing the fine-grained concurrency primitive compare-and-swap. It is believed that R. Kent Treiber was the first to publish it in his 1986 article "Systems Programming: Coping with Parallelism".
 #### Michael and Scott (MS) Queue (FIFO)
 #### Baskets Queue (FIFO)
+#### Elimination Stacks (FIFO) with SGL Stack and Treiber Stack
+
+#### Flat combining Stack and Queue 
+Wasn't able to find much info on implementing this.
+FC resources: [FC stack](http://libcds.sourceforge.net/doc/cds-api/classcds_1_1intrusive_1_1_f_c_stack.html), [FC Queue](http://libcds.sourceforge.net/doc/cds-api/classcds_1_1intrusive_1_1_f_c_queue.html) [FC and trade-off](https://sites.google.com/site/cconcurrencypackage/flat-combining-and-the-synchronization-parallelism-tradeoff) [FC chat](https://kukuruku.co/post/lock-free-data-structures-the-evolution-of-a-stack/#flat-combining)
 
 ## Code Organization
 #### 📁 Files
