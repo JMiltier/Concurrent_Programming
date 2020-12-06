@@ -19,10 +19,9 @@
 #include "sgl_queue.h"
 #include "sgl_stack.h"
 #include "treiber_stack.h"
+#include "baskets_queue.h"
 
 using namespace std;
-
-extern pthread_mutex_t SGL_stack_lock;
 
 /* variables */
 pthread_t *threads;
@@ -33,6 +32,7 @@ stack<int> sgl_s, *sgl_stack = &sgl_s;
 queue<int> sgl_q, *sgl_queue = &sgl_q;
 tstack ts, *tre_stack = &ts;
 msqueue ms, *ms_queue = &ms;
+queue_t bq, *bas_queue = &bq;
 
 /* execution time struct */
 typedef chrono::high_resolution_clock Clock;
@@ -89,5 +89,27 @@ void *MS_queue(void *i) {
 	  ms_queue->enqueue(test_vec[i]);
   }
   ms_queue->dequeue();
+	return NULL;
+}
+
+// BASKETS QUEUE
+void *baskets_queue(void *i) {
+  int tid = (int)(size_t)i;
+	size_t split = test_vec.size() / NUM_THREADS;
+  size_t start = split * tid;
+  size_t end = split * (tid+1);
+  printf("YOO\n");
+  for (int i = start; i < end; ++i) {
+    printf("YOO2\n");
+	  baskets_enqueue(bas_queue, test_vec[i]);
+    printf("YOO2.2\n");
+  }
+  size_t t = 0;
+  printf("YOO3\n");
+  while(t != 999) {
+    printf("YOO4\n");
+    t = baskets_dequeue(bas_queue);
+  }
+
 	return NULL;
 }

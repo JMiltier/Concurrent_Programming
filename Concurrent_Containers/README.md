@@ -17,7 +17,8 @@ For the sake of resources available, and class slides, concurrent containers see
 #### Single Global Lock (SGL) Queue (FIFO)
 #### Treiber Stack (LIFO)
 The Treiber stack algorithm is a scalable lock-free stack utilizing the fine-grained concurrency primitive compare-and-swap. It is believed that R. Kent Treiber  The Treiber stack algorithm is a scalable lock-free stack utilizing the fine-grained concurrency primitive compare-and-swap. It is believed that R. Kent Treiber was the first to publish it in his 1986 article "Systems Programming: Coping with Parallelism".
-#### Michael and Scott (M&S) QUEUE (FIFO)
+#### Michael and Scott (MS) Queue (FIFO)
+#### Baskets Queue (FIFO)
 
 ## Code Organization
 #### 📁 Files
@@ -46,11 +47,11 @@ The Treiber stack algorithm is a scalable lock-free stack utilizing the fine-gra
 `containers --name`: prints name to console.  
 **OR**  
 ```shell
-> containers [-t NUM THREADS] [-i=NUM_ITERATIONS] --container=<sgl_stack,sgl_queue,treiber_stack,ms_queue>
+> containers [-t NUM THREADS] [-i=NUM_ITERATIONS] --container=<sgl_stack,sgl_queue,treiber_stack,ms_queue,baskets_queue>
 ```
   1. `-t NUM_THREADS`: specify how many threads to use during execution (including master thread)
   <!-- 2. `-i=NUM_ITERATIONS`: number of times to increment counter on each thread -->
-  2. `--container=<sgl_stack,sgl_queue,treiber_stack,ms_queue>`: type of algorithm to use
+  2. `--container=<sgl_stack,sgl_queue,treiber_stack,ms_queue,baskets_queue>`: type of algorithm to use
   - **Additional outputs**: time of execution in nanoseconds  
 Example of program execution, using 10 threads, and sgl_stack algorithm
 ```shell
@@ -144,6 +145,8 @@ Overall among benchmarking and mysort performance tests, locking algorithms seem
 12. [Lock-Free Programming](https://www.cs.cmu.edu/~410-s05/lectures/L31_LockFree.pdf)
 13. [A Scalable Correct Time-Stamped Stack](https://dl.acm.org/doi/pdf/10.1145/2775051.2676963)
 14. [Old counted ptr header file (not currently implemented)](http://ootips.org/yonat/4dev/counted_ptr.h)
+15. [cpp compare exchange](https://en.cppreference.com/w/cpp/atomic/atomic_compare_exchange)
+16. [stack overflow CAS solution for baskets queue](https://stackoverflow.com/questions/27919854/compare-and-swap-in-c)
 
 <!-- CREATE README PDF -->
 <!-- md2pdf README.md --highlight-style atom-one-dark --pdf-options '{ "format": "Letter", "margin": "20mm", "printBackground": true }' -->

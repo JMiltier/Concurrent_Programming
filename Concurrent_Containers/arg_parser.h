@@ -59,7 +59,7 @@ struct arg_params arg_parser(int argc, const char* argv[]){
     else if (string(argv[4]) == "--algorithm=sgl_queue") args.ALGORITHM= 2;
     else if (string(argv[4]) == "--algorithm=treiber_stack") args.ALGORITHM = 3;
     else if (string(argv[4]) == "--algorithm=ms_queue") args.ALGORITHM = 4;
-    else if (string(argv[4]) == "--algorithm=1") args.ALGORITHM = 5;
+    else if (string(argv[4]) == "--algorithm=baskets_queue") args.ALGORITHM = 5;
     else if (string(argv[4]) == "--algorithm=2") args.ALGORITHM = 6;
     else {
       printf("ERROR: argument does not exist. Try '--container=' with an available specified method. Refer to README if needed.\n");

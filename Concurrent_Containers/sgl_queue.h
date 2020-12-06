@@ -17,7 +17,7 @@ void SGL_q_push(queue<int> *q, size_t num){
   pthread_mutex_unlock(&SGL_queue_lock);
 }
 
-void SGL_q_pop(queue<int> *q){
+int SGL_q_pop(queue<int> *q){
   pthread_mutex_lock(&SGL_queue_lock);
   while (!q->empty()) {
     printf("Queue dequeue: %i\n", q->front());

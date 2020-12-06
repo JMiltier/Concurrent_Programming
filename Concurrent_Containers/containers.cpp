@@ -9,6 +9,7 @@ int main(int argc, const char* argv[]){
 
 	threads = static_cast<pthread_t*>(malloc(NUM_THREADS*sizeof(pthread_t)));
 	pthread_mutex_init(&SGL_stack_lock, NULL);
+	pthread_mutex_init(&SGL_queue_lock, NULL);
 
 	// read in integers from input file, allocate vector size, and store values
 	fstream file(inputFile.c_str(), ios_base::in);
@@ -25,7 +26,7 @@ int main(int argc, const char* argv[]){
 	sgl_stack->size();
 
 	/* algorithm statement (from parser) is as follows:
-	* 1-sgl_stack, 2-sgl_queue, 3-treiber_stack, 4-ms_queue */
+	* 1-sgl_stack, 2-sgl_queue, 3-treiber_stack, 4-ms_queue, 5-baskets_queue */
 	switch (algorithm) {
 		// sgl_stack
 		case 1:
@@ -52,6 +53,14 @@ int main(int argc, const char* argv[]){
 		case 4:
 			for (size_t i = 0; i < NUM_THREADS; i++)
 				pthread_create(&threads[i], NULL, MS_queue, (void*)i);
+			for (size_t i = 0; i < NUM_THREADS; i++)
+				pthread_join(threads[i], NULL);
+			break;
+		// baskets_queue
+		case 5:
+			init_queue(bas_queue);
+			for (size_t i = 0; i < NUM_THREADS; i++)
+				pthread_create(&threads[i], NULL, baskets_queue, (void*)i);
 			for (size_t i = 0; i < NUM_THREADS; i++)
 				pthread_join(threads[i], NULL);
 			break;
