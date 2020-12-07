@@ -65,20 +65,19 @@ int main(int argc, const char* argv[]){
 			for (size_t i = 0; i < NUM_THREADS; i++)
 				pthread_join(threads[i], NULL);
 			break;
-		// elim_t_stack
+		// elim_sql_stack
 		case 6:
 			init_queue(bas_queue);
 			for (size_t i = 0; i < NUM_THREADS; i++)
-				pthread_create(&threads[i], NULL, baskets_queue, (void*)i);
+				pthread_create(&threads[i], NULL, elim_sgl_stack, (void*)i);
 			for (size_t i = 0; i < NUM_THREADS; i++)
 				pthread_join(threads[i], NULL);
 			break;
-		// elim_sgl_stack
+		// elim_t_stack
 		case 7:
 			init_queue(bas_queue);
 			for (size_t i = 0; i < NUM_THREADS; i++)
-				pthread_create(&threads[i], NULL, baskets_queue, (void*)i);
-			printf("joining?\n");
+				pthread_create(&threads[i], NULL, elim_t_stack, (void*)i);
 			for (size_t i = 0; i < NUM_THREADS; i++)
 				pthread_join(threads[i], NULL);
 			break;

@@ -35,6 +35,8 @@ queue<int> sgl_q, *sgl_queue = &sgl_q;
 tstack ts, *tre_stack = &ts;
 msqueue ms, *ms_queue = &ms;
 queue_t bq, *bas_queue = &bq;
+elim_stack es, *es_stack = &es;
+elim_stack et, *et_stack = &et;
 
 /* execution time struct */
 typedef chrono::high_resolution_clock Clock;
@@ -113,5 +115,31 @@ void *baskets_queue(void *i) {
     t = baskets_dequeue(bas_queue);
   }
 
+	return NULL;
+}
+
+// ELIMINATION SGL STACK
+void *elim_sgl_stack(void *i) {
+  int tid = (int)(size_t)i;
+	size_t split = test_vec.size() / NUM_THREADS;
+  size_t start = split * tid;
+  size_t end = split * (tid+1);
+  for (int i = start; i < end; ++i) {
+	  ms_queue->enqueue(test_vec[i]);
+  }
+  ms_queue->dequeue();
+	return NULL;
+}
+
+// ELIMINATION TREIBER STACK
+void *elim_t_stack(void *i) {
+  int tid = (int)(size_t)i;
+	size_t split = test_vec.size() / NUM_THREADS;
+  size_t start = split * tid;
+  size_t end = split * (tid+1);
+  for (int i = start; i < end; ++i) {
+	  ms_queue->enqueue(test_vec[i]);
+  }
+  ms_queue->dequeue();
 	return NULL;
 }

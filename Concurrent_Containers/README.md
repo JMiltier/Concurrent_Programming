@@ -14,12 +14,14 @@ For the sake of resources available, and class slides, concurrent containers see
 
 ## Algorithm Descriptions
 #### Single Global Lock (SGL) Stack (LIFO)
+Lock-based
 #### Single Global Lock (SGL) Queue (FIFO)
 #### Treiber Stack (LIFO)
-The Treiber stack algorithm is a scalable lock-free stack utilizing the fine-grained concurrency primitive compare-and-swap. It is believed that R. Kent Treiber  The Treiber stack algorithm is a scalable lock-free stack utilizing the fine-grained concurrency primitive compare-and-swap. It is believed that R. Kent Treiber was the first to publish it in his 1986 article "Systems Programming: Coping with Parallelism".
+The Treiber stack algorithm is a scalable lock-free stack utilizing the fine-grained concurrency primitive compare-and-swap. It is believed that R. Kent Treiber  The Treiber stack algorithm is a scalable lock-free stack utilizing the fine-grained concurrency primitive compare-and-swap. It is believed that R. Kent Treiber was the first to publish it in his 1986 article "Systems Programming: Coping with Parallelism". However, treiber stack is prone to bottlenecking and thus offers little scalability. 
 #### Michael and Scott (MS) Queue (FIFO)
 #### Baskets Queue (FIFO)
 #### Elimination Stacks (FIFO) with SGL Stack and Treiber Stack
+Concurrent stack algorithm that is lock-free (robust), parallel (scalable), and adaptive (performs well at low loads). Additionally, it is linearizable and combine modularly with other algorithms. 
 
 #### Flat combining Stack and Queue 
 Wasn't able to find much info on implementing this.
@@ -52,11 +54,12 @@ FC resources: [FC stack](http://libcds.sourceforge.net/doc/cds-api/classcds_1_1i
 `containers --name`: prints name to console.  
 **OR**  
 ```shell
-> containers [-t NUM THREADS] [-i=NUM_ITERATIONS] --container=<sgl_stack,sgl_queue,treiber_stack,ms_queue,baskets_queue>
+> containers <input_file> [-t NUM THREADS] --algorithm=<sgl_stack,sgl_queue,treiber_stack,ms_queue,baskets_queue, elim_sql_stack, elim_t_stack>
 ```
+  1. `input_file`: name of file with ints 
   1. `-t NUM_THREADS`: specify how many threads to use during execution (including master thread)
   <!-- 2. `-i=NUM_ITERATIONS`: number of times to increment counter on each thread -->
-  2. `--container=<sgl_stack,sgl_queue,treiber_stack,ms_queue,baskets_queue>`: type of algorithm to use
+  2. `--container=<sgl_stack,sgl_queue,treiber_stack,ms_queue,baskets_queue, elim_sql_stack, elim_t_stack>`: type of algorithm to use
   - **Additional outputs**: time of execution in nanoseconds  
 Example of program execution, using 10 threads, and sgl_stack algorithm
 ```shell

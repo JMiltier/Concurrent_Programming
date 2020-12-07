@@ -51,7 +51,7 @@ int msqueue::dequeue() {
   while(true) {
     h = head.load();
     t = tail.load();
-    n = h->next.load();
+    n = h->next.load();››
     if(h == head.load()){
       if(h == t){
         if(n == NULL) {return NULL;}
