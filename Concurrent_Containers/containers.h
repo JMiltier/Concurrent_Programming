@@ -20,8 +20,7 @@
 #include "sgl_stack.h"
 #include "treiber_stack.h"
 #include "baskets_queue.h"
-#include "elim_sgl_stack.h"
-#include "elim_t_stack.h"
+// #include "elim_stack.h"
 
 using namespace std;
 
@@ -35,8 +34,8 @@ queue<int> sgl_q, *sgl_queue = &sgl_q;
 tstack ts, *tre_stack = &ts;
 msqueue ms, *ms_queue = &ms;
 queue_t bq, *bas_queue = &bq;
-elim_stack es, *es_stack = &es;
-elim_stack et, *et_stack = &et;
+// elim_stack es, *es_stack = &es;
+// elim_stack et, *et_stack = &et;
 
 /* execution time struct */
 typedef chrono::high_resolution_clock Clock;

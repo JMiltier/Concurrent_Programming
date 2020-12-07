@@ -10,6 +10,8 @@
 
 using namespace std;
 
+void helpfn();
+
 struct arg_params {
   size_t NUM_THREADS, ALGORITHM;
   string INPUTFILE;
@@ -22,6 +24,8 @@ struct arg_params arg_parser(int argc, const char* argv[]){
     if (argc == 2 && string(argv[1]) == "--name"){
       printf("Josh Miltier\n"); // check for --name
       exit(-1);
+    }if (argc == 2 && string(argv[1]) == "-h"){
+      helpfn(); exit(-1);
     } else if (argc == 5) {} // continue on to execution
     else { // catch all else
       printf("\nERROR: Program option parameters are invalid.\n"
@@ -69,6 +73,21 @@ struct arg_params arg_parser(int argc, const char* argv[]){
     /* ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ END ARG PARSER ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ */
 
     return args;
+}
+
+void helpfn() {
+  printf("Program execution is as follows: \n"
+        "  ./containers     : call to program \n"
+        "  <input_file>     : list the input file with list of integers to test,     example: 'source.txt'\n"
+        "  -t <NUM THREADS> : number of threads to execute the program with (1-150), example: '-t 5'\n"
+        "  --algorithm=     : options available are:\n"
+        "                     sgl_stack, sgl_queue, treiber_stack, ms_queue, baskets_queue, elim_sql_stack, and elim_t_stack\n"
+        "                     example: '--algorithm=sgl_stack'\n\n"
+        "Example with all :\n"
+        "    ./container source.txt -t 5 --algorithm=sgl_stack\n\n"
+        "Additionally, '--test' flag will run tests (with output) for all algorithms described above\n"
+        "              '--name' flag will list out project owner's name\n\n"
+        );
 }
 
 #endif // ARG_PARSER

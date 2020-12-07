@@ -11,20 +11,26 @@
 
 #define ACQ memory_order_acquire
 #define ACQREL memory_order_acq_rel
-#define CAS compare_exchange_weak
+#define CAS __sync_val_compare_and_swap
 
 using namespace std;
 
 // from treiber_stack.h, used for SGL
+
+struct Node {
+  Node *pnext;
+  void *pdata;
+};
+
 class elim_stack {
   public:
     class node {
       public:
         node(int v):val(v) {}
         int val;
-        node *down;
+        Node *down;
     };
-  atomic<node *> top;
+  atomic<Node *> top, next;
   bool push(int val);
   int pop();
 };
@@ -32,22 +38,10 @@ class elim_stack {
 void **location;
 int *collision;
 
-bool elim_stack::push(int val) {
-
-}
-
-int elim_stack::pop() {
-
-}
-
-struct Cell {
-  Cell *pnext;
-  void *pdata;
-};
 struct ThreadInfo {
   size_t *id;
   // char op; // operation of thread
-  Cell cell;
+  elim_stack cell;
   // int spin; // amt of delay time for thread to collide
 };
 
@@ -57,11 +51,14 @@ void StackOp(size_t *i) {
   return;
 }
 
-bool TryPerformStackOpPush(size_t *i) {
+bool TryPerformStackOpPush(size_t *i, elim_stack *s) {
   ThreadInfo *ti;
   ti->id = i;
-  Cell *phead, *pnext;
-  phead(elim_stack->top);
+  Node *phead, *pnext;
+  phead = s->top;
+  if(CAS(s->top, phead, &ti->cell))
+    return true;
+  else return false;
 }
 
 void LesOP(ThreadInfo *p) {
@@ -76,6 +73,14 @@ void TryCollisionPush(int tid) {
 }
 
 void TryCollisionPop(int tid){
+
+}
+
+bool elim_stack::push(int val) {
+
+}
+
+int elim_stack::pop() {
 
 }
 
