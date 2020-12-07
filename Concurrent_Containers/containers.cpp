@@ -78,6 +78,7 @@ int main(int argc, const char* argv[]){
 			init_queue(bas_queue);
 			for (size_t i = 0; i < NUM_THREADS; i++)
 				pthread_create(&threads[i], NULL, baskets_queue, (void*)i);
+			printf("joining?\n");
 			for (size_t i = 0; i < NUM_THREADS; i++)
 				pthread_join(threads[i], NULL);
 			break;
@@ -94,5 +95,6 @@ int main(int argc, const char* argv[]){
 	unsigned long time_spent = chrono::duration_cast<chrono::nanoseconds>(end_time - start_time).count();
 	// printf("Time elapsed is %lu nanoseconds\n", time_spent);
 	// printf("                %f seconds\n", time_spent/1e9);
+	return 0;
 }
 

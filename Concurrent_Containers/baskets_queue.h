@@ -5,6 +5,7 @@
 
 #include <iostream>
 #include <atomic>
+#include <time.h> // for nanosleep()
 
 #define MAX_HOPS 3
 #define CAS __sync_val_compare_and_swap
@@ -24,6 +25,10 @@ void init_queue(queue_t *q) {
   nd->next = {NULL, 0, 0};
   q->tail  = {nd, 0, 0};
   q->head  = {nd, 0, 0};
+}
+
+void backoff_scheme() {
+  nanosleep((const struct timespec[]){{0, 550L}}, NULL);
 }
 
 bool baskets_enqueue(queue_t *q, size_t val) {
@@ -48,7 +53,7 @@ bool baskets_enqueue(queue_t *q, size_t val) {
         next = tail.ptr->next;
         while((next.tag == tail.tag+1) && (!next.deleted)) {
           printf("YOO!3\n");
-          // backoff_scheme() not sure what this is for?
+          backoff_scheme();
           nd->next = next;
           if (CAS(&tail.ptr->next.ptr, next.ptr, nd) &&
             CAS(&tail.ptr->next.deleted, next.deleted, 0) &&
@@ -58,9 +63,8 @@ bool baskets_enqueue(queue_t *q, size_t val) {
         }
       } else {
         while ((next.ptr->next.ptr != NULL) && (q->tail.ptr == tail.ptr)) {
-          printf("YOO!4\n");
+          printf("YOO!433\n");
           next = next.ptr->next;
-          return false;
         }
         CAS(&q->tail.ptr, tail.ptr, nd);
         CAS(&q->tail.deleted, tail.deleted, 0);
@@ -85,6 +89,7 @@ void free_chain(queue_t *q, pointer_t head, pointer_t new_head) {
 
 int baskets_dequeue(queue_t *q) {
   while(true) {
+    printf("stuck at top\n");
     pointer_t head = q->head;
     pointer_t tail = q->tail;
     pointer_t next = head.ptr->next;
@@ -100,6 +105,7 @@ int baskets_dequeue(queue_t *q) {
         pointer_t iter = head;
         size_t hops = 0;
         while ((next.deleted && iter.ptr != tail.ptr) && (q->head.ptr == head.ptr)) {
+          printf("stuck in here?\n");
           iter = next;
           next = iter.ptr->next;
           hops++;
@@ -111,13 +117,15 @@ int baskets_dequeue(queue_t *q) {
           if (CAS(&iter.ptr->next.ptr, next.ptr, next.ptr) &&
             CAS(&iter.ptr->next.deleted, next.deleted, 1) &&
             CAS(&iter.ptr->next.tag, next.tag, next.tag+1)) {
+              printf("val: %i\n", value);
               if (hops >= MAX_HOPS) free_chain(q, head, iter);
               return value;
-          }
+          } backoff_scheme();
         }
       }
     }
   }
+  return 999;
 }
 
 #endif // BASKETS_QUEUE

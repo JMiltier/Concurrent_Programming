@@ -109,7 +109,7 @@ void *baskets_queue(void *i) {
   size_t t = 0;
   printf("YOO3\n");
   while(t != 999) {
-    printf("YOO4\n");
+    printf("YOO999\n");
     t = baskets_dequeue(bas_queue);
   }
 
