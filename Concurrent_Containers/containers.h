@@ -1,4 +1,4 @@
-// #include <iostream> // already in other header file
+#include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -9,8 +9,6 @@
 #include <algorithm>
 #include <string>
 #include <vector>
-// #include <stack> // already included in other header file
-// #include <queue> // already included in other header file
 #include "pthread.h" // APPLE
 #include "arg_parser.h"
 
@@ -20,7 +18,7 @@
 #include "sgl_stack.h"
 #include "treiber_stack.h"
 #include "baskets_queue.h"
-// #include "elim_stack.h"
+#include "elim_stack.h"
 
 using namespace std;
 
@@ -35,8 +33,8 @@ queue<int> sgl_q, *sgl_queue = &sgl_q;
 tstack ts, *tre_stack = &ts;
 msqueue ms, *ms_queue = &ms;
 queue_t bq, *bas_queue = &bq;
-// elim_stack es, *es_stack = &es;
-// elim_stack et, *et_stack = &et;
+elim_stack es, *es_stack = &es;
+elim_stack et, *et_stack = &et;
 
 /* execution time struct */
 typedef chrono::high_resolution_clock Clock;
@@ -125,10 +123,13 @@ void *elim_sgl_stack(void *i) {
 	size_t split = test_vec.size() / NUM_THREADS;
   size_t start = split * tid;
   size_t end = split * (tid+1);
+  int fin = 0;
   for (int i = start; i < end; ++i) {
-	  // es_stack->push(test_vec[i]);
+	  es_stack->push(test_vec[i], test);
+    fin = test_vec[i+1];
   }
-  // es_stack->pop();
+  if (fin == test_vec[split * NUM_THREADS])
+    while(es_stack->pop(test));
 	return NULL;
 }
 
@@ -138,10 +139,13 @@ void *elim_t_stack(void *i) {
 	size_t split = test_vec.size() / NUM_THREADS;
   size_t start = split * tid;
   size_t end = split * (tid+1);
+  int fin = 0;
   for (int i = start; i < end; ++i) {
-	  // et_stack->push(test_vec[i]);
+	  et_stack->push(test_vec[i], test);
+    fin = test_vec[i+1];
   }
-  // et_stack->pop();
+  if (fin == test_vec[split * NUM_THREADS])
+    while(et_stack->pop(test));
 	return NULL;
 }
 
@@ -191,17 +195,41 @@ void testFuncs() {
 	unsigned long time_spent4 = chrono::duration_cast<chrono::nanoseconds>(end_time4 - start_time4).count();
   printf("\n Time elapsed: %f seconds", time_spent4/1e9);
 
-  printf("\n•••••• Baskets Queue Tests ••••••\n");
-  printf(" Enqueued: ");
-  auto start_time5 = Clock::now();
+  // printf("\n•••••• Baskets Queue Tests ••••••\n");
+  // printf(" Enqueued: ");
+  // auto start_time5 = Clock::now();
+  // init_queue(bas_queue);
+  // for (size_t i = 0; i < NUM_THREADS; i++)
+	// 	pthread_create(&threads[i], NULL, baskets_queue, (void*)i);
+	// for (size_t i = 0; i < NUM_THREADS; i++)
+	// 	pthread_join(threads[i], NULL);
+  // auto end_time5 = Clock::now();
+	// unsigned long time_spent5 = chrono::duration_cast<chrono::nanoseconds>(end_time5 - start_time5).count();
+  // printf("\n Time elapsed: %f seconds", time_spent5/1e9);
+
+  printf("\n•••••• Elimination SGL Stack Tests ••••••\n");
+  printf(" Pushed: ");
+  auto start_time6 = Clock::now();
   init_queue(bas_queue);
   for (size_t i = 0; i < NUM_THREADS; i++)
-		pthread_create(&threads[i], NULL, baskets_queue, (void*)i);
+		pthread_create(&threads[i], NULL, elim_sgl_stack, (void*)i);
 	for (size_t i = 0; i < NUM_THREADS; i++)
 		pthread_join(threads[i], NULL);
-  auto end_time5 = Clock::now();
-	unsigned long time_spent5 = chrono::duration_cast<chrono::nanoseconds>(end_time5 - start_time5).count();
-  printf("\n Time elapsed: %f seconds", time_spent5/1e9);
+  auto end_time6 = Clock::now();
+	unsigned long time_spent6 = chrono::duration_cast<chrono::nanoseconds>(end_time6 - start_time6).count();
+  printf("\n Time elapsed: %f seconds", time_spent6/1e9);
+
+  printf("\n•••••• Elimination Treiber Stack Tests ••••••\n");
+  printf(" Pushed: ");
+  auto start_time7 = Clock::now();
+  init_queue(bas_queue);
+  for (size_t i = 0; i < NUM_THREADS; i++)
+		pthread_create(&threads[i], NULL, elim_t_stack, (void*)i);
+	for (size_t i = 0; i < NUM_THREADS; i++)
+		pthread_join(threads[i], NULL);
+  auto end_time7 = Clock::now();
+	unsigned long time_spent7 = chrono::duration_cast<chrono::nanoseconds>(end_time7 - start_time7).count();
+  printf("\n Time elapsed: %f seconds", time_spent7/1e9);
 }
 
 void printVec(vector<int> t) {

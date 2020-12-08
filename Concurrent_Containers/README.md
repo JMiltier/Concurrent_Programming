@@ -23,7 +23,7 @@ The Treiber stack algorithm is a scalable lock-free stack utilizing the fine-gra
 Non-blocking, dynamic-memory algorithm that whose threads reserve blocks beforehand, so that other threads won't reclaim before it finishes. This comes increased performance overhead. 
 #### Baskets Queue (FIFO)
 A concurrent lock-free dynamic linearizable queue algorithm. The throughput of this is greater than the previous ones listed - as it created a mixed order (baskets) of items, instead of the traditional ordered list. Operations within each basket can be performed in parallel.
-#### Elimination Stacks (FIFO) with SGL Stack and Treiber Stack
+#### Elimination Stacks (FIFO) with SGL Stack and Treiber Stack -- !Not fully implemented
 Concurrent stack algorithm that is lock-free (robust), parallel (scalable), and adaptive (performs well at low loads). Additionally, it is linearizable and combine modularly with other algorithms. Notes from paper: A push followed by a pop does not change a data structure's state. If the two threads can exchange these values without having to touch a centralized structure, they have 'eliminated' the push->pop effect. The idea: use a single elimination array as a backoff scheme on a shared lock-free stack. If the thread fails on the stack, it attempts to eliminate on the array, and if they fail at elimination, they attempt to access the stack again (and so on).  
 Global arrays:
 - location[1..n] has an element per thread, and pointer location to thread
@@ -124,8 +124,9 @@ SGL Queue           | 0.003159215  | 98.44%            | 99.05%                 
 Treiber Stack       | 0.003125873  | 98.44%            | 99.05%                     | 134
 MS Queue            | 0.002613348  | 98.48%            | 99.05%                     | 134
 Baskets Queue       | 0.002597239  | 98.44%            | 99.06%                     | 134
-Elim SGL Stack      | 0.00         | %                 | %                          | 122
-Elim Treiber Stack  | 0.00         | %                 | %                          | 122
+Elim SGL Stack      | 0.002524128  | 98.44%            | 99.06%                     | 134
+Elim Treiber Stack  | 0.002423572  | 98.45%            | 99.04%                     | 134
+
 ##### *NOTE: Run time includes testing
 
 ### Perf Analysis
@@ -160,6 +161,14 @@ With Nums: { 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 }
  Enqueued: 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 
  Dequeued: 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 
  Time elapsed: 0.039010 seconds
+ •••••• Elimination SGL Stack Tests ••••••
+ Pushed: 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 
+ Popped: 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1 
+ Time elapsed: 0.000054 seconds
+•••••• Elimination Treiber Stack Tests ••••••
+ Pushed: 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 
+ Popped: 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1 
+ Time elapsed: 0.000066 seconds
 
 ---------------- Testing with 3 Threads ----------------
 With Nums: { 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 }
@@ -183,6 +192,14 @@ With Nums: { 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 }
  Enqueued: 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 
  Dequeued: 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 
  Time elapsed: 0.000103 seconds
+ •••••• Elimination SGL Stack Tests ••••••
+ Pushed: 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 
+ Popped: 30 29 28 27 25 24 23 22 26 21 20 19 18 17 16 
+ Time elapsed: 0.000150 seconds
+•••••• Elimination Treiber Stack Tests ••••••
+ Pushed: 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 
+ Popped: 30 29 28 27 26 25 24 23 22 21 20 19 18 17 16 
+ Time elapsed: 0.000095 seconds
 
 ---------------- Testing with 5 Threads ----------------
 With Nums: { 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 }
@@ -206,6 +223,14 @@ With Nums: { 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 }
  Enqueued: 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 
  Dequeued: 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 
  Time elapsed: 0.000120 seconds
+ •••••• Elimination SGL Stack Tests ••••••
+ Pushed: 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 
+ Popped: 45 44 43 42 41 40 39 38 37 36 35 34 33 32 31 
+ Time elapsed: 0.000131 seconds
+•••••• Elimination Treiber Stack Tests ••••••
+ Pushed: 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 
+ Popped: 45 44 43 42 41 40 39 38 37 36 35 34 33 32 31 
+ Time elapsed: 0.000123 seconds
 
 ================ END TEST CASES ================
 ```

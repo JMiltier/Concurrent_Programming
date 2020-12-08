@@ -7,20 +7,22 @@
 #include <stack>
 #include <pthread.h>
 #include <atomic>
+#include <unistd.h>
+#include <time.h> // for nanosleep()
 #include "pthread_add.h"
 #include "sgl_stack.h"
 #include "treiber_stack.h"
 
 #define ACQ memory_order_acquire
 #define ACQREL memory_order_acq_rel
-#define CAS __sync_val_compare_and_swap
+#define CAS compare_exchange_weak
 
 using namespace std;
 
-struct Node {
-  Node *pnext;
-  void *pdata;
-};
+// struct Node {
+//   Node *pnext;
+//   void *pdata;
+// };
 
 // reimplemented from treiber_stack.h
 class elim_stack {
@@ -29,68 +31,97 @@ class elim_stack {
       public:
         node(int v):val(v) {}
         int val;
-        Node *down;
+        node *down;
+        node *next;
+        node *prev;
     };
-  atomic<Node *> top, next;
-  bool push(int val);
-  int pop();
+  atomic<node *> top;
+  bool push(int val, bool test);
+  int pop(bool test);
 };
 
-void **location;
-int *collision;
-
-struct ThreadInfo {
-  size_t *id;
-  // char op; // operation of thread
-  elim_stack cell;
-  // int spin; // amt of delay time for thread to collide
-};
-
-void StackOp(size_t *i) {
-  if (TryPerformStackOpPush(i)==false)
-    LesOP(i);
-  return;
-}
-
-bool TryPerformStackOpPush(size_t *i, elim_stack *s) {
-  ThreadInfo *ti;
-  ti->id = i;
-  Node *phead, *pnext;
-  phead = s->top;
-  if(CAS(s->top, phead, &ti->cell))
-    return true;
-  else return false;
-}
-
-void LesOP(ThreadInfo *p) {
-  while(true) {
-    thread[mypid] = p;
-    pos = GetPosition(p)
-    him=collision[pos];
-    while(!CAS(&collsion[pos], him, mypid))
-      him=collision[pos];
-    if (him!=EMPTY) {
-      q=location[him];
-      if(q!=NULL && q->id)
-    }
+bool elim_stack::push(int value, bool test) {
+  node *n = new node(value);
+  node *t;
+  do{
+    t = top.load(ACQ);
+    n->down = t;
+  }while (!top.CAS(t,n,ACQREL));
+  if(test) {
+    printf("%i ", n->val);
+    if(n->val%15==0) printf("\n Popped: ");
   }
+  // if(n->next == t->next) return true;
+  return false;
 }
 
-void TryCollisionPush(int tid) {
-  if(CAS(&thread[tid], *tid, *tid))
+int elim_stack::pop(bool test) {
+  node *t, *n;
+  int v;
+  do{
+    t = top.load(ACQ);
+    if (t==NULL) {return NULL;}
+    n = t->down;
+    v = t->val;
+  }while (!top.CAS(t,n,ACQREL));
+  if(test) printf("%i ", v);
+  return v;
 }
 
-void TryCollisionPop(int tid){
 
-}
+/* original attempt */
+// void **location;
+// int *collision;
 
-bool elim_stack::push(int val) {
+// struct ThreadInfo {
+//   size_t *id;
+//   // char op; // operation of thread
+//   elim_stack cell;
+//   // int spin; // amt of delay time for thread to collide
+// };
 
-}
+// void backoff_scheme() {
+//   // nanosleep((const struct timespec[]){{0, 500L}}, NULL);
+//   usleep(1);
+// }
 
-int elim_stack::pop() {
+// void StackOp(size_t *i) {
+//   if (TryPerformStackOpPush(i)==false)
+//     LesOP(i);
+//   return;
+// }
 
-}
+// bool TryPerformStackOpPush(size_t *i, elim_stack *s) {
+//   ThreadInfo *ti;
+//   ti->id = i;
+//   Node *phead, *pnext;
+//   phead = s->top;
+//   if(CAS(s->top, phead, &ti->cell))
+//     return true;
+//   else return false;
+// }
+
+// void LesOP(ThreadInfo *p) {
+//   while(true) {
+//     thread[mypid] = p;
+//     pos = GetPosition(p)
+//     him=collision[pos];
+//     while(!CAS(&collsion[pos], him, mypid))
+//       him=collision[pos];
+//     if (him!=EMPTY) {
+//       q=location[him];
+//       if(q!=NULL && q->id==him)
+//     }
+//   }
+// }
+
+// void TryCollisionPush(int tid) {
+//   if(CAS(&thread[tid], *tid, *tid))
+// }
+
+// void TryCollisionPop(int tid){
+
+// }
 
 #endif // ELIM_SGL_STACK
 #endif // __APPLE__
