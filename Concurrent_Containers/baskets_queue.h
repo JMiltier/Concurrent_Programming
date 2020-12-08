@@ -48,10 +48,10 @@ bool baskets_enqueue(queue_t *q, size_t val, bool test) {
             CAS(&q->tail.ptr, tail.ptr, nd);
             CAS(&q->tail.deleted, tail.deleted, 0);
             CAS(&q->tail.tag, tail.tag, tail.tag+1);
-            if(test) {
+            // if(test) {
               printf("%i ", nd->value);
-              if(nd->value%15==0) printf("\n Popped: ");
-            }
+              // if(nd->value%15==0) printf("\n Popped: ");
+            // }
             return true;
         }
         next = tail.ptr->next;

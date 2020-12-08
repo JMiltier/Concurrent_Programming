@@ -85,11 +85,11 @@ FC resources: [FC stack](http://libcds.sourceforge.net/doc/cds-api/classcds_1_1i
 `containers --test`: visual tests using a vector with 15 integers against 1, 3, and 5 threads for each algorithm. This currently only works on macOS (tested on v10.15.7)
 **OR**  
 ```shell
-> containers <input_file> [-t NUM THREADS] --algorithm=<sgl_stack,sgl_queue,treiber_stack,ms_queue,baskets_queue, elim_sql_stack, elim_t_stack>
+> containers <input_file> [-t NUM THREADS] --algorithm=<sgl_stack,sgl_queue,treiber_stack,ms_queue,baskets_queue, elim_sgl_stack, elim_t_stack>
 ```
   1. `input_file`: name of file with ints 
   2. `-t NUM_THREADS`: specify how many threads to use during execution (including master thread)
-  3. `--container=<sgl_stack,sgl_queue,treiber_stack,ms_queue,baskets_queue, elim_sql_stack, elim_t_stack>`: type of algorithm to use
+  3. `--container=<sgl_stack,sgl_queue,treiber_stack,ms_queue,baskets_queue,elim_sgl_stack,elim_t_stack>`: type of algorithm to use
   - **Additional outputs**: time of execution in nanoseconds  
 Example of program execution, using integers from source.txt file, 5 threads, and the sgl_stack algorithm
 ```shell
@@ -100,36 +100,35 @@ Example of program execution, using integers from source.txt file, 5 threads, an
 ## Analyzing program performances, using `perf`
 #### For L1 cache hit rate
 ```shell
-> perf stat -e L1-dcache-loads -e L1-dcache-load-misses ./containers source.txt -t 5 --algorithm=<sgl_stack,sgl_queue,treiber_stack,ms_queue,baskets_queue, elim_sql_stack, elim_t_stack>
+> perf stat -e L1-dcache-loads -e L1-dcache-load-misses ./containers source.txt -t 5 --algorithm=<sgl_stack,sgl_queue,treiber_stack,ms_queue,baskets_queue, elim_sgl_stack, elim_t_stack>
 ```
 #### For branch-prediction hit rate
 ```shell
-> perf stat -e branch-loads -e branch-load-misses ./containers source.txt -t 5 --algorithm=<sgl_stack,sgl_queue,treiber_stack,ms_queue,baskets_queue, elim_sql_stack, elim_t_stack>
+> perf stat -e branch-loads -e branch-load-misses ./containers source.txt -t 5 --algorithm=<sgl_stack,sgl_queue,treiber_stack,ms_queue,baskets_queue, elim_sgl_stack, elim_t_stack>
 ```
 #### For page faults
 ```shell
-> perf stat -e page-faults ./containers source.txt -t 5 --algorithm=<sgl_stack,sgl_queue,treiber_stack,ms_queue,baskets_queue, elim_sql_stack, elim_t_stack>
+> perf stat -e page-faults ./containers source.txt -t 5 --algorithm=<sgl_stack,sgl_queue,treiber_stack,ms_queue,baskets_queue, elim_sgl_stack, elim_t_stack>
 ```
 #### Or all stats at once (how I ended up doing it), using 10 repeated runs
 ```shell
-> perf stat --repeat 10 -e L1-dcache-loads,L1-dcache-load-misses,branch-loads,branch-load-misses,page-faults ./containers source.txt -t 5 --algorithm=<sgl_stack,sgl_queue,treiber_stack,ms_queue,baskets_queue, elim_sql_stack, elim_t_stack>
+> perf stat --repeat 10 -e L1-dcache-loads,L1-dcache-load-misses,branch-loads,branch-load-misses,page-faults ./containers source.txt -t 5 --algorithm=<sgl_stack,sgl_queue,treiber_stack,ms_queue,baskets_queue, elim_sgl_stack, elim_t_stack>
 ```
+<style> table { font-size: 12px } </style>
 
 ### Container Perf Table (Iteration/Array of 10000, 5 threads, and 10 repeated runs (average))
 Algorithm           | Run Time (s) | L1 cache hit rate | branch-prediction hit rate | page-fault
 :------------------ | :----------- | :---------------- | :------------------------- | :---------
-SGL Stack           | 0.003164545  | 98.46%            | 99.05%                     | 134
-SGL Queue           | 0.003159215  | 98.44%            | 99.05%                     | 133
-Treiber Stack       | 0.003125873  | 98.44%            | 99.05%                     | 134
-MS Queue            | 0.002613348  | 98.48%            | 99.05%                     | 134
-Baskets Queue       | 0.002597239  | 98.44%            | 99.06%                     | 134
-Elim SGL Stack      | 0.002524128  | 98.44%            | 99.06%                     | 134
-Elim Treiber Stack  | 0.002423572  | 98.45%            | 99.04%                     | 134
-
-##### *NOTE: Run time includes testing
+SGL Stack           | 0.002508     | 96.94%            | 98.77%                     | 164
+SGL Queue           | 0.002110     | 96.93%            | 98.76%                     | 164
+Treiber Stack       | 0.001281     | 97.68%            | 99.05%                     | 232
+MS Queue            | 0.002370     | 97.46%            | 98.97%                     | 232
+Baskets Queue       | 0.00         | %                | %                         | 
+Elim SGL Stack      | 0.001309     | 97.31%            | 98.97%                     | 272
+Elim Treiber Stack  | 0.001234     | 97.65%            | 99.07%                     | 272
 
 ### Perf Analysis
-Overall among all of the algorithm's performance tests, the baskets queue algorithms seem to be faster. However, all have very similar hit rates. Ideally, this run times make sense, as the single global locks should perform much slower than the other algorithms since these are sequential operations; each process has to wait for one another before proceeding on. The stacks with elimination (as read, but not implemented) should outperform the SGL and Treiber stacks. 
+Overall among all of the algorithm's performance tests, the baskets queue algorithms seem to be the fastest, with the treiber stack in second. However, all have very similar hit rates. Ideally, this run times make sense, as the single global locks should perform much slower than the other algorithms since these are sequential operations; each process has to wait for one another before proceeding on. The stacks with elimination (as read, but not implemented) should outperform the SGL and Treiber stacks. 
 
 <div style="page-break-after: always; visibility: hidden"></div>
 
@@ -256,6 +255,7 @@ With Nums: { 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 }
 15. [cpp compare exchange](https://en.cppreference.com/w/cpp/atomic/atomic_compare_exchange)
 16. [stack overflow CAS solution for baskets queue](https://stackoverflow.com/questions/27919854/compare-and-swap-in-c)
 17. [nanoseconds sleep for backoff scheme](https://stackoverflow.com/questions/7684359/how-to-use-nanosleep-in-c-what-are-tim-tv-sec-and-tim-tv-nsec)
+18. Class notes and lectures
 
 <!-- CREATE README PDF -->
 <!-- md2pdf README.md --highlight-style atom-one-dark --pdf-options '{ "format": "Letter", "margin": "20mm", "printBackground": true }' -->

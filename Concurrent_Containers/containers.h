@@ -151,6 +151,7 @@ void *elim_t_stack(void *i) {
 
 // test functions
 void testFuncs() {
+  threads = static_cast<pthread_t*>(malloc(NUM_THREADS*sizeof(pthread_t)));
   printf("•••••• SGL Stack Tests ••••••\n");
   printf(" Pushed: ");
   auto start_time1 = Clock::now();
@@ -195,22 +196,21 @@ void testFuncs() {
 	unsigned long time_spent4 = chrono::duration_cast<chrono::nanoseconds>(end_time4 - start_time4).count();
   printf("\n Time elapsed: %f seconds", time_spent4/1e9);
 
-  // printf("\n•••••• Baskets Queue Tests ••••••\n");
-  // printf(" Enqueued: ");
-  // auto start_time5 = Clock::now();
-  // init_queue(bas_queue);
-  // for (size_t i = 0; i < NUM_THREADS; i++)
-	// 	pthread_create(&threads[i], NULL, baskets_queue, (void*)i);
-	// for (size_t i = 0; i < NUM_THREADS; i++)
-	// 	pthread_join(threads[i], NULL);
-  // auto end_time5 = Clock::now();
-	// unsigned long time_spent5 = chrono::duration_cast<chrono::nanoseconds>(end_time5 - start_time5).count();
-  // printf("\n Time elapsed: %f seconds", time_spent5/1e9);
+  printf("\n•••••• Baskets Queue Tests ••••••\n");
+  printf(" Enqueued: ");
+  auto start_time5 = Clock::now();
+  init_queue(bas_queue);
+  for (size_t i = 0; i < NUM_THREADS; i++)
+    pthread_create(&threads[i], NULL, baskets_queue, (void*)i);
+  for (size_t i = 0; i < NUM_THREADS; i++)
+    pthread_join(threads[i], NULL);
+  auto end_time5 = Clock::now();
+	unsigned long time_spent5 = chrono::duration_cast<chrono::nanoseconds>(end_time5 - start_time5).count();
+  printf("\n Time elapsed: %f seconds", time_spent5/1e9);
 
   printf("\n•••••• Elimination SGL Stack Tests ••••••\n");
   printf(" Pushed: ");
   auto start_time6 = Clock::now();
-  init_queue(bas_queue);
   for (size_t i = 0; i < NUM_THREADS; i++)
 		pthread_create(&threads[i], NULL, elim_sgl_stack, (void*)i);
 	for (size_t i = 0; i < NUM_THREADS; i++)
@@ -222,7 +222,6 @@ void testFuncs() {
   printf("\n•••••• Elimination Treiber Stack Tests ••••••\n");
   printf(" Pushed: ");
   auto start_time7 = Clock::now();
-  init_queue(bas_queue);
   for (size_t i = 0; i < NUM_THREADS; i++)
 		pthread_create(&threads[i], NULL, elim_t_stack, (void*)i);
 	for (size_t i = 0; i < NUM_THREADS; i++)
