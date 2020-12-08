@@ -1,4 +1,4 @@
-# C++ Parallel Algorithms
+# C++ Concurrent Containers
 
 #### Concurrent Tree
 A tree, whether a binary search tree (BST), radix tree, red-black tree (RBT), or any other tree imagineable, allowing for multiple reads/writes/deletes functionalities for parallism. Ideally, all reads are lock-free, meaning any read threads should not block. These read threads should always see a consistent version of the tree, and should never block writing threads. As for the writing threads, they should block other writing threads, but not any reading threads. Writing threads blocking writing threads ensures consistency when modifying the tree. [Additional info](https://www.cs.cmu.edu/~yihans/papers/tutorial.pdf) and for [BST](https://stanford-ppl.github.io/website/papers/ppopp207-bronson.pdf)
