@@ -97,7 +97,7 @@ int main(int argc, const char* argv[]){
 	// unsigned int 4,294,967,295, which is only 4.3 seconds
 	// unsigned long, plan on never running out (over 5 centuries)
 	unsigned long time_spent = chrono::duration_cast<chrono::nanoseconds>(end_time - start_time).count();
-	printf("Time elapsed is %lu nanoseconds\n", time_spent);
+	printf("\nTime elapsed is %lu nanoseconds\n", time_spent);
 	printf("                %f seconds\n", time_spent/1e9);
 	return 0;
 }

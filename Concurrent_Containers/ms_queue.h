@@ -43,10 +43,7 @@ void msqueue::enqueue(int value, bool test) {
       else if(e != NULL) tail.CAS(t,e);
     }
   }
-  if(test) {
-    printf("%i ", n->val);
-    if(n->val%15==0) printf("\n Dequeued: ");
-  }
+  if(test) printf("+%i ", n->val);
   tail.CAS(t,n);
 }
 
@@ -63,7 +60,7 @@ int msqueue::dequeue(bool test) {
       } else {
         int ret = n->val;
         if(head.CAS(h,n)) {
-          if(test) printf("%i ", ret);
+          if(test) printf("-%i ", ret);
           return ret;
         }
       }

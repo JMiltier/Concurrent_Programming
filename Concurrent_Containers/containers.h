@@ -106,14 +106,14 @@ void *baskets_queue(void *i) {
 	size_t split = test_vec.size() / NUM_THREADS;
   size_t start = split * tid;
   size_t end = split * (tid+1);
+  int fin = 0;
   for (int i = start; i < end; ++i) {
 	  baskets_enqueue(bas_queue, test_vec[i], test);
+    fin = test_vec[i+1];
   }
-  int t = 0;
-  while(t != -1) {
-    t = baskets_dequeue(bas_queue, test);
-  }
-
+  if (fin == test_vec[split * NUM_THREADS])
+    while(baskets_dequeue(bas_queue, test) != -1);
+    // printf("%i ");
 	return NULL;
 }
 
@@ -153,7 +153,6 @@ void *elim_t_stack(void *i) {
 void testFuncs() {
   threads = static_cast<pthread_t*>(malloc(NUM_THREADS*sizeof(pthread_t)));
   printf("•••••• SGL Stack Tests ••••••\n");
-  printf(" Pushed: ");
   auto start_time1 = Clock::now();
   for (int i = 0; i < NUM_THREADS; i++)
 		pthread_create(&threads[i], NULL, SGL_stack, (void*)i);
@@ -164,7 +163,6 @@ void testFuncs() {
   printf("\n Time elapsed: %f seconds", time_spent1/1e9);
 
   printf("\n•••••• SGL Queue Tests ••••••\n");
-  printf(" Enqueued: ");
   auto start_time2 = Clock::now();
   for (size_t i = 0; i < NUM_THREADS; i++)
 		pthread_create(&threads[i], NULL, SGL_queue, (void*)i);
@@ -175,7 +173,6 @@ void testFuncs() {
   printf("\n Time elapsed: %f seconds", time_spent2/1e9);
 
   printf("\n•••••• Treiber Stack Tests ••••••\n");
-  printf(" Pushed: ");
   auto start_time3 = Clock::now();
   for (size_t i = 0; i < NUM_THREADS; i++)
 		pthread_create(&threads[i], NULL, treiber_stack, (void*)i);
@@ -186,7 +183,6 @@ void testFuncs() {
   printf("\n Time elapsed: %f seconds", time_spent3/1e9);
 
   printf("\n•••••• Michael And Scott Queue Tests ••••••\n");
-  printf(" Enqueued: ");
   auto start_time4 = Clock::now();
   for (size_t i = 0; i < NUM_THREADS; i++)
 		pthread_create(&threads[i], NULL, MS_queue, (void*)i);
@@ -197,7 +193,6 @@ void testFuncs() {
   printf("\n Time elapsed: %f seconds", time_spent4/1e9);
 
   printf("\n•••••• Baskets Queue Tests ••••••\n");
-  printf(" Enqueued: ");
   auto start_time5 = Clock::now();
   init_queue(bas_queue);
   for (size_t i = 0; i < NUM_THREADS; i++)
@@ -209,7 +204,6 @@ void testFuncs() {
   printf("\n Time elapsed: %f seconds", time_spent5/1e9);
 
   printf("\n•••••• Elimination SGL Stack Tests ••••••\n");
-  printf(" Pushed: ");
   auto start_time6 = Clock::now();
   for (size_t i = 0; i < NUM_THREADS; i++)
 		pthread_create(&threads[i], NULL, elim_sgl_stack, (void*)i);
@@ -220,7 +214,6 @@ void testFuncs() {
   printf("\n Time elapsed: %f seconds", time_spent6/1e9);
 
   printf("\n•••••• Elimination Treiber Stack Tests ••••••\n");
-  printf(" Pushed: ");
   auto start_time7 = Clock::now();
   for (size_t i = 0; i < NUM_THREADS; i++)
 		pthread_create(&threads[i], NULL, elim_t_stack, (void*)i);
@@ -240,6 +233,8 @@ void printVec(vector<int> t) {
 // test runs
 void runTests() {
 	printf("================ STARTING TEST CASES ================\n");
+	printf("|     LEGEND:    + push/enqueue    - pop/dequeue    |\n");
+	printf("=====================================================\n");
 	printf("\n---------------- Testing with 1 Thread ----------------\n");
   NUM_THREADS = 1;
   tv1 = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
@@ -248,13 +243,13 @@ void runTests() {
   testFuncs();
   printf("\n\n---------------- Testing with 3 Threads ----------------\n");
   NUM_THREADS = 3;
-  tv2 = {16,17,18,19,20,21,22,23,24,25,26,27,28,29,30};
+  tv2 = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
   printVec(tv2);
   test_vec = tv2;
   testFuncs();
   printf("\n\n---------------- Testing with 5 Threads ----------------\n");
   NUM_THREADS = 5;
-  tv3 = {31,32,33,34,35,36,37,38,39,40,41,42,43,44,45};
+  tv3 = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
   printVec(tv3);
   test_vec = tv3;
   testFuncs();

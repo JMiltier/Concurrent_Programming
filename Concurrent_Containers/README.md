@@ -82,18 +82,18 @@ FC resources: [FC stack](http://libcds.sourceforge.net/doc/cds-api/classcds_1_1i
 ```shell
 > containers [--test]
 ```
-`containers --test`: visual tests using a vector with 15 integers against 1, 3, and 5 threads for each algorithm. This currently only works on macOS (tested on v10.15.7)
+`containers --test`: visual tests using a vector with 15 integers against 1, 3, and 5 threads for each algorithm. 
 **OR**  
 ```shell
-> containers <input_file> [-t NUM THREADS] --algorithm=<sgl_stack,sgl_queue,treiber_stack,ms_queue,baskets_queue, elim_sgl_stack, elim_t_stack>
+> containers <input_file> [-t NUM THREADS] --algorithm=<sgl_stack,sgl_queue,treiber_stack,ms_queue,baskets_queue, elim_sgl_stack, elim_t_stack> <--test>
 ```
   1. `input_file`: name of file with ints 
   2. `-t NUM_THREADS`: specify how many threads to use during execution (including master thread)
   3. `--container=<sgl_stack,sgl_queue,treiber_stack,ms_queue,baskets_queue,elim_sgl_stack,elim_t_stack>`: type of algorithm to use
   - **Additional outputs**: time of execution in nanoseconds  
-Example of program execution, using integers from source.txt file, 5 threads, and the sgl_stack algorithm
+Example of program execution, using integers from source.txt file, 5 threads, the sgl_stack algorithm, and display the output
 ```shell
-> ./containers source.txt -t 5 --algorithm=sgl_stack
+> ./containers source.txt -t 5 --algorithm=sgl_stack --test
 ```
 <div style="page-break-after: always; visibility: hidden"></div>
 
@@ -133,7 +133,7 @@ Overall among all of the algorithm's performance tests, the baskets queue algori
 <div style="page-break-after: always; visibility: hidden"></div>
 
 ## Unit Testing
-Local test cases were setup on a MacOS machine, and currently unable to run on Linux (seg faults). Below is the console output from a Mac notebook:
+Testing output; output may vary on updates. 
 ```shell
 ================ STARTING TEST CASES ================
 

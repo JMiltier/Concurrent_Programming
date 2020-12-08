@@ -34,10 +34,7 @@ void tstack::push(int value, bool test) {
     t = top.load(ACQ);
     n->down = t;
   }while (!top.CAS(t,n,ACQREL));
-  if(test) {
-    printf("%i ", n->val);
-    if(n->val%15==0) printf("\n Popped: ");
-  }
+  if(test) printf("+%i ", n->val);
 }
 
 int tstack::pop(bool test) {
@@ -49,7 +46,7 @@ int tstack::pop(bool test) {
     n = t->down;
     v = t->val;
   }while (!top.CAS(t,n,ACQREL));
-  if(test) printf("%i ", v);
+  if(test) printf("-%i ", v);
   return v;
 }
 

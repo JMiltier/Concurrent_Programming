@@ -9,12 +9,12 @@
 #include <time.h> // for nanosleep()
 
 #define MAX_HOPS 3
-#define CAS __sync_val_compare_and_swap // References #16
+#define CAS __sync_bool_compare_and_swap // References #16
 
 // from baskets queue reference (p. 405)
 struct node_t;
 struct pointer_t {
-  node_t * ptr;
+  node_t *ptr;
   bool deleted;
   size_t tag;
 };
@@ -33,7 +33,7 @@ void backoff_scheme() {
   usleep(1);
 }
 
-bool baskets_enqueue(queue_t *q, size_t val, bool test) {
+bool baskets_enqueue(queue_t *q, int val, bool test) {
   node_t *nd = new node_t;
   nd->value = val;
   while(true) {
@@ -48,10 +48,9 @@ bool baskets_enqueue(queue_t *q, size_t val, bool test) {
             CAS(&q->tail.ptr, tail.ptr, nd);
             CAS(&q->tail.deleted, tail.deleted, 0);
             CAS(&q->tail.tag, tail.tag, tail.tag+1);
-            // if(test) {
-              printf("%i ", nd->value);
-              // if(nd->value%15==0) printf("\n Popped: ");
-            // }
+            if(test) {
+              printf("+%i ", nd->value);
+            }
             return true;
         }
         next = tail.ptr->next;
@@ -119,9 +118,10 @@ int baskets_dequeue(queue_t *q, bool test) {
             CAS(&iter.ptr->next.deleted, next.deleted, 1) &&
             CAS(&iter.ptr->next.tag, next.tag, next.tag+1)) {
               if (hops >= MAX_HOPS) free_chain(q, head, iter);
-              if(test) printf("%i ", value);
+              if(test) printf("-%i ", value);
               return value;
-          } backoff_scheme();
+          }
+          backoff_scheme();
         }
       }
     }

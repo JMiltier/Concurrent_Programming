@@ -30,7 +30,7 @@ struct arg_params arg_parser(int argc, const char* argv[]){
     } else if (argc == 2 && string(argv[1]) == "--test") {
       args.TEST = true;
       return args;
-    } else if (argc == 5) {} // continue on to execution
+    } else if (argc >= 5 && argc <= 6) {} // continue on to execution
     else { // catch all else
       printf("\nERROR: Program option parameters are invalid.\n"
              "         Expected 4 options, but got %i.\n"
@@ -78,7 +78,7 @@ struct arg_params arg_parser(int argc, const char* argv[]){
     }
 
     // test flag set with output (not implemented fully)
-    // if (string(argv[5]) == "--test") args.TEST = true;
+    if (string(argv[5]) == "--test") args.TEST = true;
     /* ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ END ARG PARSER ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ */
 
     return args;
