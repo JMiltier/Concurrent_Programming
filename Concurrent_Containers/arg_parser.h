@@ -13,7 +13,8 @@ using namespace std;
 void helpfn();
 
 struct arg_params {
-  size_t NUM_THREADS, ALGORITHM;
+  size_t NUM_THREADS;
+  int ALGORITHM;
   string INPUTFILE;
 };
 
@@ -23,9 +24,12 @@ struct arg_params arg_parser(int argc, const char* argv[]){
   /* ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ ARG CHECKER ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ */
     if (argc == 2 && string(argv[1]) == "--name"){
       printf("Josh Miltier\n"); // check for --name
-      exit(-1);
-    }if (argc == 2 && string(argv[1]) == "-h"){
-      helpfn(); exit(-1);
+      exit(0);
+    } else if (argc == 2 && string(argv[1]) == "-h") {
+      helpfn(); exit(0);
+    } else if (argc == 2 && string(argv[1]) == "--test") {
+      args.ALGORITHM = -1;
+      return args;
     } else if (argc == 5) {} // continue on to execution
     else { // catch all else
       printf("\nERROR: Program option parameters are invalid.\n"

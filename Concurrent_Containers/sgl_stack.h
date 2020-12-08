@@ -12,18 +12,24 @@ using namespace std;
 
 pthread_mutex_t SGL_stack_lock;
 
-void SGL_s_push(stack<int> *s, size_t num){
+void SGL_s_push(stack<int> *stack, size_t num, int test){
   pthread_mutex_lock(&SGL_stack_lock);
-  s->push(num);
-  printf("Stack push: %i\n", s->top());
+  stack->push(num);
+  // for testing
+  if(test == -1) {
+    printf("%i ", stack->top());
+    if(stack->size() == 15)
+      printf("\n Popped: ");
+  }
   pthread_mutex_unlock(&SGL_stack_lock);
 }
 
-void SGL_s_pop(stack<int> *s){
+void SGL_s_pop(stack<int> *stack, int test){
   pthread_mutex_lock(&SGL_stack_lock);
-  while (!s->empty()) {
-    printf("Stack pop: %i\n", s->top());
-    s->pop();
+  while (!stack->empty()) {
+    // for testing
+    if(test == -1) printf("%i ", stack->top());
+    stack->pop();
   }
   pthread_mutex_unlock(&SGL_stack_lock);
 }

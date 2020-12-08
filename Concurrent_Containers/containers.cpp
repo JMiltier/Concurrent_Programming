@@ -23,8 +23,6 @@ int main(int argc, const char* argv[]){
 	// execution start time
 	auto start_time = Clock::now();
 
-	sgl_stack->size();
-
 	/* algorithm statement (from parser) is as follows:
 	* 1-sgl_stack, 2-sgl_queue, 3-treiber_stack, 4-ms_queue
 	* 5-baskets_queue, 6-elim_t_stack, 7-elim_sgl_stack */
@@ -82,6 +80,9 @@ int main(int argc, const char* argv[]){
 				pthread_join(threads[i], NULL);
 			break;
 		// something didn't match up
+		case -1:
+			runTests();
+			exit(0);
 		default:
 			printf("An error occured in main argument switch\n");
 			exit(-1);
@@ -96,4 +97,3 @@ int main(int argc, const char* argv[]){
 	// printf("                %f seconds\n", time_spent/1e9);
 	return 0;
 }
-

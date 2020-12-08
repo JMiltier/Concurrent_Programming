@@ -51,7 +51,15 @@ FC resources: [FC stack](http://libcds.sourceforge.net/doc/cds-api/classcds_1_1i
 ```shell
 > containers [--name]
 ```
-`containers --name`: prints name to console.  
+`containers --name`: prints name to console.
+```shell
+> containers [--name]
+```
+`containers -h`: prints help instructions to console.
+```shell
+> containers [--name]
+```
+`containers --test`: prints tests for all algorithms.
 **OR**  
 ```shell
 > containers <input_file> [-t NUM THREADS] --algorithm=<sgl_stack,sgl_queue,treiber_stack,ms_queue,baskets_queue, elim_sql_stack, elim_t_stack>
