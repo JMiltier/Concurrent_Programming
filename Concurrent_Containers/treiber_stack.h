@@ -23,24 +23,24 @@ class tstack {
         node *down;
     };
   atomic<node *> top;
-  void push(int val, int test);
-  int pop(int test);
+  void push(int val, bool test);
+  int pop(bool test);
 };
 
-void tstack::push(int value, int test) {
+void tstack::push(int value, bool test) {
   node *n = new node(value);
   node *t;
   do{
     t = top.load(ACQ);
     n->down = t;
   }while (!top.CAS(t,n,ACQREL));
-  if(test == -1) {
+  if(test) {
     printf("%i ", n->val);
     if(n->val%15==0) printf("\n Popped: ");
   }
 }
 
-int tstack::pop(int test) {
+int tstack::pop(bool test) {
   node *t, *n;
   int v;
   do{
@@ -49,7 +49,7 @@ int tstack::pop(int test) {
     n = t->down;
     v = t->val;
   }while (!top.CAS(t,n,ACQREL));
-  if(test == -1) printf("%i ", v);
+  if(test) printf("%i ", v);
   return v;
 }
 

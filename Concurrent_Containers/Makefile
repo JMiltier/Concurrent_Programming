@@ -1,10 +1,9 @@
 # --------------------------------------------------------
 # Makefile - versitility to use again for C or C++ files
-# 'make'         builds executable targets marked from 'all:'
-# 'make mysort'  creates executable object for sort algos
-# 'make counter' creates executable object for counter
-# 'make numGen'  creates random number generator object
-# 'make clean'   removes all .o and executable files
+# 'make'             cleans and builds executable targets marked from 'all:'
+# 'make containers'  creates executable object for sort algos
+# 'make numGen'      creates random number generator object
+# 'make clean'       removes all .o and executable files
 # --------------------------------------------------------
 
 # the compiler: gcc for C program, define as g++ for C++
@@ -22,8 +21,6 @@ STD = -std=c++11
 # variables
 CNTNRPRGM=containers
 CNTNRSRC=containers.cpp
-CNTRPRGM=counter
-CNTRSRC=counter.cpp
 NUMGENPRGM=numGen
 NUMGENSRC=randomNumberGen.cpp
 
@@ -32,10 +29,6 @@ all: clean $(CNTNRPRGM)
 # containers
 $(CNTNRPRGM): $(CNTNRSRC)
 	$(CC) $(STD) $(CFLAGS) $(CNTNRSRC) -o $(CNTNRPRGM) -pthread
-
-# mysort
-$(SORTPRGM): $(SORTSRC)
-	$(CC) $(STD) $(CFLAGS) $(SORTSRC) -o $(SORTPRGM)
 
 # random numbers generation
 $(NUMGENPRGM): $(NUMGENSRC)

@@ -13,8 +13,8 @@ using namespace std;
 void helpfn();
 
 struct arg_params {
-  size_t NUM_THREADS;
-  int ALGORITHM;
+  size_t NUM_THREADS, ALGORITHM = 0;
+  bool TEST = false;
   string INPUTFILE;
 };
 
@@ -28,7 +28,7 @@ struct arg_params arg_parser(int argc, const char* argv[]){
     } else if (argc == 2 && string(argv[1]) == "-h") {
       helpfn(); exit(0);
     } else if (argc == 2 && string(argv[1]) == "--test") {
-      args.ALGORITHM = -1;
+      args.TEST = true;
       return args;
     } else if (argc == 5) {} // continue on to execution
     else { // catch all else
@@ -71,9 +71,14 @@ struct arg_params arg_parser(int argc, const char* argv[]){
     else if (string(argv[4]) == "--algorithm=elim_t_stack") args.ALGORITHM = 6;
     else if (string(argv[4]) == "--algorithm=elim_sgl_stack") args.ALGORITHM = 7;
     else {
-      printf("ERROR: argument does not exist. Try '--container=' with an available specified method. Refer to README if needed.\n");
+      printf("ERROR: argument does not exist.\n"
+             "       Try '--container=' with an available specified method.\n"
+             "       Refer to README if needed, or use '-h' flag for help.\n");
       exit(-1);
     }
+
+    // test flag set with output (not implemented fully)
+    // if (string(argv[5]) == "--test") args.TEST = true;
     /* ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ END ARG PARSER ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ */
 
     return args;

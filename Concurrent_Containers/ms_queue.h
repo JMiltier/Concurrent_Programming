@@ -22,8 +22,8 @@ class msqueue {
     };
     atomic<node*> head, tail;
     msqueue();
-    void enqueue(int val, int test);
-    int dequeue(int test);
+    void enqueue(int val, bool test);
+    int dequeue(bool test);
 };
 
 msqueue::msqueue() {
@@ -32,7 +32,7 @@ msqueue::msqueue() {
   tail.store(dummy);
 }
 
-void msqueue::enqueue(int value, int test) {
+void msqueue::enqueue(int value, bool test) {
   node *t, *e, *n, *dummy = NULL;
   n = new node(value);
   while(true) {
@@ -43,14 +43,14 @@ void msqueue::enqueue(int value, int test) {
       else if(e != NULL) tail.CAS(t,e);
     }
   }
-  if(test == -1) {
+  if(test) {
     printf("%i ", n->val);
     if(n->val%15==0) printf("\n Dequeued: ");
   }
   tail.CAS(t,n);
 }
 
-int msqueue::dequeue(int test) {
+int msqueue::dequeue(bool test) {
   node *t, *h, *n;
   while(true) {
     h = head.load();
@@ -63,7 +63,7 @@ int msqueue::dequeue(int test) {
       } else {
         int ret = n->val;
         if(head.CAS(h,n)) {
-          if(test == -1) printf("%i ", ret);
+          if(test) printf("%i ", ret);
           return ret;
         }
       }

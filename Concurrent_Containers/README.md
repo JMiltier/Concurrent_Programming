@@ -4,7 +4,7 @@
 A tree, whether a binary search tree (BST), radix tree, red-black tree (RBT), or any other tree imagineable, allowing for multiple reads/writes/deletes functionalities for parallism. Ideally, all reads are lock-free, meaning any read threads should not block. These read threads should always see a consistent version of the tree, and should never block writing threads. As for the writing threads, they should block other writing threads, but not any reading threads. Writing threads blocking writing threads ensures consistency when modifying the tree. [Additional info](https://www.cs.cmu.edu/~yihans/papers/tutorial.pdf) and for [BST](https://stanford-ppl.github.io/website/papers/ppopp207-bronson.pdf)
 
 #### Concurrent Containers
-Several concurrent algorithms with an elimination: SGL stack and queue, Treiber stack, and M&S stack. Additionally flat-combining stack and queue. 
+Several concurrent algorithms with an elimination: SGL stack and queue, Treiber stack, M&S stack, baskets queue, and elimination SGL/Treiber stacks. 
 
 #### Transactions
 A series of code execution that only commits all if the entire run is completed successfully. Othwerise, it will abort (fail) and roll back. Doing this in parallel seems odd, being that it may be need to wait on one (sequentially) function to run before another. This seems extremely useful for database management. More importantly, there seems that there may be some additional troubleshooting for transactions that may not be discovered until further implemented. [Additional read](https://ashutoshtripathi.com/2017/11/28/concurrent-executions-in-transaction/)
@@ -14,12 +14,15 @@ For the sake of resources available, and class slides, concurrent containers see
 
 ## Algorithm Descriptions
 #### Single Global Lock (SGL) Stack (LIFO)
-Lock-based
+Lock-based stack that uses a single global lock, which can decrease performance time when scaling.
 #### Single Global Lock (SGL) Queue (FIFO)
+Lock-based queue that also uses a single global local, again at a degradation issue with increasing complexity. 
 #### Treiber Stack (LIFO)
 The Treiber stack algorithm is a scalable lock-free stack utilizing the fine-grained concurrency primitive compare-and-swap. It is believed that R. Kent Treiber  The Treiber stack algorithm is a scalable lock-free stack utilizing the fine-grained concurrency primitive compare-and-swap. It is believed that R. Kent Treiber was the first to publish it in his 1986 article "Systems Programming: Coping with Parallelism". However, treiber stack is prone to bottlenecking and thus offers little scalability. 
 #### Michael and Scott (MS) Queue (FIFO)
+Non-blocking, dynamic-memory algorithm that whose threads reserve blocks beforehand, so that other threads won't reclaim before it finishes. This comes increased performance overhead. 
 #### Baskets Queue (FIFO)
+A concurrent lock-free dynamic linearizable queue algorithm. The throughput of this is greater than the previous ones listed - as it created a mixed order (baskets) of items, instead of the traditional ordered list. Operations within each basket can be performed in parallel.
 #### Elimination Stacks (FIFO) with SGL Stack and Treiber Stack
 Concurrent stack algorithm that is lock-free (robust), parallel (scalable), and adaptive (performs well at low loads). Additionally, it is linearizable and combine modularly with other algorithms. 
 
@@ -31,13 +34,19 @@ FC resources: [FC stack](http://libcds.sourceforge.net/doc/cds-api/classcds_1_1i
 #### 📁 Files
   1. `Makefile` - used to create and remove executable C++11 objects 
   2. `container.cpp` - main file
-  3. `arg_parser.h` - parsing and error handling for mysort program input options
-  6. `README.pdf` - write-up for project (this file)
+  3. `container.h` - header file for main, includes testing
+  4. `arg_parser.h` - parsing and error handling for mysort program input options
+  5. `sgl_stack.h` - functionality for stack using a single global lock
+  6. `sgl_queue.h` - functionality for queue using a single global lock
+  7. `treiber_stack.h` - functionality for treiber stack
+  8. `ms_queue.h` - functionality for Michael and Scott stack
+  9. `baskets_queue.h` - functionality for Baskets queue
+  10. `elim_stack.h` - added functionality for stacks above, using threads to exchange values through elimination
+  11. `README.pdf` - write-up for project (this file)
 
 #### 💾 Additional files
   1. `randomNumberGen.cpp`- creates a text file with a specified number of random numbers from [ 1 - number size ]. Default number is 10,000 unless specified when ran (as second argument).
   2. `pthread_add.h` - threading if compiling on macOS (will still run as normal for linux systems)'
-  3. `perf.sh` - shell script file to run perf tests -- Omitted this file b/c was not able to run due to permissions on jupiter notebook. Methods for testing are listed below.
 
 ### Compiling
   Note: If zipped, first unzip file before proceeding.
@@ -46,6 +55,8 @@ FC resources: [FC stack](http://libcds.sourceforge.net/doc/cds-api/classcds_1_1i
   3. `Make clean` will remove all files generated by `make`.
   4. Additionally, `make numGen` will generate the executable object to generate random numbers to a .txt file (set to *source.txt*).
 
+<div style="page-break-after: always; visibility: hidden">\pagebreak</div>
+
 ## Execution
 #### Program option/input parameters for `containers`
 ```shell
@@ -53,98 +64,143 @@ FC resources: [FC stack](http://libcds.sourceforge.net/doc/cds-api/classcds_1_1i
 ```
 `containers --name`: prints name to console.
 ```shell
-> containers [--name]
+> containers [-h]
 ```
 `containers -h`: prints help instructions to console.
 ```shell
-> containers [--name]
+> containers [--test]
 ```
-`containers --test`: prints tests for all algorithms.
+`containers --test`: visual tests using a vector with 15 integers against 1, 3, and 5 threads for each algorithm. This currently only works on macOS (tested on v10.15.7)
 **OR**  
 ```shell
 > containers <input_file> [-t NUM THREADS] --algorithm=<sgl_stack,sgl_queue,treiber_stack,ms_queue,baskets_queue, elim_sql_stack, elim_t_stack>
 ```
   1. `input_file`: name of file with ints 
-  1. `-t NUM_THREADS`: specify how many threads to use during execution (including master thread)
-  <!-- 2. `-i=NUM_ITERATIONS`: number of times to increment counter on each thread -->
-  2. `--container=<sgl_stack,sgl_queue,treiber_stack,ms_queue,baskets_queue, elim_sql_stack, elim_t_stack>`: type of algorithm to use
+  2. `-t NUM_THREADS`: specify how many threads to use during execution (including master thread)
+  3. `--container=<sgl_stack,sgl_queue,treiber_stack,ms_queue,baskets_queue, elim_sql_stack, elim_t_stack>`: type of algorithm to use
   - **Additional outputs**: time of execution in nanoseconds  
-Example of program execution, using 10 threads, and sgl_stack algorithm
+Example of program execution, using integers from source.txt file, 5 threads, and the sgl_stack algorithm
 ```shell
-> ./containers source.txt -t 10 --container=sgl_stack
+> ./containers source.txt -t 5 --algorithm=sgl_stack
 ```
+<div style="page-break-after: always; visibility: hidden">\pagebreak</div>
 
 ## Analyzing program performances, using `perf`
-## Barriers
 #### For L1 cache hit rate
 ```shell
-> perf stat -e L1-dcache-loads -e L1-dcache-load-misses ./counter -t 10 -i=1000 --bar=<sense, pthread> -o out.txt
-> perf stat -e L1-dcache-loads -e L1-dcache-load-misses ./mysort source.txt -o out.txt -t 10 --alg=bucket --bar=<sense, pthread>
+> perf stat -e L1-dcache-loads -e L1-dcache-load-misses ./containers source.txt -t 5 --algorithm=<sgl_stack,sgl_queue,treiber_stack,ms_queue,baskets_queue, elim_sql_stack, elim_t_stack>
 ```
 #### For branch-prediction hit rate
 ```shell
-> perf stat -e branch-loads -e branch-load-misses ./counter -t 10 -i=1000 --bar=<sense, pthread> -o out.txt
-> perf stat -e branch-loads -e branch-load-misses ./mysort source.txt -o out.txt -t 10 --alg=bucket --bar=<sense, pthread>
+> perf stat -e branch-loads -e branch-load-misses ./containers source.txt -t 5 --algorithm=<sgl_stack,sgl_queue,treiber_stack,ms_queue,baskets_queue, elim_sql_stack, elim_t_stack>
 ```
-#### For L1 cache hit rate
+#### For page faults
 ```shell
-> perf stat -e page-faults ./counter -t 10 -i=1000 --bar=<sense, pthread> -o out.txt
-> perf stat -e page-faults ./mysort source.txt -o out.txt -t 10 --alg=bucket --bar=<sense, pthread>
+> perf stat -e page-faults ./containers source.txt -t 5 --algorithm=<sgl_stack,sgl_queue,treiber_stack,ms_queue,baskets_queue, elim_sql_stack, elim_t_stack>
 ```
 #### Or all stats at once (how I ended up doing it), using 10 repeated runs
 ```shell
-> perf stat --repeat 10 -e L1-dcache-loads,L1-dcache-load-misses,branch-loads,branch-load-misses,page-faults ./counter -t 10 -i=1000 --bar=<sense, pthread> -o out.txt  
-> perf stat --repeat 10 -e L1-dcache-loads,L1-dcache-load-misses,branch-loads,branch-load-misses,page-faults ./mysort source.txt -o out.txt -t 10 --alg=bucket --bar=<sense, pthread>
+> perf stat --repeat 10 -e L1-dcache-loads,L1-dcache-load-misses,branch-loads,branch-load-misses,page-faults ./containers source.txt -t 5 --algorithm=<sgl_stack,sgl_queue,treiber_stack,ms_queue,baskets_queue, elim_sql_stack, elim_t_stack>
 ```
 
-### Barrier Perf Table (Iteration/Array at 1000, 10 threads, and 10 repeated runs (average))
-Program | Barrier | Run Time (s) | L1 cache hit rate | branch-prediction hit rate | page-fault
-:------ | :-----: | :----------- | :---------------- | :------------------------- | :---------
-counter | sense   | 0.001862     | 99.70%            | 99.86%                     | 154
-counter | pthread | 0.012391     | 90.04%            | 99.01%                     | 148
-mysort  | sense   | 0.001578     | 99.32%            | 99.46%                     | 187
-mysort  | pthread | 0.000531     | 96.56%            | 97.58%                     | 186
-
-## Locks
-#### For L1 cache hit rate
-```shell
-> perf stat -e L1-dcache-loads -e L1-dcache-load-misses ./counter -t 10 -i=1000 --lock=<tas,ttas,ticket,pthread> -o out.txt
-> perf stat -e L1-dcache-loads -e L1-dcache-load-misses ./mysort source.txt -o out.txt -t 10 --alg=bucket --lock=<tas,ttas,ticket,pthread>
-```
-#### For branch-prediction hit rate
-```shell
-> perf stat -e branch-loads -e branch-load-misses ./counter -t 10 -i=1000 --lock=<tas,ttas,ticket,pthread> -o out.txt
-> perf stat -e branch-loads -e branch-load-misses ./mysort source.txt -o out.txt -t 10 --alg=bucket --lock=<tas,ttas,ticket,pthread>
-```
-#### For L1 cache hit rate
-```shell
-> perf stat -e page-faults ./counter -t 10 -i=1000 --lock=<tas,ttas,ticket,pthread> -o out.txt
-> perf stat -e page-faults ./mysort source.txt -o out.txt -t 10 --alg=bucket --lock=<tas,ttas,ticket,pthread>
-```
-#### Or all stats at once (how I ended up doing it), using 10 repeated runs
-```shell
-> perf stat --repeat 10 -e L1-dcache-loads,L1-dcache-load-misses,branch-loads,branch-load-misses,page-faults ./counter -t 10 -i=1000 --lock=<tas,ttas,ticket,pthread> -o out.txt 
-> perf stat --repeat 10 -e L1-dcache-loads,L1-dcache-load-misses,branch-loads,branch-load-misses,page-faults ./mysort source.txt -o out.txt -t 10 --alg=bucket --lock=<tas,ttas,ticket,pthread>
-```
-
-### Lock Perf Table (Iteration/Array at 1000, 10 threads, and 10 repeated runs (average))
-Program | Lock    | Run Time (s) | L1 cache hit rate | branch-prediction hit rate | page-fault
-:------ | :------ | :----------- | :---------------- | :------------------------- | :---------
-counter | tas     | 0.000574     | 92.37%            | 97.01%                     | 144
-counter | ttas    | 0.000705     | 93.40%            | 97.07%                     | 145
-counter | ticket  | 0.001021     | 96.17%            | 98.69%                     | 145
-counter | pthread | 0.001050     | 97.06%            | 99.01%                     | 145
-mysort  | tas     | 0.000346     | 96.99%            | 97.75%                     | 171
-mysort  | ttas    | 0.000371     | 97.02%            | 97.78%                     | 170
-mysort  | ticket  | 0.000358     | 97.30%            | 97.92%                     | 166
-mysort  | pthread | 0.000349     | 96.53%            | 97.46%                     | 171
+<style> table { font-size: 12px } </style>
+### Container Perf Table (Iteration/Array of 10000, 5 threads, and 10 repeated runs (average))
+Algorithm           | Run Time (s) | L1 cache hit rate | branch-prediction hit rate | page-fault
+:------------------ | :----------- | :---------------- | :------------------------- | :---------
+SGL Stack           | 0.003164545  | 98.46%            | 99.05%                     | 134
+SGL Queue           | 0.003159215  | 98.44%            | 99.05%                     | 133
+Treiber Stack       | 0.003125873  | 98.44%            | 99.05%                     | 134
+MS Queue            | 0.002613348  | 98.48%            | 99.05%                     | 134
+Baskets Queue       | 0.002597239  | 98.44%            | 99.06%                     | 134
+Elim SGL Stack      | 0.00         | %                 | %                          | 122
+Elim Treiber Stack  | 0.00         | %                 | %                          | 122
+##### *NOTE: Run time includes testing
 
 ### Perf Analysis
-Overall among benchmarking and mysort performance tests, locking algorithms seem to be faster and have better hit rates. Speculating that with barriers, each process has to wait for one another before proceeding on, while the locking algorithms are able to sort the subarray independently on one another prior to merging back. The pthread appeared the perform the worse across the board, since each thread was having to synchronize after every bit, there's a lot of overhead cost involed. The fastest looked to be TAS lock, imagining it's the simplest of the locks, but it not scalable so could see degraded results with larger numbers. 
+Overall among all of the algorithm's performance tests, the baskets queue algorithms seem to be faster. However, all have very similar hit rates. Ideally, this run times make sense, as the single global locks should perform much slower than the other algorithms since these are sequential operations; each process has to wait for one another before proceeding on. The stacks with elimination (as read, but not implemented) should outperform the SGL and Treiber stacks. 
+
+<div style="page-break-after: always; visibility: hidden">\pagebreak</div>
+
+## Unit Testing
+Local test cases were setup on a MacOS machine, and currently unable to run on Linux (seg faults). Below is the console output from a Mac notebook:
+```shell
+================ STARTING TEST CASES ================
+
+---------------- Testing with 1 Thread ----------------
+With Nums: { 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 }
+•••••• SGL Stack Tests ••••••
+ Pushed: 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 
+ Popped: 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1 
+ Time elapsed: 0.000117 seconds
+•••••• SGL Queue Tests ••••••
+ Enqueued: 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 
+ Dequeued: 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 
+ Time elapsed: 0.000060 seconds
+•••••• Treiber Stack Tests ••••••
+ Pushed: 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 
+ Popped: 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1 
+ Time elapsed: 0.000061 seconds
+•••••• Michael And Scott Queue Tests ••••••
+ Enqueued: 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 
+ Dequeued: 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 
+ Time elapsed: 0.000043 seconds
+•••••• Baskets Queue Tests ••••••
+ Enqueued: 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 
+ Dequeued: 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 
+ Time elapsed: 0.039010 seconds
+
+---------------- Testing with 3 Threads ----------------
+With Nums: { 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 }
+•••••• SGL Stack Tests ••••••
+ Pushed: 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 
+ Popped: 30 29 28 27 26 25 24 23 22 21 20 19 18 17 16 
+ Time elapsed: 0.000357 seconds
+•••••• SGL Queue Tests ••••••
+ Enqueued: 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 
+ Dequeued: 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 
+ Time elapsed: 0.000340 seconds
+•••••• Treiber Stack Tests ••••••
+ Pushed: 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 
+ Popped: 30 29 28 27 26 25 24 23 22 21 20 19 18 17 16 
+ Time elapsed: 0.000117 seconds
+•••••• Michael And Scott Queue Tests ••••••
+ Enqueued: 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 
+ Dequeued: 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 
+ Time elapsed: 0.000209 seconds
+•••••• Baskets Queue Tests ••••••
+ Enqueued: 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 
+ Dequeued: 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 
+ Time elapsed: 0.000103 seconds
+
+---------------- Testing with 5 Threads ----------------
+With Nums: { 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 }
+•••••• SGL Stack Tests ••••••
+ Pushed: 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 
+ Popped: 45 44 43 42 41 40 39 38 37 36 35 34 33 32 31 
+ Time elapsed: 0.000355 seconds
+•••••• SGL Queue Tests ••••••
+ Enqueued: 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 
+ Dequeued: 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 
+ Time elapsed: 0.000144 seconds
+•••••• Treiber Stack Tests ••••••
+ Pushed: 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 
+ Popped: 45 44 43 42 41 40 39 38 37 36 35 34 33 32 31 
+ Time elapsed: 0.000138 seconds
+•••••• Michael And Scott Queue Tests ••••••
+ Enqueued: 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 
+ Dequeued: 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 
+ Time elapsed: 0.000125 seconds
+•••••• Baskets Queue Tests ••••••
+ Enqueued: 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 
+ Dequeued: 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 
+ Time elapsed: 0.000120 seconds
+
+================ END TEST CASES ================
+```
 
 #### 🐜 Surviving Bugs
   - Input/output files are loaded/saved as is. Does not check for txt file types or if data is integers.
-  - Creating/Joining of threads is out of order for locks, so sometimes fails bucket sorting.
+  - Creating/Joining of threads is out of order, so sometimes fails pushing/pushing OR enqueuing dequeuing order. 
 
 #### Resources:
 1. [*Scalable Lock-free Stack Algorithm](https://people.csail.mit.edu/shanir/publications/Lock_Free.pdf)
@@ -163,6 +219,7 @@ Overall among benchmarking and mysort performance tests, locking algorithms seem
 14. [Old counted ptr header file (not currently implemented)](http://ootips.org/yonat/4dev/counted_ptr.h)
 15. [cpp compare exchange](https://en.cppreference.com/w/cpp/atomic/atomic_compare_exchange)
 16. [stack overflow CAS solution for baskets queue](https://stackoverflow.com/questions/27919854/compare-and-swap-in-c)
+17. [nanoseconds sleep for backoff scheme](https://stackoverflow.com/questions/7684359/how-to-use-nanosleep-in-c-what-are-tim-tv-sec-and-tim-tv-nsec)
 
 <!-- CREATE README PDF -->
 <!-- md2pdf README.md --highlight-style atom-one-dark --pdf-options '{ "format": "Letter", "margin": "20mm", "printBackground": true }' -->

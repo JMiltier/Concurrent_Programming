@@ -6,22 +6,30 @@ int main(int argc, const char* argv[]){
 	inputFile = args_parsed.INPUTFILE;
 	NUM_THREADS = args_parsed.NUM_THREADS;
 	algorithm = args_parsed.ALGORITHM;
+	test = args_parsed.TEST;
 
 	threads = static_cast<pthread_t*>(malloc(NUM_THREADS*sizeof(pthread_t)));
 	pthread_mutex_init(&SGL_stack_lock, NULL);
 	pthread_mutex_init(&SGL_queue_lock, NULL);
 
-	// read in integers from input file, allocate vector size, and store values
-	fstream file(inputFile.c_str(), ios_base::in);
-	fstream infile(inputFile, ios_base::in);
-	while (getline(file, line)) s++;
-	test_vec.resize(s);
-	while (infile >> a) {
-		test_vec[b++] = a;
+	if (inputFile != "") {
+		// read in integers from input file, allocate vector size, and store values
+		fstream file(inputFile.c_str(), ios_base::in);
+		fstream infile(inputFile, ios_base::in);
+		while (getline(file, line)) s++;
+		test_vec.resize(s);
+		while (infile >> a) {
+			test_vec[b++] = a;
+		}
 	}
 
 	// execution start time
 	auto start_time = Clock::now();
+
+	// testing flag
+	if(test && algorithm == 0)
+		runTests();
+		exit(0);
 
 	/* algorithm statement (from parser) is as follows:
 	* 1-sgl_stack, 2-sgl_queue, 3-treiber_stack, 4-ms_queue
@@ -65,7 +73,6 @@ int main(int argc, const char* argv[]){
 			break;
 		// elim_sql_stack
 		case 6:
-			init_queue(bas_queue);
 			for (size_t i = 0; i < NUM_THREADS; i++)
 				pthread_create(&threads[i], NULL, elim_sgl_stack, (void*)i);
 			for (size_t i = 0; i < NUM_THREADS; i++)
@@ -73,16 +80,12 @@ int main(int argc, const char* argv[]){
 			break;
 		// elim_t_stack
 		case 7:
-			init_queue(bas_queue);
 			for (size_t i = 0; i < NUM_THREADS; i++)
 				pthread_create(&threads[i], NULL, elim_t_stack, (void*)i);
 			for (size_t i = 0; i < NUM_THREADS; i++)
 				pthread_join(threads[i], NULL);
 			break;
 		// something didn't match up
-		case -1:
-			runTests();
-			exit(0);
 		default:
 			printf("An error occured in main argument switch\n");
 			exit(-1);

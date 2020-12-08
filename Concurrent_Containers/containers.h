@@ -26,8 +26,8 @@ using namespace std;
 
 /* variables */
 pthread_t *threads;
-size_t NUM_THREADS, s, a, b=0;
-int algorithm;
+size_t NUM_THREADS, algorithm, s, a, b=0;
+atomic<bool> test;
 string inputFile, line;
 vector<int> test_vec, tv1, tv2, tv3;
 stack<int> sgl_s, *sgl_stack = &sgl_s;
@@ -49,10 +49,10 @@ void *SGL_stack(void *i) {
   size_t start = split * tid;
   size_t end = split * (tid+1);
   for (int i = start; i < end; ++i) {
-	  SGL_s_push(sgl_stack, test_vec[i], algorithm);
+	  SGL_s_push(sgl_stack, test_vec[i], test);
   }
   if (sgl_stack->size() == split * NUM_THREADS)
-    SGL_s_pop(sgl_stack, algorithm);
+    SGL_s_pop(sgl_stack, test);
 	return NULL;
 }
 
@@ -63,10 +63,10 @@ void *SGL_queue(void *i) {
   size_t start = split * tid;
   size_t end = split * (tid+1);
   for (int i = start; i < end; ++i) {
-	  SGL_q_push(sgl_queue, test_vec[i], algorithm);
+	  SGL_q_push(sgl_queue, test_vec[i], test);
   }
   if (sgl_queue->size() == split * NUM_THREADS)
-    SGL_q_pop(sgl_queue, algorithm);
+    SGL_q_pop(sgl_queue, test);
 	return NULL;
 }
 
@@ -78,11 +78,11 @@ void *treiber_stack(void *i) {
   size_t end = split * (tid+1);
   int fin = 0;
   for (int i = start; i < end; ++i) {
-	  tre_stack->push(test_vec[i], algorithm);
+	  tre_stack->push(test_vec[i], test);
     fin = test_vec[i+1];
   }
   if (fin == test_vec[split * NUM_THREADS])
-    while (tre_stack->pop(algorithm) != NULL);
+    while (tre_stack->pop(test) != NULL);
 	return NULL;
 }
 
@@ -94,11 +94,11 @@ void *MS_queue(void *i) {
   size_t end = split * (tid+1);
   int fin = 0;
   for (int i = start; i < end; ++i) {
-	  ms_queue->enqueue(test_vec[i], algorithm);
+	  ms_queue->enqueue(test_vec[i], test);
     fin = test_vec[i+1];
   }
   if (fin == test_vec[split * NUM_THREADS])
-    while (ms_queue->dequeue(algorithm));
+    while (ms_queue->dequeue(test));
 	return NULL;
 }
 
@@ -108,17 +108,12 @@ void *baskets_queue(void *i) {
 	size_t split = test_vec.size() / NUM_THREADS;
   size_t start = split * tid;
   size_t end = split * (tid+1);
-  printf("YOO\n");
   for (int i = start; i < end; ++i) {
-    printf("YOO2\n");
-	  baskets_enqueue(bas_queue, test_vec[i]);
-    printf("YOO2.2\n");
+	  baskets_enqueue(bas_queue, test_vec[i], test);
   }
-  size_t t = 0;
-  printf("YOO3\n");
-  while(t != 999) {
-    printf("YOO999\n");
-    t = baskets_dequeue(bas_queue);
+  int t = 0;
+  while(t != -1) {
+    t = baskets_dequeue(bas_queue, test);
   }
 
 	return NULL;
@@ -155,9 +150,9 @@ void testFuncs() {
   printf("•••••• SGL Stack Tests ••••••\n");
   printf(" Pushed: ");
   auto start_time1 = Clock::now();
-  for (size_t i = 0; i < NUM_THREADS; i++)
+  for (int i = 0; i < NUM_THREADS; i++)
 		pthread_create(&threads[i], NULL, SGL_stack, (void*)i);
-	for (size_t i = 0; i < NUM_THREADS; i++)
+	for (int i = 0; i < NUM_THREADS; i++)
 		pthread_join(threads[i], NULL);
   auto end_time1 = Clock::now();
 	unsigned long time_spent1 = chrono::duration_cast<chrono::nanoseconds>(end_time1 - start_time1).count();
@@ -199,8 +194,9 @@ void testFuncs() {
   printf("\n•••••• Baskets Queue Tests ••••••\n");
   printf(" Enqueued: ");
   auto start_time5 = Clock::now();
+  init_queue(bas_queue);
   for (size_t i = 0; i < NUM_THREADS; i++)
-		pthread_create(&threads[i], NULL, MS_queue, (void*)i);
+		pthread_create(&threads[i], NULL, baskets_queue, (void*)i);
 	for (size_t i = 0; i < NUM_THREADS; i++)
 		pthread_join(threads[i], NULL);
   auto end_time5 = Clock::now();

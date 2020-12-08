@@ -8,6 +8,8 @@
 #include <pthread.h>
 #include <atomic>
 #include "pthread_add.h"
+#include "sgl_stack.h"
+#include "treiber_stack.h"
 
 #define ACQ memory_order_acquire
 #define ACQREL memory_order_acq_rel
@@ -15,13 +17,12 @@
 
 using namespace std;
 
-// from treiber_stack.h, used for SGL
-
 struct Node {
   Node *pnext;
   void *pdata;
 };
 
+// reimplemented from treiber_stack.h
 class elim_stack {
   public:
     class node {
