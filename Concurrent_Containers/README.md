@@ -24,7 +24,19 @@ Non-blocking, dynamic-memory algorithm that whose threads reserve blocks beforeh
 #### Baskets Queue (FIFO)
 A concurrent lock-free dynamic linearizable queue algorithm. The throughput of this is greater than the previous ones listed - as it created a mixed order (baskets) of items, instead of the traditional ordered list. Operations within each basket can be performed in parallel.
 #### Elimination Stacks (FIFO) with SGL Stack and Treiber Stack
-Concurrent stack algorithm that is lock-free (robust), parallel (scalable), and adaptive (performs well at low loads). Additionally, it is linearizable and combine modularly with other algorithms. 
+Concurrent stack algorithm that is lock-free (robust), parallel (scalable), and adaptive (performs well at low loads). Additionally, it is linearizable and combine modularly with other algorithms. Notes from paper: A push followed by a pop does not change a data structure's state. If the two threads can exchange these values without having to touch a centralized structure, they have 'eliminated' the push->pop effect. The idea: use a single elimination array as a backoff scheme on a shared lock-free stack. If the thread fails on the stack, it attempts to eliminate on the array, and if they fail at elimination, they attempt to access the stack again (and so on).  
+Global arrays:
+- location[1..n] has an element per thread, and pointer location to thread
+- collision[1..size] holds ids of the threads trying to collide
+Vars:
+- p, q - thread id
+Order of eliminate stack:
+1. tries to perform operation on central stack
+2. if that fails, it goes through the collision layer
+    1. writes thread info to location array
+    2. chooses random location in collision array
+    3. read random location and store it, while trying to write own id
+    4. will keep trying 2c until successful
 
 #### Flat combining Stack and Queue 
 Wasn't able to find much info on implementing this.

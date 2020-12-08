@@ -66,6 +66,13 @@ void LesOP(ThreadInfo *p) {
   while(true) {
     thread[mypid] = p;
     pos = GetPosition(p)
+    him=collision[pos];
+    while(!CAS(&collsion[pos], him, mypid))
+      him=collision[pos];
+    if (him!=EMPTY) {
+      q=location[him];
+      if(q!=NULL && q->id)
+    }
   }
 }
 
@@ -101,6 +108,9 @@ int elim_stack::pop() {
  * Global arrays:
  * * location[1..n] has an element per thread, and pointer location to thread
  * * collision[1..size] holds ids of the threads trying to collide
+ *
+ * Vars:
+ * * p, q - thread
  *
  * Order of eliminate stack
  * 1st: tries to perform operation on central stack
