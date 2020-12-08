@@ -236,7 +236,7 @@ With Nums: { 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 }
 
 #### 🐜 Surviving Bugs
   - Input/output files are loaded/saved as is. Does not check for txt file types or if data is integers.
-  - Creating/Joining of threads is out of order, so sometimes fails pushing/pushing OR enqueuing dequeuing order. 
+  - Creating/Joining of threads is out of order, so sometimes fails pushing/pushing OR enqueuing/dequeuing order. 
 
 #### Resources:
 1. [*Scalable Lock-free Stack Algorithm](https://people.csail.mit.edu/shanir/publications/Lock_Free.pdf)
